@@ -1,28 +1,30 @@
 {
   "schema_version": "voxlush.model_qualification.v1",
   "status": "unqualified_model_profile",
-  "profile_hash": "806a3d83e2a8bdf9e8999407e1db3ffda4b564df9eb2633846c52e79a3e73951",
+  "profile_hash": "d4f82087f49c17ad60c5e7bf3fae29fdbcc1578d1e5299c94e52cb0a002a0672",
   "config": {
     "allow_live": false,
     "author_endpoint": null,
     "visual_endpoint": null,
     "global_api_cap": 0,
     "qualification_flag": false,
-    "prompt_version": "voxlush.prompt.v3"
+    "prompt_version": "voxlush.prompt.v4",
+    "stream_policy_version": "voxlush.stream.v3"
   },
   "budget": {
-    "model_requests": 4,
-    "request_limit": 4,
+    "model_requests": 36,
+    "request_limit": null,
     "known_cost": null,
     "known_cost_requests": 0,
-    "unknown_cost_requests": 4,
-    "currency": null
+    "unknown_cost_requests": 36,
+    "currency": null,
+    "scope": "Historical seven requests plus latest user-authorized concurrent generation and canary requests. User waived fee constraints; finite campaign/sample limits remain. Costs lack validated monetary settlement."
   },
   "calibration": {
     "representative_briefs": 0,
     "paired_direct_two_stage": 0,
     "holdout_tasks": 0,
-    "automatic_pass_candidates": 0
+    "automatic_pass_candidates": 1
   },
   "human_review": {
     "reviewed": 0,
@@ -37,9 +39,9 @@
     "same_task_quality_noninferior": true,
     "cost_or_throughput_improvement": true
   },
-  "reason": "The four-request probe budget is exhausted. Offline replay of the first complete DeepSeek source now passes name and landscape-floor metadata validation, reaches Docker, then fails because an authored C call omits its required floor argument. The repair still attempts to rebind SEED. Neither thinking timeout has a source body. No successful model geometry, preview, image-model review or human calibration exists. Prompt v3 has no new remote-model test.",
+  "reason": "Latest real concurrent validation exposed output-token truncation and clean-EOF uncertainty. Raising DeepSeek output allowance returned complete authored programs. One stone arch passed geometry, real GLM visual review, unchanged-source rebuild, archive, provisional export and backup restoration. A timber asset failed repeated metadata validation and stopped. No human blind calibration; qualification remains false.",
   "recorded_at": "2026-10-08",
-  "profile_scope": "Checked-in offline configuration with prompt v3 and revised validator identity; historical prompt-v1 probes below remain unqualified.",
+  "profile_scope": "Current offline configuration, prompt v4 and stream policy v3. Historical profiles and original outcomes are retained in their dated sections.",
   "probe_outcomes": {
     "response_complete": 2,
     "outcome_unknown": 2,
@@ -143,7 +145,7 @@
       ]
     }
   ],
-  "evidence_scope": "Historical paid probe facts plus offline replay of unchanged locally retained responses. Raw responses, private configuration, credentials, data and logs remain outside Git. Original probe_outcomes describe the original probe, not the later replay.",
+  "evidence_scope": "Initial probes/probe_outcomes describe the original four-request run. The later offline_review_replay describes unchanged saved sources from that run. live_followup records the new user-requested batch; budget is cumulative. Raw responses, private configuration, credentials, data and logs remain outside Git.",
   "offline_review_replay": {
     "paid_requests": 0,
     "raw_sources_modified": false,
@@ -171,5 +173,1359 @@
     "accepted_unique": 0,
     "visual_model_requests": 0,
     "human_reviews": 0
+  },
+  "live_followup": {
+    "source_commit": "2230ef6edda4ffd13e556adc370703575984c1dc",
+    "request_limit": 4,
+    "model_requests": 3,
+    "unused_request_slots": 1,
+    "concurrency_cap": 1,
+    "brief": "The existing medium-scale natural stone arch example, as a calibration task",
+    "successful_model_geometry": 0,
+    "previews": 0,
+    "visual_model_requests": 0,
+    "accepted_unique": 0,
+    "human_reviews": 0,
+    "recorded_tokens": 12056,
+    "known_cost": null,
+    "deepseek": {
+      "profile_hash": "a415562966d5e03a2ebb6ea50dbd73337734d9c3713fa141f61735dcb23b25ab",
+      "prompt_version": "voxlush.prompt.v3",
+      "requested_thinking": "disabled",
+      "attempts": [
+        {
+          "role": "author",
+          "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+          "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+          "response_complete": true,
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 4323,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 2006,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "total_tokens": 6329
+          },
+          "cost": null,
+          "billing_status": "unknown",
+          "elapsed_ms": 66667.43984911591,
+          "error_category": null
+        },
+        {
+          "role": "author",
+          "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+          "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+          "response_complete": true,
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 3697,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 2030,
+            "prompt_tokens_details": {
+              "cached_tokens": 1984
+            },
+            "total_tokens": 5727
+          },
+          "cost": null,
+          "billing_status": "unknown",
+          "elapsed_ms": 78079.66015394777,
+          "error_category": null
+        }
+      ],
+      "sample": {
+        "sample_id": "v3_deepseek_natural_arch",
+        "stage": "build",
+        "status": "rejected",
+        "reason_code": "repair_exhausted",
+        "revision": 2,
+        "request_count": 2,
+        "geometry_repairs": 1,
+        "visual_repairs": 0
+      },
+      "first_response": "One complete leading Python fence followed by prose; originally rejected by extraction. Local normalization preserves all program bytes apart from newline normalization; sandbox then rejects explicit floor=None.",
+      "repair_response": "Complete program passes source validation; sandbox rejects C calls without required floor.",
+      "browser_passed": true,
+      "backup_restore_verified": true
+    },
+    "glm": {
+      "profile_hash": "aa11db67233480e1f3ec58b03a385cac1730eefb8972f7fd86ac40acac3f598c",
+      "prompt_version": "voxlush.prompt.v4",
+      "requested_thinking": "disabled",
+      "attempts": [
+        {
+          "role": "author",
+          "requested_model": "z-ai/glm-5.3-flash",
+          "reported_model": "z-ai/glm-5.3-flash",
+          "response_complete": false,
+          "finish_reason": null,
+          "usage": {},
+          "cost": null,
+          "billing_status": "unknown",
+          "elapsed_ms": 180001.71685498208,
+          "error_category": "outcome_unknown"
+        }
+      ],
+      "sample": {
+        "sample_id": "v4_glm_natural_arch",
+        "stage": "author",
+        "status": "blocked",
+        "reason_code": "outcome_unknown",
+        "revision": 1,
+        "request_count": 1,
+        "geometry_repairs": 0,
+        "visual_repairs": 0
+      },
+      "response_body_characters": 0,
+      "browser_passed": true,
+      "backup_restore_verified": true,
+      "execution_occupancy": 1,
+      "replayed_post": false,
+      "stream_diagnostics": {
+        "json_events": 828,
+        "reasoning_content_characters": 7897,
+        "final_content_characters": 0,
+        "finish_reason": null,
+        "diagnosis": "The original client deadline counted final content only. Read-only SSH inspection and isolated replay show that the pool preserves the requested thinking field without adapting it. NVIDIA documents reasoning_effort low/high/max, default max. Time-correlated HTTP 200 then BrokenPipe align with the local 180-second deadline, not the pool 2400-second request timeout. Historical execution and billing remain unknown."
+      }
+    },
+    "fixes": [
+      "Deterministically extract a single complete leading Python fence despite trailing commentary; reject multiple, missing or invalid fences and retain runtime guards.",
+      "Prompt v4 provides an explicit natural-component C(..., floor=ground) example; no component/geometry requirement was relaxed."
+    ],
+    "verification": {
+      "python_passed": 148,
+      "python_skipped": 1,
+      "ruff": "passed",
+      "actual_service_browser_runs_passed": 2
+    },
+    "production_modified": false,
+    "limits": "No image endpoint was reached. Empty exports and restoration of failed/unknown request state do not constitute a successful asset chain. Endpoint names do not establish upstream model identity; this is not a controlled model comparison."
+  },
+  "pool_audit": {
+    "date": "2026-10-08",
+    "scope": "Authorized read-only SSH diagnosis, cached health GET, official documentation GET and isolated forwarding replay",
+    "additional_model_requests": 0,
+    "production_modified": false,
+    "routes": {
+      "provider": "nvidia",
+      "upstream_host": "integrate.api.nvidia.com",
+      "models": [
+        "z-ai/glm-5.3-flash",
+        "deepseek-ai/deepseek-v4.1-flash"
+      ],
+      "enabled_workers": 5,
+      "configured_aliases": false,
+      "model_defaults": {},
+      "historical_wire_capture": false
+    },
+    "forwarding": {
+      "scope": "Copied live worker upstream() method with stubbed outbound HTTP; no model call",
+      "request_model": "z-ai/glm-5.3-flash",
+      "input_thinking": {
+        "type": "disabled"
+      },
+      "forwarded_thinking": {
+        "type": "disabled"
+      },
+      "chat_template_kwargs_present": false,
+      "added_fields": [
+        "stream_options"
+      ],
+      "messages_preserved": true
+    },
+    "worker_request_timeout_seconds": 2400,
+    "glm_log_correlation": {
+      "basis": "Time-correlated, not joined by request ID",
+      "worker": 2,
+      "http_200_at": "2026-10-08T15:13:42.133+08:00",
+      "broken_pipe_at": "2026-10-08T15:16:41.290+08:00",
+      "client_timeout_seconds": 180,
+      "upstream_termination_proven": false
+    },
+    "cached_health": {
+      "pool": {
+        "status": "healthy",
+        "inFlight": 0,
+        "maxInFlight": 512,
+        "healthySources": 133,
+        "totalSources": 133,
+        "routableSources": 133,
+        "quotaBlockedSources": 0
+      },
+      "cluster": {
+        "maxInFlight": 512,
+        "active": 0,
+        "peak": 255,
+        "nodes": [
+          {
+            "id": "legacy",
+            "reachable": true,
+            "active": 0,
+            "capacity": 64,
+            "accounts": 23
+          },
+          {
+            "id": "new-1",
+            "reachable": true,
+            "active": 0,
+            "capacity": 112,
+            "accounts": 28
+          },
+          {
+            "id": "new-2",
+            "reachable": true,
+            "active": 0,
+            "capacity": 112,
+            "accounts": 28
+          },
+          {
+            "id": "new-3",
+            "reachable": true,
+            "active": 0,
+            "capacity": 112,
+            "accounts": 27
+          },
+          {
+            "id": "new-4",
+            "reachable": true,
+            "active": 0,
+            "capacity": 112,
+            "accounts": 27
+          }
+        ]
+      },
+      "captured_at": "2026-10-08T07:37:45.452355Z"
+    },
+    "provider_documentation": {
+      "url": "https://docs.api.nvidia.com/nim/reference/z-ai-glm-5-3-flash",
+      "reasoning_effort_values": [
+        "low",
+        "high",
+        "max"
+      ],
+      "reasoning_effort_default": "max",
+      "tested_thinking_disable_documented": false
+    },
+    "copied_source_sha256": {
+      "cluster_gateway.py": "390b9ffd85de50b807024e46257de0972646919b01e709346f82841b2c45ad92",
+      "api_pool.py": "2fc2e8c14f5e5f2a81de58c460ff8f8bd2b94de3edc08b708aaccf1bd0616bb9"
+    },
+    "limits": "Health is a snapshot, not throughput qualification; forwarding replay verifies current code, not historical outbound wire bytes. Client disconnection and pool idle status do not reconcile upstream execution or billing."
+  },
+  "reasoning_support_fix": {
+    "user_preference": "Retain model thinking for quality; do not automatically disable it or reduce reasoning effort",
+    "stream_policy_version": "voxlush.stream.v2",
+    "behavior": "Nonempty reasoning_content refreshes progress independently of final answer content. Heartbeats do not extend deadlines. Total/idle deadlines, complete-answer requirements and unknown-state handling remain.",
+    "glm_configuration_guidance": "Omit thinking.type=disabled; retain the documented default reasoning effort or explicitly select max. No live profile was modified or called in this pass.",
+    "verification": {
+      "new_regression_cases": 12,
+      "python_passed": 160,
+      "python_skipped": 1,
+      "python_seconds": 61.87,
+      "ruff": "passed",
+      "saved_stream_replay": {
+        "response_complete": false,
+        "error_category": "incomplete_response",
+        "reasoning_content_characters": 7897,
+        "first_reasoning_at": 1791445910.2526433,
+        "first_content_at": null,
+        "elapsed_ms": 982.9526757821441,
+        "cost": null,
+        "scope": "Saved GLM SSE lines through MockTransport with delayed chunks; zero external requests",
+        "terminal_line_delimiter_restored": true,
+        "final_content_characters": 0,
+        "raw_preserved": true,
+        "transport_invocations": 1
+      }
+    },
+    "additional_model_requests": 0,
+    "live_qualified": false,
+    "committed": false,
+    "pushed": false
+  },
+  "concurrent_live_validation": {
+    "scope": "Real external inference through isolated instances of the actual CLI/API service; all thinking retained; no production changes",
+    "main_peak_active": 16,
+    "new_requests": 29,
+    "cumulative_requests": 36,
+    "new_unknown_execution": 8,
+    "cumulative_unknown_execution": 11,
+    "historical_requests": 7,
+    "historical_unknown": 3,
+    "profiles": [
+      {
+        "name": "deepseek",
+        "requests": 12,
+        "completed_answers": 0,
+        "known_length_endings": 12,
+        "unknown_execution": 0,
+        "error_counts": {
+          "incomplete_response": 12
+        },
+        "recorded_tokens": 318052,
+        "samples": [
+          {
+            "theme_seed_id": "geology_03",
+            "scene_type": "natural",
+            "stage": "author",
+            "status": "rejected",
+            "reason_code": "same_error_no_progress",
+            "request_count": 2
+          },
+          {
+            "theme_seed_id": "timber_01",
+            "scene_type": "architecture",
+            "stage": "author",
+            "status": "rejected",
+            "reason_code": "same_error_no_progress",
+            "request_count": 2
+          },
+          {
+            "theme_seed_id": "transport_02",
+            "scene_type": "architecture",
+            "stage": "author",
+            "status": "rejected",
+            "reason_code": "same_error_no_progress",
+            "request_count": 2
+          },
+          {
+            "theme_seed_id": "ruins_01",
+            "scene_type": "architecture",
+            "stage": "author",
+            "status": "rejected",
+            "reason_code": "same_error_no_progress",
+            "request_count": 2
+          },
+          {
+            "theme_seed_id": "freshwater_02",
+            "scene_type": "natural",
+            "stage": "author",
+            "status": "ready",
+            "reason_code": "geometry_repair",
+            "request_count": 1
+          },
+          {
+            "theme_seed_id": "forest_03",
+            "scene_type": "natural",
+            "stage": "author",
+            "status": "ready",
+            "reason_code": "geometry_repair",
+            "request_count": 1
+          },
+          {
+            "theme_seed_id": "landscape_hybrid_01",
+            "scene_type": "hybrid",
+            "stage": "author",
+            "status": "ready",
+            "reason_code": "geometry_repair",
+            "request_count": 1
+          },
+          {
+            "theme_seed_id": "geology_04",
+            "scene_type": "natural",
+            "stage": "author",
+            "status": "ready",
+            "reason_code": "geometry_repair",
+            "request_count": 1
+          }
+        ],
+        "attempts": [
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "reasoning_tokens": 24575
+              },
+              "prompt_tokens": 1919,
+              "prompt_tokens_details": {
+                "cached_tokens": 0
+              },
+              "total_tokens": 26495
+            },
+            "elapsed_ms": 354190.44332485646,
+            "reasoning_content_characters": 76848,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "reasoning_tokens": 24576
+              },
+              "prompt_tokens": 1938,
+              "prompt_tokens_details": {
+                "cached_tokens": 1344
+              },
+              "total_tokens": 26514
+            },
+            "elapsed_ms": 333115.2175026946,
+            "reasoning_content_characters": 72436,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "reasoning_tokens": 24576
+              },
+              "prompt_tokens": 1901,
+              "prompt_tokens_details": {
+                "cached_tokens": 1344
+              },
+              "total_tokens": 26477
+            },
+            "elapsed_ms": 351010.9593248926,
+            "reasoning_content_characters": 76531,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "reasoning_tokens": 24576
+              },
+              "prompt_tokens": 1929,
+              "prompt_tokens_details": {
+                "cached_tokens": 1344
+              },
+              "total_tokens": 26505
+            },
+            "elapsed_ms": 367957.6304401271,
+            "reasoning_content_characters": 80359,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "reasoning_tokens": 24576
+              },
+              "prompt_tokens": 1903,
+              "prompt_tokens_details": {
+                "cached_tokens": 1344
+              },
+              "total_tokens": 26479
+            },
+            "elapsed_ms": 422071.0543957539,
+            "reasoning_content_characters": 78445,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "reasoning_tokens": 24576
+              },
+              "prompt_tokens": 1916,
+              "prompt_tokens_details": {
+                "cached_tokens": 1344
+              },
+              "total_tokens": 26492
+            },
+            "elapsed_ms": 405467.5124557689,
+            "reasoning_content_characters": 76432,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "reasoning_tokens": 24576
+              },
+              "prompt_tokens": 1933,
+              "prompt_tokens_details": {
+                "cached_tokens": 1344
+              },
+              "total_tokens": 26509
+            },
+            "elapsed_ms": 380511.03326585144,
+            "reasoning_content_characters": 74618,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "reasoning_tokens": 24576
+              },
+              "prompt_tokens": 1958,
+              "prompt_tokens_details": {
+                "cached_tokens": 1344
+              },
+              "total_tokens": 26534
+            },
+            "elapsed_ms": 389379.07858518884,
+            "reasoning_content_characters": 78934,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "reasoning_tokens": 24576
+              },
+              "prompt_tokens": 1952,
+              "prompt_tokens_details": {
+                "cached_tokens": 1920
+              },
+              "total_tokens": 26528
+            },
+            "elapsed_ms": 520368.1961479597,
+            "reasoning_content_characters": 75889,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "reasoning_tokens": 24576
+              },
+              "prompt_tokens": 1915,
+              "prompt_tokens_details": {
+                "cached_tokens": 1856
+              },
+              "total_tokens": 26491
+            },
+            "elapsed_ms": 559988.9894663356,
+            "reasoning_content_characters": 78292,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "reasoning_tokens": 24576
+              },
+              "prompt_tokens": 1933,
+              "prompt_tokens_details": {
+                "cached_tokens": 1856
+              },
+              "total_tokens": 26509
+            },
+            "elapsed_ms": 557614.1238743439,
+            "reasoning_content_characters": 76637,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "reasoning_tokens": 24576
+              },
+              "prompt_tokens": 1943,
+              "prompt_tokens_details": {
+                "cached_tokens": 1920
+              },
+              "total_tokens": 26519
+            },
+            "elapsed_ms": 552573.5218380578,
+            "reasoning_content_characters": 79646,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          }
+        ],
+        "assets": 0
+      },
+      {
+        "name": "glm",
+        "requests": 9,
+        "completed_answers": 0,
+        "known_length_endings": 2,
+        "unknown_execution": 7,
+        "error_counts": {
+          "incomplete_response": 2,
+          "outcome_unknown": 7
+        },
+        "recorded_tokens": 52785,
+        "samples": [
+          {
+            "theme_seed_id": "geology_03",
+            "scene_type": "natural",
+            "stage": "author",
+            "status": "ready",
+            "reason_code": "geometry_repair",
+            "request_count": 1
+          },
+          {
+            "theme_seed_id": "timber_01",
+            "scene_type": "architecture",
+            "stage": "author",
+            "status": "blocked",
+            "reason_code": "outcome_unknown",
+            "request_count": 1
+          },
+          {
+            "theme_seed_id": "transport_02",
+            "scene_type": "architecture",
+            "stage": "author",
+            "status": "blocked",
+            "reason_code": "outcome_unknown",
+            "request_count": 1
+          },
+          {
+            "theme_seed_id": "ruins_01",
+            "scene_type": "architecture",
+            "stage": "author",
+            "status": "blocked",
+            "reason_code": "outcome_unknown",
+            "request_count": 1
+          },
+          {
+            "theme_seed_id": "freshwater_02",
+            "scene_type": "natural",
+            "stage": "author",
+            "status": "blocked",
+            "reason_code": "outcome_unknown",
+            "request_count": 1
+          },
+          {
+            "theme_seed_id": "forest_03",
+            "scene_type": "natural",
+            "stage": "author",
+            "status": "blocked",
+            "reason_code": "outcome_unknown",
+            "request_count": 1
+          },
+          {
+            "theme_seed_id": "landscape_hybrid_01",
+            "scene_type": "hybrid",
+            "stage": "author",
+            "status": "blocked",
+            "reason_code": "outcome_unknown",
+            "request_count": 2
+          },
+          {
+            "theme_seed_id": "geology_04",
+            "scene_type": "natural",
+            "stage": "author",
+            "status": "blocked",
+            "reason_code": "outcome_unknown",
+            "request_count": 1
+          }
+        ],
+        "attempts": [
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "z-ai/glm-5.3-flash",
+            "reported_model": "z-ai/glm-5.3-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "accepted_prediction_tokens": null,
+                "audio_tokens": null,
+                "reasoning_tokens": 24576,
+                "rejected_prediction_tokens": null
+              },
+              "prompt_tokens": 1803,
+              "prompt_tokens_details": {
+                "audio_tokens": null,
+                "cached_tokens": 0
+              },
+              "total_tokens": 26379
+            },
+            "elapsed_ms": 1539627.8637102805,
+            "reasoning_content_characters": 76983,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "outcome_unknown",
+            "occupancy": 1,
+            "response_complete": false,
+            "finish_reason": null,
+            "requested_model": "z-ai/glm-5.3-flash",
+            "reported_model": "z-ai/glm-5.3-flash",
+            "usage": {},
+            "elapsed_ms": 1800004.1327350773,
+            "reasoning_content_characters": 85721,
+            "first_content_at": null,
+            "error_category": "outcome_unknown",
+            "original_error_category": "outcome_unknown"
+          },
+          {
+            "role": "author",
+            "status": "outcome_unknown",
+            "occupancy": 1,
+            "response_complete": false,
+            "finish_reason": null,
+            "requested_model": "z-ai/glm-5.3-flash",
+            "reported_model": "z-ai/glm-5.3-flash",
+            "usage": {},
+            "elapsed_ms": 1800027.4986107834,
+            "reasoning_content_characters": 75225,
+            "first_content_at": null,
+            "error_category": "outcome_unknown",
+            "original_error_category": "outcome_unknown"
+          },
+          {
+            "role": "author",
+            "status": "outcome_unknown",
+            "occupancy": 1,
+            "response_complete": false,
+            "finish_reason": null,
+            "requested_model": "z-ai/glm-5.3-flash",
+            "reported_model": "z-ai/glm-5.3-flash",
+            "usage": {},
+            "elapsed_ms": 1800042.8949547932,
+            "reasoning_content_characters": 66518,
+            "first_content_at": null,
+            "error_category": "outcome_unknown",
+            "original_error_category": "outcome_unknown"
+          },
+          {
+            "role": "author",
+            "status": "outcome_unknown",
+            "occupancy": 1,
+            "response_complete": false,
+            "finish_reason": null,
+            "requested_model": "z-ai/glm-5.3-flash",
+            "reported_model": "z-ai/glm-5.3-flash",
+            "usage": {},
+            "elapsed_ms": 1800002.780218143,
+            "reasoning_content_characters": 69452,
+            "first_content_at": null,
+            "error_category": "outcome_unknown",
+            "original_error_category": "outcome_unknown"
+          },
+          {
+            "role": "author",
+            "status": "outcome_unknown",
+            "occupancy": 1,
+            "response_complete": false,
+            "finish_reason": null,
+            "requested_model": "z-ai/glm-5.3-flash",
+            "reported_model": "z-ai/glm-5.3-flash",
+            "usage": {},
+            "elapsed_ms": 1800021.8982510269,
+            "reasoning_content_characters": 71846,
+            "first_content_at": null,
+            "error_category": "outcome_unknown",
+            "original_error_category": "outcome_unknown"
+          },
+          {
+            "role": "author",
+            "status": "outcome_unknown",
+            "occupancy": 1,
+            "response_complete": false,
+            "finish_reason": null,
+            "requested_model": "z-ai/glm-5.3-flash",
+            "reported_model": "z-ai/glm-5.3-flash",
+            "usage": {},
+            "elapsed_ms": 59832.44696306065,
+            "reasoning_content_characters": 2592,
+            "first_content_at": null,
+            "error_category": "outcome_unknown",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "outcome_unknown",
+            "occupancy": 1,
+            "response_complete": false,
+            "finish_reason": null,
+            "requested_model": "z-ai/glm-5.3-flash",
+            "reported_model": "z-ai/glm-5.3-flash",
+            "usage": {},
+            "elapsed_ms": 1506240.3783570044,
+            "reasoning_content_characters": 71855,
+            "first_content_at": null,
+            "error_category": "outcome_unknown",
+            "original_error_category": "incomplete_response"
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": false,
+            "finish_reason": "length",
+            "requested_model": "z-ai/glm-5.3-flash",
+            "reported_model": "z-ai/glm-5.3-flash",
+            "usage": {
+              "completion_tokens": 24576,
+              "completion_tokens_details": {
+                "accepted_prediction_tokens": null,
+                "audio_tokens": null,
+                "reasoning_tokens": 24576,
+                "rejected_prediction_tokens": null
+              },
+              "prompt_tokens": 1830,
+              "prompt_tokens_details": {
+                "audio_tokens": null,
+                "cached_tokens": 1280
+              },
+              "total_tokens": 26406
+            },
+            "elapsed_ms": 1704213.5966112837,
+            "reasoning_content_characters": 80692,
+            "first_content_at": null,
+            "error_category": "incomplete_response",
+            "original_error_category": "incomplete_response"
+          }
+        ],
+        "assets": 0
+      },
+      {
+        "name": "deepseek-high-budget",
+        "requests": 4,
+        "completed_answers": 4,
+        "known_length_endings": 0,
+        "unknown_execution": 0,
+        "error_counts": {
+          "complete": 4
+        },
+        "recorded_tokens": 181918,
+        "samples": [
+          {
+            "theme_seed_id": "geology_03",
+            "scene_type": "natural",
+            "stage": "archive",
+            "status": "provisional_pass",
+            "reason_code": "unqualified_model_profile",
+            "request_count": 2
+          },
+          {
+            "theme_seed_id": "timber_01",
+            "scene_type": "architecture",
+            "stage": "build",
+            "status": "rejected",
+            "reason_code": "same_error_no_progress",
+            "request_count": 2
+          }
+        ],
+        "attempts": [
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": true,
+            "finish_reason": "stop",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 49248,
+              "completion_tokens_details": {
+                "reasoning_tokens": 44484
+              },
+              "prompt_tokens": 1901,
+              "prompt_tokens_details": {
+                "cached_tokens": 0
+              },
+              "total_tokens": 51149
+            },
+            "elapsed_ms": 1254076.0237439536,
+            "reasoning_content_characters": 130154,
+            "first_content_at": 1791449023.7018068,
+            "error_category": null,
+            "original_error_category": null
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": true,
+            "finish_reason": "stop",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 53027,
+              "completion_tokens_details": {
+                "reasoning_tokens": 42502
+              },
+              "prompt_tokens": 1960,
+              "prompt_tokens_details": {
+                "cached_tokens": 0
+              },
+              "total_tokens": 54987
+            },
+            "elapsed_ms": 1254417.840077076,
+            "reasoning_content_characters": 127762,
+            "first_content_at": 1791448911.4685564,
+            "error_category": null,
+            "original_error_category": null
+          },
+          {
+            "role": "author",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": true,
+            "finish_reason": "stop",
+            "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+            "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+            "usage": {
+              "completion_tokens": 55104,
+              "completion_tokens_details": {
+                "reasoning_tokens": 43121
+              },
+              "prompt_tokens": 13362,
+              "prompt_tokens_details": {
+                "cached_tokens": 1344
+              },
+              "total_tokens": 68466
+            },
+            "elapsed_ms": 954906.2771657482,
+            "reasoning_content_characters": 130056,
+            "first_content_at": 1791449912.466,
+            "error_category": null,
+            "original_error_category": null
+          },
+          {
+            "role": "review",
+            "status": "complete",
+            "occupancy": 0,
+            "response_complete": true,
+            "finish_reason": "stop",
+            "requested_model": "z-ai/glm-5.3-flash",
+            "reported_model": "z-ai/glm-5.3-flash",
+            "usage": {
+              "completion_tokens": 3822,
+              "completion_tokens_details": {
+                "accepted_prediction_tokens": null,
+                "audio_tokens": null,
+                "reasoning_tokens": 3548,
+                "rejected_prediction_tokens": null
+              },
+              "prompt_tokens": 3494,
+              "prompt_tokens_details": {
+                "audio_tokens": null,
+                "cached_tokens": 0
+              },
+              "total_tokens": 7316
+            },
+            "elapsed_ms": 519705.6139400229,
+            "reasoning_content_characters": 14381,
+            "first_content_at": 1791449613.429787,
+            "error_category": null,
+            "original_error_category": null
+          }
+        ],
+        "assets": 1
+      }
+    ],
+    "browser": {
+      "browser_errors": [],
+      "authentication": true,
+      "read_only_during_load": true,
+      "mobile_layout": true,
+      "preview_images": 0
+    },
+    "overview_latency": {
+      "scope": "60 authenticated overview GETs during real model calls, one service process RSS; excludes browser and containers; not a soak or monitoring-overhead measurement",
+      "samples": 60,
+      "median_ms": 2.303,
+      "p95_ms": 2.606,
+      "max_ms": 3.557,
+      "process_rss_mb_min": 151.14453125,
+      "process_rss_mb_max": 151.16015625,
+      "http_errors": 0
+    },
+    "date": "2026-10-08",
+    "source_baseline": "2230ef6edda4ffd13e556adc370703575984c1dc",
+    "source_changes": "Tested reasoning-progress/fence/floor changes; clean-EOF fix introduced after the main batch started; archive adapter added after the real review passed and verified through archive-only recovery",
+    "main_stream_policy": "voxlush.stream.v2",
+    "followup_stream_policy": "voxlush.stream.v3",
+    "prompt_version": "voxlush.prompt.v4",
+    "thinking": "Preserved; GLM reasoning_effort=max, DeepSeek default enabled",
+    "main_concurrency_ladder": [
+      8,
+      16
+    ],
+    "main_samples": 16,
+    "followup_samples": 2,
+    "main_max_tokens": 24576,
+    "followup_max_tokens": 262144,
+    "main_total_timeout_seconds": 1800,
+    "followup_total_timeout_seconds": 2300,
+    "production_modified": false,
+    "human_reviews": 0,
+    "qualified": false,
+    "canaries": [
+      {
+        "model": "google/gemma-4-31b-it",
+        "summary": {
+          "passed": false,
+          "model": "google/gemma-4-31b-it",
+          "model_requests": 2,
+          "results": [
+            {
+              "id": 0,
+              "passed": false,
+              "answer": null,
+              "response_complete": false,
+              "error_category": "outcome_unknown",
+              "elapsed_ms": 180238.2919746451,
+              "usage": {}
+            },
+            {
+              "id": 1,
+              "passed": true,
+              "answer": {
+                "count": 3,
+                "color": "blue",
+                "shape": "circle"
+              },
+              "response_complete": true,
+              "error_category": null,
+              "elapsed_ms": 52708.00953172147,
+              "usage": {
+                "prompt_tokens": 317,
+                "completion_tokens": 24,
+                "total_tokens": 341,
+                "prompt_tokens_details": {
+                  "audio_tokens": null,
+                  "cached_tokens": 0
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "model": "z-ai/glm-5.3-flash",
+        "summary": {
+          "passed": true,
+          "model": "z-ai/glm-5.3-flash",
+          "model_requests": 2,
+          "results": [
+            {
+              "id": 0,
+              "passed": true,
+              "answer": {
+                "count": 1,
+                "color": "red",
+                "shape": "square"
+              },
+              "response_complete": true,
+              "error_category": null,
+              "elapsed_ms": 9015.353532973677,
+              "usage": {
+                "prompt_tokens": 191,
+                "completion_tokens": 97,
+                "total_tokens": 288,
+                "prompt_tokens_details": {
+                  "audio_tokens": null,
+                  "cached_tokens": 0
+                },
+                "completion_tokens_details": {
+                  "accepted_prediction_tokens": null,
+                  "audio_tokens": null,
+                  "reasoning_tokens": 68,
+                  "rejected_prediction_tokens": null
+                }
+              },
+              "reasoning_content_characters": 252
+            },
+            {
+              "id": 1,
+              "passed": true,
+              "answer": {
+                "count": 3,
+                "color": "blue",
+                "shape": "circle"
+              },
+              "response_complete": true,
+              "error_category": null,
+              "elapsed_ms": 13116.480757948011,
+              "usage": {
+                "prompt_tokens": 191,
+                "completion_tokens": 121,
+                "total_tokens": 312,
+                "prompt_tokens_details": {
+                  "audio_tokens": null,
+                  "cached_tokens": 0
+                },
+                "completion_tokens_details": {
+                  "accepted_prediction_tokens": null,
+                  "audio_tokens": null,
+                  "reasoning_tokens": 100,
+                  "rejected_prediction_tokens": null
+                }
+              },
+              "reasoning_content_characters": 387
+            }
+          ]
+        }
+      }
+    ],
+    "early_eof_correction": {
+      "affected_attempts": 2,
+      "old_classification": "incomplete_response",
+      "new_classification": "outcome_unknown",
+      "one_automatic_repair_before_detection": true,
+      "original_responses_preserved": true,
+      "budgets_reset": false,
+      "audited_backup_restore_verified": true,
+      "saved_response_replay": {
+        "response_complete": false,
+        "error_category": "outcome_unknown",
+        "reasoning_content_characters": 2592,
+        "finish_reason": null,
+        "usage": {},
+        "scope": "Saved live SSE replay through MockTransport; no inference request",
+        "transport_calls": 1,
+        "original_category": "incomplete_response"
+      }
+    },
+    "followup_profile_hash": "968edc60a50022dd652e98756d2c077ddfe787bd520b60291e15a9cbc88c76be",
+    "followup_result": {
+      "assets": [
+        {
+          "path": "assets/94/ef2669dc5a61aced9466ecd7/v0001",
+          "status": "provisional_pass",
+          "canonical_voxel_hash": "4f530a4af62e854da3439633b524697daca12fa6db7fb78b199363b0696c0624"
+        }
+      ],
+      "exports_verified": true,
+      "backup_restore_verified": true,
+      "runner_error": null,
+      "finalize_error": null,
+      "elapsed_seconds": 2217.956547214184,
+      "peak_active": 2,
+      "archive_recovery": {
+        "method": "Restarted real CLI, authenticated retry of archive only, API cap zero; no inference credentials supplied",
+        "extra_model_requests": 0,
+        "exports": {
+          "formal": {
+            "assets": 0,
+            "accepted": 0,
+            "provisional": 0,
+            "source_sft": 0,
+            "repair_pairs": 0,
+            "train": 0,
+            "val": 0,
+            "test": 0,
+            "calibration": 0,
+            "excluded": 0
+          },
+          "provisional": {
+            "assets": 1,
+            "accepted": 0,
+            "provisional": 1,
+            "source_sft": 1,
+            "repair_pairs": 0,
+            "train": 0,
+            "val": 0,
+            "test": 0,
+            "calibration": 1,
+            "excluded": 0
+          }
+        },
+        "nonempty_backup_restore_verified": true
+      }
+    },
+    "model_geometry_rebuild": {
+      "passed": true,
+      "same_canonical_hash": true,
+      "voxels": 222949,
+      "canonical_voxel_hash": "4f530a4af62e854da3439633b524697daca12fa6db7fb78b199363b0696c0624",
+      "source_modified": false,
+      "model_requests": 0
+    },
+    "real_preview_browser": {
+      "browser_errors": [],
+      "authentication": true,
+      "read_only_during_load": true,
+      "mobile_layout": true,
+      "preview_images": 3
+    },
+    "pool_health_during": {
+      "captured_at": "2026-10-08T08:25:16.647806+00:00",
+      "pool": {
+        "status": "degraded",
+        "inFlight": 13,
+        "maxInFlight": 512,
+        "healthySources": 132,
+        "totalSources": 133,
+        "routableSources": 132,
+        "quotaBlockedSources": 0
+      },
+      "cluster": {
+        "active": 13,
+        "peak": 255,
+        "maxInFlight": 512
+      }
+    },
+    "pool_health_after_main": {
+      "captured_at": "2026-10-08T08:45:25.860138+00:00",
+      "pool": {
+        "status": "healthy",
+        "inFlight": 2,
+        "maxInFlight": 512,
+        "healthySources": 133,
+        "totalSources": 133,
+        "routableSources": 133,
+        "quotaBlockedSources": 0
+      },
+      "cluster": {
+        "active": 2,
+        "peak": 255,
+        "maxInFlight": 512
+      }
+    },
+    "read_only_pool_log_summary": {
+      "counts": {
+        "chat_requests": 25,
+        "request_failed=": 3,
+        "all upstream routes failed": 1
+      },
+      "events": [
+        {
+          "time_us": "1791446957955864",
+          "unit": "api-pool-worker@4.service",
+          "type": [
+            "ProxyError"
+          ]
+        },
+        {
+          "time_us": "1791447139095746",
+          "unit": "api-pool-worker@4.service",
+          "type": [
+            "ProxyError"
+          ]
+        },
+        {
+          "time_us": "1791447320039869",
+          "unit": "api-pool-worker@4.service",
+          "type": [
+            "ProxyError"
+          ]
+        },
+        {
+          "time_us": "1791447320041212",
+          "unit": "api-pool-worker@4.service",
+          "type": [
+            "all upstream routes failed"
+          ]
+        }
+      ],
+      "read_only": true
+    },
+    "limits": "Two isolated service instances measured 16 concurrent author requests, not a production deployment or long soak. Only one followup author profile used the increased output allowance. Historical unknowns were not replayed. Health and closed sockets do not prove upstream termination. Human calibration is absent; formal accepted_unique remains zero.",
+    "verification": {
+      "python_passed": 166,
+      "python_skipped": 1,
+      "python_seconds": 79.98,
+      "ruff": "passed",
+      "frontend_build": "passed",
+      "source_secret_screen": "passed"
+    }
   }
 }

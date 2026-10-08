@@ -12,7 +12,7 @@
   "completed": [
     {
       "name": "python_unit_and_integration",
-      "result": "140 passed, 1 skipped (optional private legacy archive)",
+      "result": "166 passed, 1 skipped (optional private legacy archive)",
       "command": ".venv/bin/pytest -q"
     },
     {
@@ -45,8 +45,10 @@
   },
   "real_api_soak": {
     "observed": false,
-    "model_requests": 4,
-    "reason": "Four earlier authorized DeepSeek/GLM probes, not a soak. No additional model requests in this review fix; authorization exhausted."
+    "latest_real_concurrency_peak": 16,
+    "latest_requests": 29,
+    "cumulative_model_requests": 36,
+    "reason": "Real mixed-brief concurrent validation completed; not a long-duration soak or qualified accepted throughput."
   },
   "recorded_at": "2026-10-08",
   "scale_fixture": {
@@ -192,5 +194,74 @@
     "RSS includes the benchmark Python process only; it excludes geometry/render containers and browsers. No long-duration memory or less-than-5-percent monitoring-overhead claim.",
     "recovery_ms measures an empty pending-recovery query. Nonempty recovery and fault boundaries are verified separately in pytest.",
     "No real-model accepted_unique/hour, tokens/accepted or paid soak qualification is available."
-  ]
+  ],
+  "live_followup": {
+    "requests": 3,
+    "measured_seconds": [
+      66.667,
+      78.08,
+      180.002
+    ],
+    "result": "Two complete DeepSeek source responses failed authoring/execution; GLM Flash returned reasoning (7897 characters) but no final content before the first-content timeout; outcome_unknown. Zero model assets or image reviews; not a throughput benchmark.",
+    "actual_service_browser_runs_passed": 2,
+    "backup_restore_runs_passed": 2
+  },
+  "reasoning_support_validation": {
+    "additional_model_requests": 0,
+    "loopback_regression_cases_added": 12,
+    "saved_glm_reasoning_characters": 7897,
+    "saved_glm_final_content_characters": 0,
+    "saved_glm_replay_result": "incomplete_response",
+    "qualified_live_throughput": false
+  },
+  "concurrent_live_validation": {
+    "new_requests": 29,
+    "main_peak_active": 16,
+    "new_unknown_execution": 8,
+    "main_concurrency_ladder": [
+      8,
+      16
+    ],
+    "overview_latency": {
+      "scope": "60 authenticated overview GETs during real model calls, one service process RSS; excludes browser and containers; not a soak or monitoring-overhead measurement",
+      "samples": 60,
+      "median_ms": 2.303,
+      "p95_ms": 2.606,
+      "max_ms": 3.557,
+      "process_rss_mb_min": 151.14453125,
+      "process_rss_mb_max": 151.16015625,
+      "http_errors": 0
+    },
+    "browser": {
+      "browser_errors": [],
+      "authentication": true,
+      "read_only_during_load": true,
+      "mobile_layout": true,
+      "preview_images": 0
+    },
+    "real_preview_browser": {
+      "browser_errors": [],
+      "authentication": true,
+      "read_only_during_load": true,
+      "mobile_layout": true,
+      "preview_images": 3
+    },
+    "model_geometry_rebuild": {
+      "passed": true,
+      "same_canonical_hash": true,
+      "voxels": 222949,
+      "canonical_voxel_hash": "4f530a4af62e854da3439633b524697daca12fa6db7fb78b199363b0696c0624",
+      "source_modified": false,
+      "model_requests": 0
+    },
+    "verification": {
+      "python_passed": 166,
+      "python_skipped": 1,
+      "python_seconds": 79.98,
+      "ruff": "passed",
+      "frontend_build": "passed",
+      "source_secret_screen": "passed"
+    },
+    "limits": "Two isolated service instances measured 16 concurrent author requests, not a production deployment or long soak. Only one followup author profile used the increased output allowance. Historical unknowns were not replayed. Health and closed sockets do not prove upstream termination. Human calibration is absent; formal accepted_unique remains zero."
+  }
 }

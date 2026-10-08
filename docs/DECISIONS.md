@@ -43,3 +43,20 @@ Three preserved legacy resource modules (`legacy_quality.py`, `legacy_render.py`
 ## Task contract mapping
 
 The published nested task v1 contract is mapped to the flatter runtime task record by the planner adapter and validated against the packaged task schema. `backend/tests/test_themes.py` checks schema parity and representative contract mappings. The earlier gap is resolved for the shipped task types; future schema additions must update both schema copies and the adapter.
+
+## Live follow-up: deterministic fence normalization and prompt v4
+
+A complete DeepSeek response contained exactly one leading Python block followed by explanatory prose. Rejecting that unambiguous wrapper spent an author repair call without addressing geometry. Extraction now removes only that wrapper and trailing commentary, preserves the complete enclosed program, and still rejects multiple/unclosed/non-Python fences and invalid source. Transport completion and runtime guards remain independent. Saved-response replay exposed floor=None in natural components; prompt v4 adds an explicit correct C call, while the runtime requirement stays unchanged. The GLM v4 request returned reasoning but timed out without final answer content, so the prompt adjustment has no positive model evidence yet.
+
+## Pool audit: distinguish reasoning progress from answer completion
+
+Read-only SSH evidence and isolated replay show that the pool forwards the requested thinking field without adapting it to NVIDIA GLM. The provider documents reasoning_effort low/high/max (default max). The user explicitly prefers retaining thinking for quality, so future profiles should retain the model default or its documented enabled mode, without an automatic low-effort fallback. Local stream policy v2 tracks reasoning progress separately, retains absolute/idle deadlines, ignores heartbeats, and requires complete answer content before execution. Parameters remain caller-controlled; policy changes invalidate qualification hashes. This is offline-verified, without a new inference call. The time-correlated BrokenPipe follows the local timeout; cached pool health and closed HTTP connections do not prove upstream computation terminated or settle billing. Existing outcome_unknown state remains intact.
+
+
+## Live concurrency: EOF needs semantic termination
+
+The 16-request concurrent author run exposed a GLM HTTP stream that closed after 59.832 seconds, retaining 2592 reasoning characters but no answer, finish reason or DONE marker. Stream policy v2 incorrectly classified that clean EOF as an ordinary incomplete answer, released occupancy and scheduled a repair. Policy v3 classifies EOF without either semantic termination marker as outcome_unknown. Known length/stop/DONE endings still reject unusable answers without claiming unknown execution. The saved response now replays as unknown, and scheduler regression verifies occupancy/reservation retention and retry rejection. This changes qualification identity; raw historical evidence is retained.
+
+## Live archive: adapt observed labels at the manifest boundary
+
+The first passing real GLM image review contained three nonempty tag/evidence/confidence records. These matched the visual rubric but lacked the manifest's key/value fields, so archive failed after rendering and review. Archive now maps this explicit visual-review shape to key=visual_tag/value=tag while retaining all evidence and the unchanged review artifact. Existing canonical observations pass through. This also supports archive-only retry of an already persisted review; no model call, schema relaxation, geometry editing or requested-tag inference is needed. The actual arch resumed via the API, exported as provisional and survived nonempty backup/restore. Human calibration and formal acceptance remain separate.
