@@ -24,6 +24,14 @@ class CommandCreate(StrictModel):
     expected_config_revision: int = Field(ge=1)
     payload: dict = Field(default_factory=dict)
 
+    @model_validator(mode="after")
+    def command_payload(self):
+        if self.action == "set_cap":
+            cap = self.payload.get("api_cap")
+            if type(cap) is not int or not 0 <= cap <= 512:
+                raise ValueError("set_cap requires an integer api_cap between 0 and 512")
+        return self
+
 class CommandResult(StrictModel):
     command_id: str
     status: Literal["queued","applied","rejected"]

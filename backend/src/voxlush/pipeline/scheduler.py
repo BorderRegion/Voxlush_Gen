@@ -9,6 +9,7 @@ from pathlib import Path
 from voxlush.core.config import Config
 from voxlush.core.files import atomic_json,digest
 from voxlush.store.store import Store
+from voxlush.store.sqlite import OperationalError
 from voxlush.inference.client import PoolClient
 from voxlush.themes.planner import runtime_task, task_for
 from voxlush.pipeline.prompts import author_messages,extract_source,review_messages,parse_review
@@ -33,12 +34,15 @@ class Scheduler:
         self.window_results = []
         self.blocked_endpoints = set()
         self.loop_error = None
+        self.storage_failed = False
         self.snapshots = {}
         self.last_snapshot = 0
         self.backpressure = False
         self.round = 0
 
     def cap(self,campaign=None):
+        if self.storage_failed:
+            return 0
         endpoints = [e.provider_cap for e in (self.config.author,self.config.visual) if e]
         return min(self.config.global_api_cap,self.adaptive_cap,campaign["api_cap"] if campaign else 512,*endpoints) if endpoints else 0
 
@@ -49,6 +53,8 @@ class Scheduler:
             except Exception as e:
                 self.store.finish(claim,status="blocked",reason="response_recovery_failed")
                 self.loop_error = type(e).__name__
+        if self.config.allow_live and self.config.visual and self.config.visual.supports_images:
+            self.store.resume_visual_reviews()
         for record in self.archive.pending_commits():
             if self.store.one("SELECT asset_id FROM assets WHERE sample_id=? AND revision=?",(record["sample_id"],record["revision"])):
                 self.archive.acknowledge(record["commit_id"])
@@ -124,7 +130,9 @@ class Scheduler:
             c = self.store.campaign(c0["campaign_id"])
             if c["state"] == "running":
                 reason = None
-                if not disk_ok:
+                if self.storage_failed:
+                    reason = "storage_unavailable"
+                elif not disk_ok:
                     reason = "disk_low_watermark"
                 elif c["accepted_unique"]>=c["target"]:
                     self.store.set_campaign_state(c["campaign_id"],"completed","target_reached")
@@ -158,7 +166,7 @@ class Scheduler:
                 claim = self.store.claim(row["sample_id"],row["revision"])
                 if claim:
                     self.store.finish(claim,status="awaiting_review",reason="awaiting_visual")
-        if self.config.allow_live and disk_ok and not self.backpressure:
+        if self.config.allow_live and disk_ok and not self.backpressure and not self.storage_failed:
             used = sum(lane == "network" for lane in self.active.values())
             # Weighted rotating preferences borrow unused capacity; oldest work is periodically first.
             weights = ("author","refine","author","review","author","review","author")
@@ -235,8 +243,21 @@ class Scheduler:
     def work_dir(self,sample):
         return self.store.root/"work"/sample["sample_id"][:2]/sample["sample_id"]/f"v{sample['revision']:04d}"
 
-    async def network(self,claim,endpoint):
+    def persist_json(self,path,value):
         try:
+            atomic_json(path,value)
+        except OSError:
+            self.storage_failed = True
+            raise
+
+    async def network(self,claim,endpoint):
+        result = None
+        request_started = False
+        response_saved = False
+        response_path = self.store.root/claim["attempt"]["response_path"]
+        try:
+            if self.storage_failed:
+                raise OSError("response storage is unavailable")
             task = claim["task"]
             directory = self.work_dir(claim)
             if claim["stage"] == "review":
@@ -249,28 +270,49 @@ class Scheduler:
                     task = {**task,"phase":"final"}
                 messages = author_messages(task,source,feedback,refine=claim["stage"] == "refine")
             request_path = self.store.root/claim["attempt"]["response_path"].replace(".json",".request.json")
-            atomic_json(request_path,{"messages":messages,"endpoint_alias":endpoint.alias,"model":endpoint.model,"parameters":endpoint.parameters})
+            self.persist_json(request_path,{"messages":messages,"endpoint_alias":endpoint.alias,"model":endpoint.model,"parameters":endpoint.parameters})
+            request_started = True
             result = await self.client.call(endpoint,messages,claim["attempt_id"],claim["stage"])
             # Durable response first. Crash here is recovered without a second POST.
-            atomic_json(self.store.root/claim["attempt"]["response_path"],result)
+            self.persist_json(response_path,result)
+            response_saved = True
             self.store.settle(claim["attempt_id"],result)
             self.window_results.append({"error_category":result.get("error_category"),"response_complete":result.get("response_complete"),"elapsed_ms":result.get("elapsed_ms")})
             if len(self.window_results)>1024:
                 del self.window_results[:len(self.window_results)-1024]
             await self.consume(claim,result)
-        except asyncio.CancelledError:
-            result = {"error_category":"outcome_unknown","cost":None}
-            atomic_json(self.store.root/claim["attempt"]["response_path"],result)
-            self.store.settle(claim["attempt_id"],result)
-            self.store.finish(claim,status="blocked",reason="outcome_unknown")
-        except Exception as e:
-            self.store.finish(claim,status="blocked",reason="finish_callback_failed")
+        except (Exception,asyncio.CancelledError) as e:
             self.loop_error = type(e).__name__
+            if isinstance(e,OperationalError):
+                self.storage_failed = True
+            if result is None:
+                result = {"error_category":"outcome_unknown" if request_started else "not_sent",
+                          "response_complete":False,"cost":None if request_started else 0}
+            # A failed write cannot prevent accounting; a failed callback cannot
+            # replace a complete response with an unknown outcome.
+            if not response_saved:
+                try:
+                    self.persist_json(response_path,result)
+                except OSError:
+                    pass
+            reason = "outcome_unknown" if result.get("error_category") == "outcome_unknown" else "storage_unavailable" if self.storage_failed else "finish_callback_failed"
+            try:
+                self.store.settle(claim["attempt_id"],result)
+                self.store.finish(claim,status="blocked",reason=reason)
+                if self.storage_failed:
+                    for campaign in self.store.campaigns():
+                        if campaign["state"] == "running":
+                            self.store.set_campaign_state(campaign["campaign_id"],"blocked","storage_unavailable")
+            except Exception as final_error:
+                # If SQLite itself is unavailable, retain durable responses for
+                # startup recovery and prevent further paid work in this owner.
+                self.storage_failed = True
+                self.loop_error = type(final_error).__name__
 
     async def consume(self,claim,result):
         category = result.get("error_category")
         if not result.get("response_complete"):
-            if category in ("endpoint_auth","endpoint_configuration"):
+            if category in ("endpoint_auth","endpoint_configuration","endpoint_quota"):
                 endpoint = self.config.visual if claim["stage"] == "review" else self.config.author
                 self.blocked_endpoints.add(endpoint.alias)
                 self.store.finish(claim,status="blocked",reason=category)
@@ -287,7 +329,7 @@ class Scheduler:
             hashes = [digest(directory/"previews"/f"view_{v}.webp") for v in ("a","b")]
             try:
                 review = parse_review(result["content"],geometry["canonical_voxel_hash"],hashes,self.config.is_qualified())
-                atomic_json(directory/"review.json",review)
+                self.persist_json(directory/"review.json",review)
             except (ValueError,KeyError,TypeError):
                 self.repair(claim,{"error_category":"review_format"},visual=True)
                 return
@@ -302,9 +344,13 @@ class Scheduler:
                 self.repair(claim,{"error_category":"invalid_source","message":str(e)[:2000]})
                 return
             directory = self.work_dir(claim)
-            directory.mkdir(parents=True,exist_ok=True)
             source_path = directory/"authored_source.py"
-            source_path.write_text(source)
+            try:
+                directory.mkdir(parents=True,exist_ok=True)
+                source_path.write_text(source)
+            except OSError:
+                self.storage_failed = True
+                raise
             self.store.finish(claim,stage="build",changes={"source_path":str(source_path),"source_hash":hashlib.sha256(source.encode()).hexdigest()})
 
     def repair(self,claim,evidence,visual=False):
@@ -316,7 +362,7 @@ class Scheduler:
             self.store.finish(claim,status="rejected",reason="same_error_no_progress" if identical>=2 else "repair_exhausted")
             return
         directory = self.work_dir(claim)
-        atomic_json(directory.parent/"feedback.json",evidence)
+        self.persist_json(directory.parent/"feedback.json",evidence)
         self.store.finish(claim,stage="author",reason="visual_repair" if visual else "geometry_repair",changes={key:claim[key]+1,"error_fingerprint":fingerprint,"identical_errors":identical,"revision":claim["revision"]+1})
 
     async def local(self,claim):
@@ -358,7 +404,7 @@ class Scheduler:
                 if task.get("record_kind") == "fixture":
                     geometry = json.loads((directory/"geometry.json").read_text())
                     review = {"status":"pass","passed":True,"input_voxel_sha256":geometry["canonical_voxel_hash"],"image_sha256":[digest(directory/"previews"/f"view_{v}.webp") for v in ("a","b")],"evidence_kind":"fixture_mock","profile_qualified":False,"observed_tags":[]}
-                    atomic_json(directory/"review.json",review)
+                    self.persist_json(directory/"review.json",review)
                     self.store.finish(claim,stage="archive",changes={"preview_artifact_id":ids[0],"review_json":json.dumps(review)})
                 else:
                     self.store.finish(claim,stage="review",changes={"preview_artifact_id":ids[0]})

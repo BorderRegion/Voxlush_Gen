@@ -9,7 +9,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 class StrictModel(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
 class Endpoint(StrictModel):
     alias: str = "author"
@@ -47,6 +47,10 @@ class Endpoint(StrictModel):
             raise ValueError("stream endpoint requires an explicit stream completion contract")
         if "messages" in self.parameters or "model" in self.parameters or "stream" in self.parameters:
             raise ValueError("parameters cannot override model/messages/stream")
+        try:
+            json.dumps(self.parameters,allow_nan=False)
+        except (TypeError,ValueError) as exc:
+            raise ValueError("endpoint parameters must contain finite JSON-compatible values") from exc
         return self
 
 class Qualification(StrictModel):

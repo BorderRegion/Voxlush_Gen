@@ -8,6 +8,7 @@ import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import FastAPI,HTTPException,Query,Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse,JSONResponse,StreamingResponse
 from voxlush.api.models import CampaignCreate,CommandCreate,CommandResult,ExportCreate,SessionCreate,Overview,SamplePage
 from voxlush.core.config import Config
@@ -86,6 +87,13 @@ def create_app(config: Config,*,start_scheduler=True):
     @app.exception_handler(ValueError)
     async def value_error(request,exc):
         return JSONResponse({"code":"invalid_operation","message":str(exc),"retryable":False,"request_id":secrets.token_hex(8),"details":{}},status_code=409)
+
+    @app.exception_handler(RequestValidationError)
+    async def invalid_request(request,exc):
+        # Invalid input can contain Infinity/NaN or secrets; never echo it into JSON.
+        errors = [{"loc":e["loc"],"message":e["msg"],"type":e["type"]} for e in exc.errors()]
+        return JSONResponse({"code":"invalid_request","message":"Request validation failed","retryable":False,
+                             "request_id":secrets.token_hex(8),"details":{"errors":errors}},status_code=422)
 
     def store():
         return app.state.store

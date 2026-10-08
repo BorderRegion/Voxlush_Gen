@@ -402,6 +402,15 @@ class Store:
             self._event(db,"system","recovery",{"responses":len(replay),"unknown":len(running)-len(replay)})
         return replay
 
+    def resume_visual_reviews(self):
+        with self.transaction() as db:
+            waiting = db.execute("SELECT campaign_id,COUNT(*) n FROM samples WHERE stage='review' AND status='awaiting_review' AND reason_code='awaiting_visual' AND lease_token IS NULL GROUP BY campaign_id").fetchall()
+            if not waiting:
+                return
+            db.execute("UPDATE samples SET status='ready',reason_code=NULL,next_ready_at=0,updated_at=?,last_progress_at=? WHERE stage='review' AND status='awaiting_review' AND reason_code='awaiting_visual' AND lease_token IS NULL",(time.time(),time.time()))
+            for row in waiting:
+                self._event(db,row["campaign_id"],"visual_endpoint_available",{"reviews_resumed":row["n"]})
+
     def rebase_paths(self, old_root, new_root=None):
         """Upgrade legacy absolute local references after a restore, centrally."""
         old_root = Path(old_root)
