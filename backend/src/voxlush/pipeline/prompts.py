@@ -7,9 +7,9 @@ from pathlib import Path
 from voxlush.voxel.adapter import primitive_contract, MAX_SOURCE_BYTES
 from voxlush.core.files import digest
 
-PROMPT_VERSION = "voxlush.prompt.v4"
-RUBRIC_VERSION = "voxlush.visual.v1"
-RUBRIC_TEXT = "Inspect actual multi-view images for coherent structure/landforms, usable spatial composition, visible design focus and defects. Do not infer requested tags without evidence. Return JSON only: verdict=pass/fail/gray, issues=[concrete visible defects], observed_tags=[{tag,evidence,confidence}]."
+PROMPT_VERSION = "voxlush.prompt.v5"
+RUBRIC_VERSION = "voxlush.visual.v2"
+RUBRIC_TEXT = "Inspect actual multi-view images for coherent structure/landforms, usable spatial composition, visible design focus and defects. Do not infer requested tags without evidence. Return one JSON object only: verdict is a string ('pass', 'fail' or 'gray'); issues is a list of strings describing concrete visible defects (empty when none); observed_tags is a list of objects with tag (string), evidence (nonempty string describing visible support), and confidence (a JSON number between 0 and 1, e.g. 0.8; never 'high', 'medium' or 'low')."
 RUBRIC_HASH = hashlib.sha256((RUBRIC_VERSION + "\0" + RUBRIC_TEXT).encode()).hexdigest()
 
 def extract_source(content: str) -> str:
@@ -34,7 +34,9 @@ def compact_evidence(evidence):
         if depth > 5:
             return '[see full local report]'
         if isinstance(value,str):
-            return value[:600]
+            # Tracebacks end with the actionable exception; a prefix-only trim
+            # discarded it in live repairs. Retain both context and root cause.
+            return value if len(value) <= 600 else value[:260]+'\n...[truncated]...\n'+value[-300:]
         if isinstance(value,list):
             return [trim(item,depth+1) for item in value[:8]]
         if isinstance(value,dict):

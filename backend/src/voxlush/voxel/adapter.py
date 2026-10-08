@@ -96,6 +96,8 @@ def primitive_contract() -> str:
         """voxlush-primitives-v1. Write complete free-form Python geometry; no main guard or finish call.
 Optional top-level literal MODEL_SPEC dict (name_en, name_zh, use, floors, spaces, features),
 DESCRIPTION {zh,en}, ACTUAL_TAGS list. These are generator declarations, not observed labels.
+Metadata values must be literals written directly in that assignment: no variable references,
+calls, comprehensions or later mutation. Geometry itself may freely use functions and loops.
 floors is an integer: 0..256 for landscape, 1..256 for architectural contracts.
 Allowed imports: math, random, collections. Maximum source size: 256 KiB UTF-8.
 Ordinary local names including '_' and '_helper' are allowed.
@@ -110,14 +112,20 @@ object/component or building_01. Each separate door/window/column needs its own 
 Every C call, including natural terrain/rock, needs a non-None floor such as 'ground'.
 Example: C('rock_a', '岩体', 'rock mass', 'rock', floor='ground'). MODEL_SPEC.floors=0 does not replace this.
 O declares an object only; natural/multiple objects use C(...,parent_id=object_id).
-B bounds are inclusive. W wall_id is the EXISTING owner of the real wall, cardinal axis,
-plane/depth must cover actual wall thickness, opening width/height >=3 inclusive.
+building_01 is the existing implicit root: never declare it with O or C.
+B bounds are inclusive. W wall_id is the EXISTING owner of the real wall.
+W axis must be 'north', 'south', 'east' or 'west' (not 'x'/'z'). For north/south,
+plane is Z and a0/a1 are X; for east/west, plane is X and a0/a1 are Z.
+plane is the lowest wall coordinate and depth covers its thickness along increasing Z/X.
+Opening width/height >=3 inclusive. G axis instead specifies ridge direction 'x' or 'z'.
 glazing=None gives an open door; entry is standing air at floor top+1 with two clear voxels.
 Draw walls before W; later strokes must not refill apertures. G is a generic gable stroke,
 K a hollow octagonal cone stroke; all positions and dimensions are chosen by your program.
 spaces=[{id,kind:'enclosed'|'open_gallery'|'porch'|'terrace',air_bbox:{min:[x,y,z],max:[x,y,z]},
 entry:[x,y,z],component_ids:[...]}] must describe actual walkable interiors, not invented boxes.
 features=[{id,component_ids:[...]}] refer to actually occupied owners.
+spaces and features must be literal lists (at most 256/1024 entries respectively),
+with a unique nonempty id for each entry. Use [] when there are none.
 Signatures (extracted from the actual runtime):\n"""
         + "\n".join(signatures)
         + "\nRead-only runtime names (never assign, define, or use as function arguments): "
