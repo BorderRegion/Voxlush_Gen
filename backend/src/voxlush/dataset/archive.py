@@ -210,6 +210,10 @@ class Archive:
         write_atomic(stage / "brief.json", json_bytes(task))
         write_atomic(stage / "review.json", json_bytes(review))
         names.extend(["brief.json", "review.json"])
+        for filename,key in (('dedup.json','dedup_features'),('runtime_config.json','runtime_config_snapshot')):
+            if sample.get(key):
+                write_atomic(stage/filename,json_bytes(sample[key]))
+                names.append(filename)
         if sample.get("repair_pairs"):
             write_atomic(stage / "repair_pairs.json", json_bytes(sample["repair_pairs"]))
             names.append("repair_pairs.json")
@@ -256,7 +260,8 @@ class Archive:
 
     @staticmethod
     def _record(manifest: dict, relative: str, path: Path) -> dict:
-        return {"sample_id": manifest["sample_id"], "campaign_id": manifest["campaign_id"], "revision": manifest["revision"], "path": relative, "manifest_json": manifest, "manifest_sha256": sha256(path / "manifest.json"), "canonical_voxel_hash": manifest["hashes"]["canonical_voxel_sha256"], "annotation_hash": manifest["hashes"]["annotation_sha256"], "accepted_unique": manifest["lifecycle"] == "accepted", "commit_id": manifest["archive"]["commit_id"], "lineage_group": manifest["lineage"]["group_id"]}
+        return {"sample_id": manifest["sample_id"], "campaign_id": manifest["campaign_id"], "revision": manifest["revision"], "path": relative, "manifest_json": manifest, "manifest_sha256": sha256(path / "manifest.json"), "canonical_voxel_hash": manifest["hashes"]["canonical_voxel_sha256"], "annotation_hash": manifest["hashes"]["annotation_sha256"], "accepted_unique": manifest["lifecycle"] == "accepted", "commit_id": manifest["archive"]["commit_id"], "lineage_group": manifest["lineage"]["group_id"],
+                **({'dedup_features':json.loads((path/'dedup.json').read_text())} if (path/'dedup.json').exists() else {})}
 
     def pending_commits(self) -> Iterator[dict]:
         directory = safe_path(self.root, "commits", must_exist=False)

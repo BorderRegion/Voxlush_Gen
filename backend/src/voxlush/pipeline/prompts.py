@@ -4,10 +4,10 @@ import base64
 import hashlib
 import json
 from pathlib import Path
-from voxlush.voxel.adapter import primitive_contract
+from voxlush.voxel.adapter import primitive_contract, MAX_SOURCE_BYTES
 from voxlush.core.files import digest
 
-PROMPT_VERSION = "voxlush.prompt.v2"
+PROMPT_VERSION = "voxlush.prompt.v3"
 RUBRIC_VERSION = "voxlush.visual.v1"
 RUBRIC_TEXT = "Inspect actual multi-view images for coherent structure/landforms, usable spatial composition, visible design focus and defects. Do not infer requested tags without evidence. Return JSON only: verdict=pass/fail/gray, issues=[concrete visible defects], observed_tags=[{tag,evidence,confidence}]."
 RUBRIC_HASH = hashlib.sha256((RUBRIC_VERSION + "\0" + RUBRIC_TEXT).encode()).hexdigest()
@@ -19,10 +19,34 @@ def extract_source(content: str) -> str:
         if lines[0] not in ("```python","```py","```") or lines[-1] != "```" or any(line.startswith("```") for line in lines[1:-1]):
             raise ValueError("expected exactly one complete Python fence")
         text = "\n".join(lines[1:-1])
-    if not text or len(text.encode())>600000:
+    if not text or len((text+'\n').encode())>MAX_SOURCE_BYTES:
         raise ValueError("source size limit or empty source")
     ast.parse(text)
     return text+"\n"
+
+def compact_evidence(evidence):
+    """A bounded model view; the original diagnostic file remains authoritative."""
+    def trim(value, depth=0):
+        if depth > 5:
+            return '[see full local report]'
+        if isinstance(value,str):
+            return value[:600]
+        if isinstance(value,list):
+            return [trim(item,depth+1) for item in value[:8]]
+        if isinstance(value,dict):
+            return {k:trim(v,depth+1) for k,v in list(value.items())[:16]}
+        return value
+    keys = ('error_category','message','violations','issues','errors','canonical_voxel_hash','passed')
+    result = {key:trim(evidence[key]) for key in keys if key in evidence}
+    # Avoid a long nested component report crowding out the source and contract.
+    while len(json.dumps(result,ensure_ascii=False).encode()) > 8000:
+        arrays = [v for v in result.values() if isinstance(v,list) and len(v)>1]
+        if arrays:
+            max(arrays,key=lambda v:len(json.dumps(v))).pop()
+        else:
+            return {'error_category':str(evidence.get('error_category','geometry_failed'))[:120],
+                    'message':json.dumps(result,ensure_ascii=False)[:1800]}
+    return result
 
 def author_messages(task: dict,source: str | None = None,feedback: dict | None = None,refine=False):
     system = "Independently design and code this voxel asset. Use free Python functions and loops with the provided low-level runtime. Never reuse a fixed building template.\n"+primitive_contract()
@@ -33,13 +57,13 @@ def author_messages(task: dict,source: str | None = None,feedback: dict | None =
     if source:
         instruction["current_authored_source"] = source
     if feedback:
-        instruction["current_evidence"] = feedback
+        instruction["current_evidence"] = compact_evidence(feedback)
     return [{"role":"system","content":system},{"role":"user","content":json.dumps(instruction,ensure_ascii=False)}]
 
 def review_messages(task: dict,build_dir: Path):
     images = [build_dir/"previews"/f"view_{v}.webp" for v in ("a","b")]
     evidence = {"schema_version":RUBRIC_VERSION,"task":task,
-        "geometry":json.loads((build_dir/"geometry.json").read_text()),
+        "geometry":compact_evidence(json.loads((build_dir/"geometry.json").read_text())),
         "rubric":RUBRIC_TEXT}
     content = [{"type":"text","text":json.dumps(evidence,ensure_ascii=False)}]
     for image in images:
@@ -51,7 +75,7 @@ def parse_review(content,geometry_hash,image_hashes,qualified=False):
     if text.startswith("```json\n") and text.endswith("\n```"):
         text = text[8:-4]
     value = json.loads(text)
-    if value.get("verdict") not in ("pass","fail","gray") or not isinstance(value.get("issues"),list):
+    if not isinstance(value,dict) or value.get("verdict") not in ("pass","fail","gray") or not isinstance(value.get("issues"),list):
         raise ValueError("invalid review verdict/issues")
     tags = value.get("observed_tags",[])
     if not isinstance(tags,list) or any(not isinstance(t,dict) or not isinstance(t.get("tag"),str) or not t.get("evidence") or not isinstance(t.get("confidence"),(int,float)) or not 0<=t["confidence"]<=1 for t in tags):

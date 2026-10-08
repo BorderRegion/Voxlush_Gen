@@ -79,6 +79,8 @@ def command_campaign(args, config: Config) -> int:
         payload = {"api_cap": args.api_cap} if args.action == "set_cap" else {}
         if args.action == "retry":
             payload["sample_id"] = args.sample_id
+        if args.action == 'reconcile_execution':
+            payload = {'attempt_id':args.attempt_id,'outcome':args.outcome,'evidence':args.evidence}
         command_id = args.command_id or uuid.uuid4().hex
         response = client.post("/api/v1/commands", json={
             "command_id": command_id,
@@ -163,13 +165,17 @@ def parser() -> argparse.ArgumentParser:
     create.add_argument("target", type=int)
     create.add_argument("--request-limit", type=int, default=800)
     create.add_argument("--api-cap", type=int, default=8)
-    for action in ("start", "pause", "resume", "drain", "emergency_stop", "set_cap", "retry"):
+    for action in ("start", "pause", "resume", "drain", "emergency_stop", "set_cap", "retry", "reconcile_execution"):
         command = camp_sub.add_parser(action)
         command.add_argument("campaign_id")
         command.add_argument("--command-id")
         command.add_argument("--api-cap", type=int, default=0)
         if action == "retry":
             command.add_argument("--sample-id", required=True)
+        if action == 'reconcile_execution':
+            command.add_argument('--attempt-id',required=True)
+            command.add_argument('--outcome',choices=('completed','cancelled'),required=True)
+            command.add_argument('--evidence',required=True)
 
     imp = sub.add_parser("import-legacy")
     imp.add_argument("--source", required=True)

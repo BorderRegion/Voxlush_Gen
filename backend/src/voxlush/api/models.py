@@ -20,7 +20,7 @@ class CampaignCreate(StrictModel):
 class CommandCreate(StrictModel):
     command_id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,100}$")
     campaign_id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,64}$")
-    action: Literal["start","resume","drain","pause","emergency_stop","set_cap","retry"]
+    action: Literal["start","resume","drain","pause","emergency_stop","set_cap","retry","reconcile_execution"]
     expected_config_revision: int = Field(ge=1)
     payload: dict = Field(default_factory=dict)
 
@@ -30,6 +30,12 @@ class CommandCreate(StrictModel):
             cap = self.payload.get("api_cap")
             if type(cap) is not int or not 0 <= cap <= 512:
                 raise ValueError("set_cap requires an integer api_cap between 0 and 512")
+        if self.action == 'reconcile_execution':
+            if (self.payload.get('outcome') not in ('completed','cancelled') or
+                not isinstance(self.payload.get('attempt_id'),str) or
+                not isinstance(self.payload.get('evidence'),str) or not self.payload['evidence'].strip() or
+                len(self.payload['evidence'])>2000):
+                raise ValueError('reconciliation requires attempt_id, confirmed completed/cancelled outcome and evidence')
         return self
 
 class CommandResult(StrictModel):

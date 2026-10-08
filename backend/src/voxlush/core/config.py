@@ -20,6 +20,9 @@ class Endpoint(StrictModel):
     completion: Literal["finish_and_done", "finish", "nonstream"] = "finish_and_done"
     parameters: dict = Field(default_factory=lambda: {"max_tokens": 12000})
     provider_cap: int = Field(default=8, ge=0, le=512)
+    capacity_pool: str | None = Field(default=None, min_length=1, max_length=100)
+    server_max_execution_seconds: float | None = Field(default=None, gt=0)
+    execution_contract_ref: str | None = Field(default=None, min_length=1, max_length=500)
     supports_images: bool = False
     connect_timeout: float = Field(default=10, gt=0)
     first_content_timeout: float = Field(default=90, gt=0)
@@ -34,6 +37,8 @@ class Endpoint(StrictModel):
 
     @model_validator(mode="after")
     def capability(self):
+        if (self.server_max_execution_seconds is None) != (self.execution_contract_ref is None):
+            raise ValueError("server execution deadline requires a documented dispatch-to-stop contract")
         parsed = urlsplit(self.base_url)
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
             raise ValueError("endpoint base_url must be an absolute http(s) URL")
@@ -52,6 +57,10 @@ class Endpoint(StrictModel):
         except (TypeError,ValueError) as exc:
             raise ValueError("endpoint parameters must contain finite JSON-compatible values") from exc
         return self
+
+    def capacity_key(self):
+        # Same service shares capacity unless its documented pools are explicit.
+        return hashlib.sha256((self.capacity_pool or self.base_url.rstrip('/')).encode()).hexdigest()
 
 class Qualification(StrictModel):
     qualified: bool = False
@@ -76,9 +85,11 @@ class Config(StrictModel):
     sample_request_limit: int = Field(default=8, ge=1, le=16)
     geometry_repairs: int = Field(default=2, ge=0, le=3)
     visual_repairs: int = Field(default=1, ge=0, le=2)
+    review_format_retries: int = Field(default=1, ge=0, le=2)
     transport_retries: int = Field(default=1, ge=0, le=2)
     zero_yield_limit: int = Field(default=64, ge=1)
     theme_zero_yield_limit: int = Field(default=8, ge=1)
+    theme_cooldown_seconds: float = Field(default=300, gt=0)
     author: Endpoint | None = None
     visual: Endpoint | None = None
     qualification: Qualification = Field(default_factory=Qualification)
@@ -86,6 +97,10 @@ class Config(StrictModel):
 
     @model_validator(mode="after")
     def memory(self):
+        endpoints = [e for e in (self.author, self.visual) if e]
+        if len(endpoints) == 2 and endpoints[0].capacity_key() == endpoints[1].capacity_key():
+            if any(getattr(endpoints[0], k) != getattr(endpoints[1], k) for k in ('provider_cap', 'rpm', 'tpm')):
+                raise ValueError("roles sharing a capacity pool must agree on its cap/RPM/TPM")
         if (self.build_workers + self.render_workers) * 1024 > self.local_memory_mb:
             raise ValueError("local workers need at least 1024 MiB each plus host headroom")
         if self.host not in ("127.0.0.1", "localhost", "::1") and not os.getenv(self.auth_token_env):
@@ -93,10 +108,34 @@ class Config(StrictModel):
         return self
 
     def profile_hash(self) -> str:
-        fields = {"author": self.author.model_dump() if self.author else None,
-                  "visual": self.visual.model_dump() if self.visual else None,
-                  "prompt": "voxlush.prompt.v2", "rubric": "voxlush.visual.v1"}
+        from voxlush.pipeline.prompts import PROMPT_VERSION, RUBRIC_HASH
+        from voxlush.voxel.adapter import versions
+        def identity(endpoint):
+            if endpoint is None:
+                return None
+            return {"route":hashlib.sha256(endpoint.base_url.encode()).hexdigest(),
+                    **endpoint.model_dump(include={"model", "parameters", "stream", "completion", "supports_images",
+                                                   "first_content_timeout", "idle_timeout", "total_timeout"})}
+        fields = {"author": identity(self.author), "visual": identity(self.visual),
+                  "prompt": PROMPT_VERSION, "rubric": RUBRIC_HASH, "quality_runtime":versions()}
         return hashlib.sha256(json.dumps(fields, sort_keys=True).encode()).hexdigest()
+
+    def snapshot(self) -> dict:
+        """Freeze routing identities and settings without addresses or secret values."""
+        def redact(value):
+            if isinstance(value, dict):
+                return {k:("[redacted]" if (k.lower() in {'token','key','credential'} or k.lower().endswith('_token') or
+                           any(word in k.lower() for word in ("secret", "password", "authorization", "api_key")))
+                           else redact(v)) for k,v in value.items()}
+            if isinstance(value, list):
+                return [redact(v) for v in value]
+            return value
+        value = redact(self.model_dump(mode="json"))
+        for role in ("author", "visual"):
+            if value[role]:
+                value[role]["base_url"] = "sha256:" + hashlib.sha256(value[role]["base_url"].encode()).hexdigest()
+        value["profile_hash"] = self.profile_hash()
+        return value
 
     def is_qualified(self) -> bool:
         q = self.qualification

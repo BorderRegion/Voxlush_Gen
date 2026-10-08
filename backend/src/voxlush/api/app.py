@@ -178,7 +178,7 @@ def create_app(config: Config,*,start_scheduler=True):
             raise HTTPException(404,"sample not found")
         result["artifacts"] = store().rows("SELECT artifact_id,name FROM artifacts WHERE sample_id=? ORDER BY name",(sample_id,))
         result["events"] = store().rows("SELECT event_id,kind,payload,created_at FROM events WHERE sample_id=? ORDER BY event_id DESC LIMIT 100",(sample_id,))
-        result["attempts"] = store().rows("SELECT attempt_id,role,endpoint_alias,status,billing_status,started_at,finished_at FROM attempts WHERE sample_id=? ORDER BY started_at DESC LIMIT 16",(sample_id,))
+        result["attempts"] = store().rows("SELECT attempt_id,role,endpoint_alias,status,billing_status,started_at,finished_at,occupancy,execution_deadline,execution_evidence,response_applied,runtime_config_hash FROM attempts WHERE sample_id=? ORDER BY started_at DESC LIMIT 16",(sample_id,))
         result.pop("lease_token",None)
         return result
 
@@ -206,6 +206,10 @@ def create_app(config: Config,*,start_scheduler=True):
     @app.get("/api/v1/metrics")
     def metrics(campaign_id: str):
         return {"items":store().rows("SELECT * FROM metrics_minute WHERE campaign_id=? ORDER BY minute DESC LIMIT 60",(campaign_id,))}
+
+    @app.get('/api/v1/config/history')
+    def config_history(campaign_id: str, before: int=2147483647):
+        return {'items':store().rows('SELECT h.*,s.profile_hash,s.config_json FROM config_history h JOIN config_snapshots s USING(config_hash) WHERE campaign_id=? AND revision<? ORDER BY revision DESC LIMIT 50',(campaign_id,before))}
 
     @app.get("/api/v1/events")
     async def events(request: Request,campaign_id: str,after: int=0):

@@ -30,13 +30,13 @@ def family_targets(target: int, scene_weights: dict) -> dict:
         result.update(apportion(count, members))
     return result
 
-def task_for(campaign: dict, family_id: str, sequence: int, record_kind="calibration") -> dict:
+def task_for(campaign: dict, family_id: str, sequence: int, record_kind="calibration", seed_id=None) -> dict:
     seeds = [s for s in SEEDS if s["family_id"] == family_id]
     if not seeds:
         raise ValueError(f"unknown theme family: {family_id}")
     if record_kind not in {"production", "calibration", "fixture", "example"}:
         raise ValueError(f"invalid task record kind: {record_kind}")
-    spec = seeds[sequence % len(seeds)]
+    spec = next(s for s in seeds if s['id'] == seed_id) if seed_id else seeds[sequence % len(seeds)]
     sid = hashlib.sha256(f'{campaign["campaign_id"]}:{sequence}'.encode()).hexdigest()[:24]
     task = {
         "schema_version": "voxlush.task.v1",

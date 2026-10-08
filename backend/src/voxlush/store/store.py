@@ -1,6 +1,7 @@
 """Single transactional writer. All durable state transitions are centralized here."""
 from __future__ import annotations
 import fcntl
+import hashlib
 import json
 import threading
 import time
@@ -8,7 +9,8 @@ import uuid
 from contextlib import contextmanager
 from pathlib import Path
 from voxlush.store import sqlite as sqlite3
-from voxlush.themes.planner import FAMILIES, family_targets
+from voxlush.themes.planner import FAMILIES, SEEDS, family_targets
+from voxlush.store.migrations import migrate
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS campaigns (
@@ -105,8 +107,8 @@ class Store:
         self.db.execute("PRAGMA busy_timeout=5000")
         self.db.executescript(SCHEMA)
         self.db.execute("INSERT OR IGNORE INTO meta VALUES('schema','1')")
-        if self.db.execute("SELECT value FROM meta WHERE key='schema'").fetchone()[0] != "1":
-            raise RuntimeError("unsupported schema: migration required")
+        migrate(self.db)
+        self.runtime_config_hash = None
         self.db.execute("INSERT OR REPLACE INTO meta VALUES('sqlite_version',?)", (sqlite3.sqlite_version,))
 
     @contextmanager
@@ -139,6 +141,32 @@ class Store:
         db.execute("INSERT INTO events(campaign_id,sample_id,kind,payload,created_at) VALUES(?,?,?,?,?)",
                    (campaign_id, sample_id, kind, dump(payload), time.time()))
 
+    def bind_config(self, config):
+        snapshot = config.snapshot()
+        key = hashlib.sha256(dump(snapshot).encode()).hexdigest()
+        with self.transaction() as db:
+            db.execute("INSERT OR IGNORE INTO config_snapshots VALUES(?,?,?,?)", (key,config.profile_hash(),dump(snapshot),time.time()))
+            self.runtime_config_hash = key
+            for row in db.execute("SELECT * FROM campaigns").fetchall():
+                if row['runtime_config_hash'] != key:
+                    db.execute("UPDATE campaigns SET runtime_config_hash=?,config_revision=config_revision+? WHERE campaign_id=?",
+                               (key,int(row['runtime_config_hash'] is not None),row['campaign_id']))
+                    self._config_history(db,row['campaign_id'])
+            # Role disambiguates old aliases shared by author and visual endpoints.
+            for endpoint, roles in ((config.author, ('author','refine')), (config.visual, ('review',))):
+                if endpoint:
+                    marks = ','.join('?' for _ in roles)
+                    db.execute(f"UPDATE attempts SET capacity_group=? WHERE capacity_group=? AND role IN ({marks})",
+                               (endpoint.capacity_key(),'legacy:'+endpoint.alias,*roles))
+
+    def _config_history(self, db, campaign_id):
+        c = db.execute("SELECT * FROM campaigns WHERE campaign_id=?",(campaign_id,)).fetchone()
+        if c['runtime_config_hash']:
+            settings = {k:c[k] for k in ('target','request_limit','api_cap','scene_weights','cost_limit')}
+            db.execute("INSERT OR IGNORE INTO config_history VALUES(?,?,?,?,?)",
+                       (campaign_id,c['config_revision'],c['runtime_config_hash'],dump(settings),time.time()))
+            self._event(db,campaign_id,'config_revision',{'revision':c['config_revision'],'config_hash':c['runtime_config_hash']})
+
     def create_campaign(self, campaign_id, name, target, request_limit, api_cap, scene_weights,
                         cost_limit=None):
         now = time.time()
@@ -154,6 +182,8 @@ class Store:
                 db.execute("INSERT INTO campaigns(campaign_id,name,target,request_limit,api_cap,scene_weights,cost_limit,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)",
                     (campaign_id,name,target,request_limit,api_cap,dump(scene_weights),cost_limit,now,now))
                 self._event(db,campaign_id,"campaign_created",{"target":target})
+                db.execute("UPDATE campaigns SET runtime_config_hash=? WHERE campaign_id=?",(self.runtime_config_hash,campaign_id))
+                self._config_history(db,campaign_id)
         return self.campaign(campaign_id)
 
     def campaign(self, campaign_id):
@@ -200,6 +230,13 @@ class Store:
                             reason = "invalid_cap"
                         else:
                             db.execute("UPDATE campaigns SET api_cap=?,config_revision=config_revision+1 WHERE campaign_id=?",(cap,c["campaign_id"]))
+                            self._config_history(db,c['campaign_id'])
+                    elif action == "reconcile_execution":
+                        payload = json.loads(cmd['payload'])
+                        try:
+                            self._reconcile_execution(db,c['campaign_id'],payload.get('attempt_id'),payload.get('outcome'),payload.get('evidence'))
+                        except ValueError as exc:
+                            reason = str(exc)
                     elif action == "retry":
                         payload = json.loads(cmd["payload"])
                         sample_id = payload.get("sample_id")
@@ -211,6 +248,8 @@ class Store:
                             reason = "campaign_not_running"
                         elif s["status"] not in ("rejected", "blocked", "deferred") or s["lease_token"]:
                             reason = "sample_not_retryable"
+                        elif db.execute("SELECT 1 FROM attempts WHERE attempt_id=? AND status='complete' AND response_applied=0",(s['attempt_id'],)).fetchone():
+                            db.execute("UPDATE samples SET reason_code='response_pending',next_ready_at=0 WHERE sample_id=?",(sample_id,))
                         elif db.execute("SELECT 1 FROM attempts WHERE sample_id=? AND status IN ('running','outcome_unknown') LIMIT 1",
                                         (sample_id,)).fetchone():
                             reason = "attempt_outcome_unresolved"
@@ -251,6 +290,7 @@ class Store:
                 (task["sample_id"],task["campaign_id"],task["theme_seed_id"],task.get("theme_family_id","unknown"),task["scene_type"],dump(task),"build" if source_path else "author","ready",source_path,now,now,now,task.get("lineage_group",task["sample_id"])))
             if db.execute("SELECT changes()").fetchone()[0]:
                 db.execute("UPDATE campaigns SET sequence=sequence+1 WHERE campaign_id=?",(task["campaign_id"],))
+                db.execute("UPDATE samples SET runtime_config_hash=? WHERE sample_id=?",(self.runtime_config_hash,task['sample_id']))
                 self._event(db,task["campaign_id"],"sample_created",{},task["sample_id"])
         return self.sample(task["sample_id"])
 
@@ -281,8 +321,10 @@ class Store:
 
     def ready(self, stages, limit=32, allow_network=True):
         marks = ",".join("?" for _ in stages)
-        return self.rows(f"SELECT s.* FROM samples s JOIN campaigns c USING(campaign_id) WHERE s.status IN ('ready','deferred') AND s.next_ready_at<=? AND s.stage IN ({marks}) AND c.state IN ('running','draining','completed','blocked','degraded') ORDER BY s.updated_at LIMIT ?",
-                         [time.time(),*stages,min(limit,1024)])
+        network = "s.stage IN ('author','refine','review') AND c.state='running' AND c.requests_used<c.request_limit AND c.api_cap>0" if allow_network else "0"
+        local = "s.stage IN ('build','render','archive') AND c.state IN ('running','draining','completed','blocked','degraded')"
+        return self.rows(f"SELECT s.* FROM samples s JOIN campaigns c USING(campaign_id) WHERE s.status IN ('ready','deferred') AND s.next_ready_at<=? AND s.stage IN ({marks}) AND (({network}) OR ({local})) ORDER BY s.updated_at LIMIT ?",
+                         [time.time(),*stages,max(0,min(limit,1024))])
 
     def claim(self, sample_id, revision, lease_seconds=600):
         token = uuid.uuid4().hex
@@ -304,9 +346,13 @@ class Store:
             c = db.execute("SELECT * FROM campaigns WHERE campaign_id=?",(s["campaign_id"],)).fetchone()
             if c["state"] != "running":
                 return None
-            active = db.execute("SELECT COALESCE(SUM(occupancy),0) FROM attempts").fetchone()[0]
-            route_active = db.execute("SELECT COALESCE(SUM(occupancy),0) FROM attempts WHERE endpoint_alias=?",(endpoint.alias,)).fetchone()[0]
-            campaign_active = db.execute("SELECT COALESCE(SUM(occupancy),0) FROM attempts WHERE campaign_id=?",(s["campaign_id"],)).fetchone()[0]
+            if db.execute("SELECT 1 FROM attempts WHERE attempt_id=? AND response_applied=0",(s['attempt_id'],)).fetchone():
+                return None
+            active = db.execute("SELECT COUNT(*) FROM attempts WHERE occupancy=1").fetchone()[0]
+            route_active = db.execute("SELECT COUNT(*) FROM attempts WHERE occupancy=1 AND capacity_group=?",(endpoint.capacity_key(),)).fetchone()[0]
+            campaign_active = db.execute("SELECT COUNT(*) FROM attempts WHERE occupancy=1 AND campaign_id=?",(s["campaign_id"],)).fetchone()[0]
+            if db.execute("SELECT 1 FROM attempts WHERE occupancy=1 AND capacity_group=? AND status='outcome_unknown' LIMIT 1",(endpoint.capacity_key(),)).fetchone():
+                return None  # Unconfirmed execution isolates this pool, never the financial ledger.
             if active >= hard_cap or campaign_active >= c["api_cap"] or route_active >= endpoint.provider_cap:
                 return None
             if c["requests_used"] >= c["request_limit"] or s["request_count"] >= sample_limit:
@@ -316,12 +362,15 @@ class Store:
                 db.execute("UPDATE campaigns SET state='blocked',reason_code='cost_budget_exhausted' WHERE campaign_id=?",(s["campaign_id"],))
                 self._event(db,s["campaign_id"],"campaign_state",{"state":"blocked","reason_code":"cost_budget_exhausted"})
                 return None
-            recent = db.execute("SELECT COUNT(*),COALESCE(SUM(reserved_tokens),0) FROM attempts WHERE started_at>? AND endpoint_alias=?",(now-60,endpoint.alias)).fetchone()
+            recent = db.execute("SELECT COUNT(*),COALESCE(SUM(reserved_tokens),0) FROM attempts WHERE capacity_group=? AND started_at>?",(endpoint.capacity_key(),now-60)).fetchone()
             if (endpoint.rpm and recent[0]>=endpoint.rpm) or (endpoint.tpm and recent[1]+endpoint.reservation_tokens>endpoint.tpm):
                 return None
             path = f"runs/{s['campaign_id']}/responses/{aid}.json"
             db.execute("INSERT INTO attempts(attempt_id,sample_id,campaign_id,revision,lease_token,role,endpoint_alias,status,reserved_cost,billing_status,response_path,started_at,reserved_tokens) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (aid,sample_id,s["campaign_id"],revision,token,s["stage"],endpoint.alias,"running",reserve_cost,"reserved",path,now,endpoint.reservation_tokens))
+            db.execute("UPDATE attempts SET capacity_group=?,execution_deadline=?,execution_evidence=?,runtime_config_hash=? WHERE attempt_id=?",
+                       (endpoint.capacity_key(),now+endpoint.server_max_execution_seconds if endpoint.server_max_execution_seconds else None,
+                        endpoint.execution_contract_ref,self.runtime_config_hash,aid))
             db.execute("UPDATE campaigns SET requests_used=requests_used+1,reserved_cost=reserved_cost+? WHERE campaign_id=?",(reserve_cost or 0,s["campaign_id"]))
             db.execute("UPDATE samples SET status='running',lease_token=?,lease_owner=?,lease_until=?,attempt_id=?,request_count=request_count+1,updated_at=? WHERE sample_id=?",
                 (token,self.owner,now+endpoint.total_timeout+30,aid,now,sample_id))
@@ -349,8 +398,8 @@ class Store:
             self._event(db,a["campaign_id"],"settled",{"attempt_id":attempt_id,"billing_status":billing},a["sample_id"])
             return True
 
-    def finish(self, claim, *, stage=None, status="ready", reason=None, changes=None, delay=0):
-        allowed = {"source_path","source_hash","build_path","review_json","geometry_repairs","visual_repairs","transport_retries","error_fingerprint","identical_errors","revision","preview_artifact_id"}
+    def finish(self, claim, *, stage=None, status="ready", reason=None, changes=None, delay=0, response_applied=True):
+        allowed = {"source_path","source_hash","build_path","review_json","geometry_repairs","visual_repairs","review_format_retries","transport_retries","error_fingerprint","identical_errors","revision","preview_artifact_id"}
         changes = changes or {}
         changes = dict(changes)
         for key in ("source_path", "build_path"):
@@ -368,14 +417,48 @@ class Store:
                 [*updates.values(),claim["sample_id"],claim["revision"],claim["lease_token"]])
             ok = bool(db.execute("SELECT changes()").fetchone()[0])
             if ok:
+                if response_applied and claim.get('attempt_id'):
+                    db.execute("UPDATE attempts SET response_applied=1 WHERE attempt_id=? AND revision=? AND role=?",(claim['attempt_id'],claim['revision'],claim['stage']))
+                if status in ('accepted','provisional_pass','rejected'):
+                    self._family_outcome(db,claim,status != 'rejected')
                 self._event(db,claim["campaign_id"],"transition",{"stage":updates["stage"],"status":status,"reason_code":reason},claim["sample_id"])
         return ok
 
-    def recover(self):
+    def _family_outcome(self, db, sample, success):
+        db.execute("INSERT INTO family_health VALUES(?,?,?,?) ON CONFLICT(campaign_id,family_id) DO UPDATE SET failures=CASE WHEN ? THEN 0 ELSE failures+1 END,last_failure_at=excluded.last_failure_at",
+                   (sample['campaign_id'],sample['family_id'],0 if success else 1,0 if success else time.time(),int(success)))
+
+    def _reconcile_execution(self, db, campaign_id, attempt_id, outcome, evidence):
+        if outcome not in ('completed','cancelled','server_deadline') or not isinstance(evidence,str) or not evidence.strip() or len(evidence)>2000:
+            raise ValueError('execution_confirmation_required')
+        a = db.execute("SELECT * FROM attempts WHERE attempt_id=? AND campaign_id=?",(attempt_id,campaign_id)).fetchone()
+        if not a or a['status'] != 'outcome_unknown':
+            raise ValueError('attempt_not_unknown')
+        if a['occupancy']:
+            db.execute("UPDATE attempts SET occupancy=0,execution_evidence=? WHERE attempt_id=?",(dump({'outcome':outcome,'evidence':evidence}),attempt_id))
+            self._event(db,campaign_id,'execution_reconciled',{'attempt_id':attempt_id,'outcome':outcome,'evidence':evidence},a['sample_id'])
+        # Financial uncertainty and original POST identity remain unchanged.
+
+    def reconcile_deadlines(self):
+        with self.transaction() as db:
+            for a in db.execute("SELECT * FROM attempts WHERE occupancy=1 AND status='outcome_unknown' AND execution_deadline<=?",(time.time(),)).fetchall():
+                self._reconcile_execution(db,a['campaign_id'],a['attempt_id'],'server_deadline',a['execution_evidence'])
+
+    def recover(self, pending_only=False):
         # Only unresolved indexed records; never reconstruct finalized arrays.
-        running = self.rows("SELECT a.* FROM attempts a JOIN samples s ON s.sample_id=a.sample_id AND s.lease_token=a.lease_token WHERE s.status='running' AND s.stage IN ('author','refine','review')")
+        # Restart batches beyond the first 1024 are processed by later ticks.
+        # Never reclaim an HTTP request owned by the current scheduler.
+        eligibility = "(s.status='blocked' AND s.reason_code IN ('finish_callback_failed','response_pending','response_recovery_failed') AND s.next_ready_at<=?) OR (s.status='running' AND COALESCE(s.lease_owner,'')!=?)" if pending_only else "s.status IN ('running','blocked')"
+        running = self.rows("SELECT a.* FROM attempts a JOIN samples s ON s.attempt_id=a.attempt_id AND s.revision=a.revision AND s.stage=a.role WHERE a.response_applied=0 AND ("+eligibility+") LIMIT 1024",(time.time(),self.owner) if pending_only else ())
         replay = []
         for a in running:
+            with self.transaction() as db:
+                token = uuid.uuid4().hex
+                db.execute("UPDATE samples SET status='running',lease_token=?,lease_owner=?,lease_until=? WHERE sample_id=? AND attempt_id=? AND revision=? AND stage=?",
+                           (token,self.owner,time.time()+600,a['sample_id'],a['attempt_id'],a['revision'],a['role']))
+            s = self.sample(a['sample_id'])
+            if not s or s['lease_token'] != token:
+                continue
             response = self.root / a["response_path"]
             if response.is_file():
                 try:
@@ -384,22 +467,18 @@ class Store:
                         raise ValueError("invalid durable response")
                     if a["status"] == "running":
                         self.settle(a["attempt_id"],result)
-                    s = self.sample(a["sample_id"])
-                    if s and s["lease_token"] == a["lease_token"]:
-                        replay.append((s,result))
+                    replay.append((s,result))
                 except (OSError,ValueError):
                     self.settle(a["attempt_id"],{"error_category":"outcome_unknown","cost":None})
-                    s = self.sample(a["sample_id"])
-                    if s:
-                        self.finish(s,status="blocked",reason="outcome_unknown")
+                    self.finish(s,status="blocked",reason="response_unavailable" if a['status']=='complete' else "outcome_unknown",response_applied=a['status']!='complete')
             else:
                 self.settle(a["attempt_id"],{"error_category":"outcome_unknown","cost":None})
-                s = self.sample(a["sample_id"])
-                if s:
-                    self.finish(s,status="blocked",reason="outcome_unknown")
+                self.finish(s,status="blocked",reason="response_unavailable" if a['status']=='complete' else "outcome_unknown",response_applied=a['status']!='complete')
         with self.transaction() as db:
-            db.execute("UPDATE samples SET status='ready',lease_token=NULL,lease_owner=NULL,lease_until=NULL,reason_code='recovered_local' WHERE status='running' AND stage IN ('build','render','archive')")
-            self._event(db,"system","recovery",{"responses":len(replay),"unknown":len(running)-len(replay)})
+            if not pending_only:
+                db.execute("UPDATE samples SET status='ready',lease_token=NULL,lease_owner=NULL,lease_until=NULL,reason_code='recovered_local' WHERE status='running' AND stage IN ('build','render','archive')")
+            if running:
+                self._event(db,"system","recovery",{"responses":len(replay),"unknown":len(running)-len(replay)})
         return replay
 
     def resume_visual_reviews(self):
@@ -437,13 +516,43 @@ class Store:
                 "requested_model":results[-1].get("requested_model") if results else None,
                 "reported_model":results[-1].get("reported_model") if results else None}
 
+    def sample_configs(self, sample_id):
+        return self.rows("SELECT a.attempt_id,a.runtime_config_hash,s.profile_hash,s.config_json FROM attempts a LEFT JOIN config_snapshots s ON a.runtime_config_hash=s.config_hash WHERE a.sample_id=? ORDER BY a.started_at",(sample_id,))
+
     def dedup_candidates(self, features):
-        return self.rows("SELECT a.sample_id,a.lineage_group,a.canonical_voxel_hash FROM dedup_features f JOIN assets a USING(asset_id) WHERE f.rotation_hash=? OR f.quantized_hash=? LIMIT 32",
+        return self.rows("SELECT a.sample_id,a.lineage_group,a.canonical_voxel_hash,a.path,f.upright_hash FROM dedup_features f JOIN assets a USING(asset_id) WHERE f.rotation_hash=? OR f.quantized_hash=? LIMIT 32",
                          (features["rotation_occupancy_sha256"],features["geometry_quant_sha256"]))
+
+    def variant_of(self, geometry_hash, features, lineage):
+        exact = self.asset_exists(geometry_hash)
+        if exact:
+            return exact
+        related = self.one("SELECT * FROM assets WHERE lineage_group=? AND is_current=1 ORDER BY accepted_unique DESC,created_at LIMIT 1",(lineage,))
+        if related:
+            return related
+        upright = self.one("SELECT a.* FROM dedup_features f JOIN assets a USING(asset_id) WHERE f.upright_hash=? ORDER BY a.accepted_unique DESC,a.created_at LIMIT 1",(features['upright_equivalence_sha256'],))
+        if upright:
+            return upright
+        # Upgrade only legacy exact rotation candidates, without scanning final assets.
+        from voxlush.dataset.dedup import features_from_asset
+        while True:
+            legacy = self.rows("SELECT a.*,f.upright_hash FROM dedup_features f JOIN assets a USING(asset_id) WHERE f.rotation_hash=? AND f.upright_hash IS NULL LIMIT 32",(features['rotation_occupancy_sha256'],))
+            if not legacy:
+                break
+            for candidate in legacy:
+                current = features_from_asset(self.root/candidate['path'])
+                self.register_dedup(candidate['asset_id'],current)
+                if current['upright_equivalence_sha256'] == features['upright_equivalence_sha256']:
+                    return candidate
+        return None
 
     def register_dedup(self, asset_id, features):
         with self.transaction() as db:
-            db.execute("INSERT OR IGNORE INTO dedup_features VALUES(?,?,?,?,?)",(asset_id,features["translation_occupancy_sha256"],features["rotation_occupancy_sha256"],features["geometry_quant_sha256"],dump(features)))
+            self._dedup(db,asset_id,features)
+
+    def _dedup(self, db, asset_id, features):
+        db.execute("INSERT INTO dedup_features VALUES(?,?,?,?,?,?) ON CONFLICT(asset_id) DO UPDATE SET upright_hash=excluded.upright_hash,features_json=excluded.features_json",
+                   (asset_id,features['translation_occupancy_sha256'],features['rotation_occupancy_sha256'],features['geometry_quant_sha256'],dump(features),features.get('upright_equivalence_sha256')))
 
     @contextmanager
     def backup_snapshot(self):
@@ -464,27 +573,38 @@ class Store:
             if not s:
                 raise ValueError("stale archive lease")
             accepted = bool(record.get("accepted_unique"))
-            duplicate = db.execute("SELECT sample_id FROM assets WHERE canonical_voxel_hash=? AND is_current=1 LIMIT 1",(record["canonical_voxel_hash"],)).fetchone()
-            if duplicate:
-                accepted = False
-                status,reason = "rejected","duplicate"
-            else:
-                status,reason = ("accepted",None) if accepted else ("provisional_pass","unqualified_model_profile")
             aid = f"{claim['sample_id']}:v{claim['revision']:04d}"
             manifest = record["manifest_json"]
             if isinstance(manifest,str):
                 manifest = json.loads(manifest)
+            features = record.get('dedup_features')
+            duplicate = self.asset_exists(record['canonical_voxel_hash']) or self.one('SELECT sample_id FROM assets WHERE lineage_group=? AND is_current=1 LIMIT 1',(manifest['lineage']['group_id'],))
+            if not duplicate and features:
+                duplicate = self.one('SELECT a.sample_id FROM dedup_features f JOIN assets a USING(asset_id) WHERE f.upright_hash=? LIMIT 1',(features['upright_equivalence_sha256'],))
+            if duplicate and manifest['lineage']['is_unique']:
+                raise ValueError('archive decision changed before commit; immutable manifest cannot be demoted')
+            if not manifest['lineage']['is_unique']:
+                if accepted or manifest['lifecycle'] != 'duplicate':
+                    raise ValueError('inconsistent variant manifest')
+                status,reason = 'rejected','duplicate'
+            else:
+                status,reason = ('accepted',None) if accepted else ('provisional_pass','unqualified_model_profile')
+            if accepted != (manifest['lifecycle'] == 'accepted'):
+                raise ValueError('inconsistent archive acceptance')
             db.execute("INSERT INTO assets VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (aid,claim["sample_id"],claim["revision"],claim["campaign_id"],str(record["path"]),dump(manifest),record["canonical_voxel_hash"],record.get("annotation_hash"),int(accepted),1,status,claim["lineage_group"],time.time()))
-            db.execute("UPDATE samples SET status=?,reason_code=?,lease_token=NULL,lease_owner=NULL,lease_until=NULL,updated_at=? WHERE sample_id=?",
-                (status,reason,time.time(),claim["sample_id"]))
+                (aid,claim["sample_id"],claim["revision"],claim["campaign_id"],str(record["path"]),dump(manifest),record["canonical_voxel_hash"],record.get("annotation_hash"),int(accepted),1,status,manifest['lineage']['group_id'],time.time()))
+            if features:
+                self._dedup(db,aid,features)
+            db.execute("UPDATE samples SET status=?,reason_code=?,lineage_group=?,lease_token=NULL,lease_owner=NULL,lease_until=NULL,updated_at=? WHERE sample_id=?",
+                (status,reason,manifest['lineage']['group_id'],time.time(),claim["sample_id"]))
+            self._family_outcome(db,s,status != 'rejected')
             counter = "accepted_unique" if accepted else "provisional_pass" if status == "provisional_pass" else None
             if counter:
                 db.execute(f"UPDATE campaigns SET {counter}={counter}+1 WHERE campaign_id=?",(claim["campaign_id"],))
             if accepted:
                 minute = int(time.time()//60)*60
                 db.execute("INSERT INTO metrics_minute(campaign_id,minute,accepted) VALUES(?,?,1) ON CONFLICT(campaign_id,minute) DO UPDATE SET accepted=accepted+1",(claim["campaign_id"],minute))
-            self._event(db,claim["campaign_id"],"archive_commit",{"asset_id":aid,"accepted_unique":accepted,"duplicate_of":duplicate[0] if duplicate else None},claim["sample_id"])
+            self._event(db,claim["campaign_id"],"archive_commit",{"asset_id":aid,"accepted_unique":accepted,"duplicate_of":duplicate['sample_id'] if duplicate else None},claim["sample_id"])
         return self.one("SELECT * FROM assets WHERE asset_id=?",(aid,))
 
     def register_artifact(self,sample_id,path,name,sha256=None):
@@ -512,13 +632,23 @@ class Store:
         if not c:
             return {"items":[],"totals":{}}
         targets = family_targets(c["target"],c["scene_weights"])
-        stats = {r["family_id"]:r for r in self.rows("SELECT family_id,SUM(status='accepted') accepted,SUM(status IN ('ready','running','deferred','awaiting_review')) active,SUM(status='rejected' AND COALESCE(reason_code,'')!='duplicate') rejected,SUM(COALESCE(reason_code,'')='duplicate') duplicate FROM samples WHERE campaign_id=? GROUP BY family_id",(campaign_id,))}
+        stats = {r['family_id']:r for r in self.rows("SELECT family_id,SUM(accepted) accepted,SUM(active) active,SUM(rejected) rejected,SUM(duplicate) duplicate FROM seed_stats WHERE campaign_id=? GROUP BY family_id",(campaign_id,))}
+        health = {r['family_id']:r for r in self.rows("SELECT * FROM family_health WHERE campaign_id=?",(campaign_id,))}
         items = []
         for fid,f in FAMILIES.items():
             s = stats.get(fid,{})
             accepted = s.get("accepted",0)
             items.append({"family_id":fid,"name":f["name_zh"],"scene_type":f["scene_type"],"target":targets.get(fid,0),"accepted":accepted,"active":s.get("active",0),"rejected":s.get("rejected",0),"duplicate":s.get("duplicate",0),"debt":max(0,targets.get(fid,0)-accepted),"qualification":"unqualified","reason_code":"unqualified_model_profile"})
-        return {"items":items,"totals":{k:sum(i[k] for i in items) for k in ("target","accepted","active","rejected","duplicate","debt")}}
+            items[-1].update(consecutive_failures=health.get(fid,{}).get('failures',0),last_failure_at=health.get(fid,{}).get('last_failure_at',0))
+        return {"items":items,"totals":{k:sum(i[k] for i in items) for k in ("target","accepted","active","rejected","duplicate","debt")},
+                'seeds':self.rows('SELECT * FROM seed_stats WHERE campaign_id=?',(campaign_id,))}
+
+    def next_seed(self, campaign_id, family_id):
+        progress = {r['theme_seed_id']:r for r in self.rows('SELECT * FROM seed_stats WHERE campaign_id=? AND family_id=?',(campaign_id,family_id))}
+        def priority(seed):
+            row = progress.get(seed['id'],{})
+            return (row.get('accepted',0)+row.get('active',0),row.get('planned',0),seed['id'])
+        return min((s for s in SEEDS if s['family_id'] == family_id),key=priority)['id']
 
     def overview(self,campaign_id,effective_cap=0):
         c = self.campaign(campaign_id)
@@ -527,7 +657,7 @@ class Store:
         queues = self.rows("SELECT stage,SUM(status IN ('ready','deferred')) ready,SUM(status='running') running,MIN(CASE WHEN status IN ('ready','deferred') THEN updated_at END) oldest FROM samples WHERE campaign_id=? AND status IN ('ready','running','deferred') GROUP BY stage",(campaign_id,))
         for q in queues:
             q["oldest_wait_seconds"] = max(0,time.time()-(q.pop("oldest") or time.time()))
-        active = self.one("SELECT SUM(status='running') active,SUM(status='outcome_unknown' AND occupancy=1) unknown FROM attempts WHERE campaign_id=?",(campaign_id,))
+        active = self.one("SELECT SUM(status='running') active,SUM(status='outcome_unknown') unknown FROM attempts WHERE occupancy=1 AND campaign_id=?",(campaign_id,))
         now = time.time()
         window = min(3600,max(0,now-c["created_at"]))
         n = self.one("SELECT COUNT(*) n FROM assets WHERE campaign_id=? AND accepted_unique=1 AND created_at>?",(campaign_id,now-3600))["n"]

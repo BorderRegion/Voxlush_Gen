@@ -1,8 +1,8 @@
-"""Material independent geometry fingerprints used to find near duplicate candidates.
+"""Material independent geometry fingerprints for variants and review candidates.
 
-These fingerprints are intentionally a review aid.  They never reject or merge an
-asset by themselves; the Store keeps the immutable sample/revision identity and
-the visual/geometry evidence remains authoritative.
+Exact occupancy under translation and Y-up rotations identifies a derived variant.
+The coarser and full cube-rotation hashes only select candidates for comparison;
+they never reject an asset or establish lineage by themselves.
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from typing import Any
 import numpy as np
 
 
-SCHEMA = "voxlush.dedup_features.v1"
+SCHEMA = "voxlush.dedup_features.v2"
 
 
 def _rotations() -> tuple[np.ndarray, ...]:
@@ -32,6 +32,7 @@ def _rotations() -> tuple[np.ndarray, ...]:
 
 
 ROTATIONS = _rotations()
+UPRIGHT_ROTATIONS = tuple(matrix for matrix in ROTATIONS if np.array_equal(matrix[1], [0, 1, 0]))
 
 
 def _points(coords: Any) -> np.ndarray:
@@ -57,9 +58,9 @@ def _digest(points: np.ndarray) -> str:
     return hashlib.sha256(b"voxlush.occupancy.v1\0" + len(normal).to_bytes(8, "little") + payload).hexdigest()
 
 
-def _rotation_digest(points: np.ndarray) -> str:
+def _rotation_digest(points: np.ndarray, rotations=ROTATIONS) -> str:
     digests = []
-    for matrix in ROTATIONS:
+    for matrix in rotations:
         transformed = points @ matrix.T
         normal = _normal(transformed)
         digests.append(normal.tobytes(order="C"))
@@ -71,7 +72,7 @@ def _quantized_digest(points: np.ndarray, bins: int = 16) -> str:
     """Hash coarse occupancy in normalized bounding-box coordinates.
 
     Quantization deliberately permits nearby edits to share a candidate key;
-    use the exact rotation hash for an exact duplicate check.
+    use the upright equivalence hash for an exact variant check.
     """
     if not 2 <= bins <= 64:
         raise ValueError("quantization bins must be in 2..64")
@@ -100,6 +101,9 @@ def feature_hashes(coords: Any, *, quantization_bins: int = 16) -> dict[str, Any
         "schema_version": SCHEMA,
         "translation_occupancy_sha256": _digest(points),
         "rotation_occupancy_sha256": _rotation_digest(points),
+        # Exact occupied cells under translation and the four Y-up rotations.
+        # Unlike coarse/cube signatures this is authoritative variant evidence.
+        "upright_equivalence_sha256": _rotation_digest(points, UPRIGHT_ROTATIONS),
         "geometry_quant_sha256": _quantized_digest(points, quantization_bins),
         "quantization_bins": quantization_bins,
         "occupied_voxels": len(points),

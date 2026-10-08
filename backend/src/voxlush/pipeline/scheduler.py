@@ -23,8 +23,10 @@ NETWORK = ("author","refine","review")
 class Scheduler:
     def __init__(self,store: Store,config: Config,client=None):
         self.store,self.config = store,config
+        self.store.bind_config(config)
         self.client = client or PoolClient(max_connections=max(1,config.global_api_cap))
         self.archive = Archive(store.root)
+        self.archive_lock = asyncio.Lock()
         self.active: dict[asyncio.Task,str] = {}
         self.active_campaigns: dict[asyncio.Task,str] = {}
         self.stopping = False
@@ -43,15 +45,14 @@ class Scheduler:
     def cap(self,campaign=None):
         if self.storage_failed:
             return 0
-        endpoints = [e.provider_cap for e in (self.config.author,self.config.visual) if e]
-        return min(self.config.global_api_cap,self.adaptive_cap,campaign["api_cap"] if campaign else 512,*endpoints) if endpoints else 0
+        return min(self.config.global_api_cap,self.adaptive_cap,campaign["api_cap"] if campaign else 512) if self.config.author or self.config.visual else 0
 
     async def start(self):
         for claim,result in self.store.recover():
             try:
                 await self.consume(claim,result)
             except Exception as e:
-                self.store.finish(claim,status="blocked",reason="response_recovery_failed")
+                self.store.finish(claim,status="blocked",reason="response_recovery_failed",delay=30,response_applied=False)
                 self.loop_error = type(e).__name__
         if self.config.allow_live and self.config.visual and self.config.visual.supports_images:
             self.store.resume_visual_reviews()
@@ -111,6 +112,14 @@ class Scheduler:
                 except (Exception,asyncio.CancelledError) as e:
                     self.loop_error = type(e).__name__
         self.store.apply_commands(self.config.sample_request_limit)
+        self.store.reconcile_deadlines()
+        if not self.storage_failed:
+            for claim,result in self.store.recover(pending_only=True):
+                try:
+                    await self.consume(claim,result)
+                except Exception as exc:
+                    self.store.finish(claim,status='blocked',reason='response_recovery_failed',delay=30,response_applied=False)
+                    self.loop_error = type(exc).__name__
         for c in self.store.campaigns():
             if c.get("reason_code") == "emergency_stop":
                 for task,lane in list(self.active.items()):
@@ -128,6 +137,10 @@ class Scheduler:
         self.adapt()
         for c0 in self.store.campaigns():
             c = self.store.campaign(c0["campaign_id"])
+            if c['state'] == 'degraded' and c['reason_code'] == 'coverage_debt':
+                if any(i['debt']>i['active'] and self.family_available(i) for i in self.store.coverage(c['campaign_id'])['items']):
+                    self.store.set_campaign_state(c['campaign_id'],'running')
+                    c = self.store.campaign(c['campaign_id'])
             if c["state"] == "running":
                 reason = None
                 if self.storage_failed:
@@ -153,7 +166,7 @@ class Scheduler:
         # Local stages use dedicated bounded lanes, including during drain/budget stop.
         for stage,limit in (("archive",self.config.archive_workers),("render",self.config.render_workers),("build",self.config.build_workers)):
             used = sum(lane == stage for lane in self.active.values())
-            for row in self.store.ready([stage],limit=max(0,limit-used)) if limit>used else []:
+            for row in self.store.ready([stage],limit=max(0,limit-used),allow_network=False) if limit>used else []:
                 c = self.store.campaign(row["campaign_id"])
                 if c["state"] == "paused":
                     continue
@@ -162,7 +175,7 @@ class Scheduler:
                     self.submit(self.local(claim),stage,claim["campaign_id"])
         # Missing visual capability remains visible even when live inference is disabled.
         if self.config.visual is None or not self.config.visual.supports_images:
-            for row in self.store.ready(["review"],limit=32):
+            for row in self.store.rows("SELECT * FROM samples WHERE stage='review' AND status IN ('ready','deferred') LIMIT 32"):
                 claim = self.store.claim(row["sample_id"],row["revision"])
                 if claim:
                     self.store.finish(claim,status="awaiting_review",reason="awaiting_visual")
@@ -172,7 +185,16 @@ class Scheduler:
             weights = ("author","refine","author","review","author","review","author")
             preference = weights[self.round % len(weights)]
             self.round += 1
-            rows = self.store.ready(NETWORK,limit=max(64,self.cap()*4))
+            pools = {r['capacity_group']:r for r in self.store.rows("SELECT capacity_group,COUNT(*) n,SUM(status='outcome_unknown') unknown FROM attempts WHERE occupancy=1 GROUP BY capacity_group")}
+            eligible = []
+            for stage in NETWORK:
+                endpoint = self.config.visual if stage == 'review' else self.config.author
+                if endpoint is None or endpoint.alias in self.blocked_endpoints or (stage == 'review' and not endpoint.supports_images):
+                    continue
+                pool = pools.get(endpoint.capacity_key(), {'n':0,'unknown':0})
+                if not pool['unknown'] and pool['n'] < endpoint.provider_cap:
+                    eligible.append(stage)
+            rows = self.store.ready(eligible,limit=max(64,self.cap()*4)) if eligible else []
             if self.round%8:
                 rows.sort(key=lambda s:(s["stage"]!=preference,s["updated_at"]))
             for row in rows:
@@ -210,13 +232,18 @@ class Scheduler:
         outstanding = c["target"]-c["accepted_unique"]-active
         if outstanding<=0:
             return
-        candidates = [i for i in coverage["items"] if i["debt"]>i["active"] and i["rejected"]<self.config.theme_zero_yield_limit]
+        candidates = [i for i in coverage["items"] if i["debt"]>i["active"] and self.family_available(i)]
         if not candidates:
             return
         family = max(candidates,key=lambda i:((i["debt"]-i["active"])/max(1,i["target"]),-i["active"],i["family_id"]))
         contract = task_for(c,family["family_id"],c["sequence"],
-                            "production" if self.config.is_qualified() else "calibration")
+                            "production" if self.config.is_qualified() else "calibration",
+                            seed_id=self.store.next_seed(c['campaign_id'],family['family_id']))
         self.store.add_sample(runtime_task(contract))
+
+    def family_available(self, family):
+        return family['consecutive_failures'] < self.config.theme_zero_yield_limit or (
+            family['active'] == 0 and family['last_failure_at']+self.config.theme_cooldown_seconds<=time.time())
 
     def loss_control(self):
         for c in self.store.campaigns():
@@ -226,7 +253,7 @@ class Scheduler:
             totals = coverage["totals"]
             if not totals["active"] and totals["rejected"]+totals["duplicate"]>=self.config.zero_yield_limit and not c["accepted_unique"] and not c["provisional_pass"]:
                 self.store.set_campaign_state(c["campaign_id"],"blocked","zero_yield_stop")
-            elif not totals["active"] and all(i["debt"]<=0 or i["rejected"]>=self.config.theme_zero_yield_limit for i in coverage["items"]):
+            elif not totals["active"] and all(i["debt"]<=0 or not self.family_available(i) for i in coverage["items"]):
                 self.store.set_campaign_state(c["campaign_id"],"degraded","coverage_debt")
 
     def adapt(self):
@@ -298,7 +325,7 @@ class Scheduler:
             reason = "outcome_unknown" if result.get("error_category") == "outcome_unknown" else "storage_unavailable" if self.storage_failed else "finish_callback_failed"
             try:
                 self.store.settle(claim["attempt_id"],result)
-                self.store.finish(claim,status="blocked",reason=reason)
+                self.store.finish(claim,status="blocked",reason=reason,delay=1,response_applied=False)
                 if self.storage_failed:
                     for campaign in self.store.campaigns():
                         if campaign["state"] == "running":
@@ -321,7 +348,10 @@ class Scheduler:
             elif category == "outcome_unknown":
                 self.store.finish(claim,status="blocked",reason=category)
             else:
-                self.repair(claim,{"error_category":category or "incomplete_response"},visual=claim["stage"] == "review")
+                if claim['stage'] == 'review':
+                    self.retry_review(claim,category or 'incomplete_review')
+                else:
+                    self.repair(claim,{"error_category":category or "incomplete_response"})
             return
         if claim["stage"] == "review":
             directory = Path(claim["build_path"])
@@ -331,7 +361,7 @@ class Scheduler:
                 review = parse_review(result["content"],geometry["canonical_voxel_hash"],hashes,self.config.is_qualified())
                 self.persist_json(directory/"review.json",review)
             except (ValueError,KeyError,TypeError):
-                self.repair(claim,{"error_category":"review_format"},visual=True)
+                self.retry_review(claim,'review_format')
                 return
             if review["passed"]:
                 self.store.finish(claim,stage="archive",changes={"review_json":json.dumps(review)})
@@ -353,6 +383,14 @@ class Scheduler:
                 raise
             self.store.finish(claim,stage="build",changes={"source_path":str(source_path),"source_hash":hashlib.sha256(source.encode()).hexdigest()})
 
+    def retry_review(self, claim, reason):
+        used = claim['review_format_retries']
+        if used >= self.config.review_format_retries or claim['request_count'] >= self.config.sample_request_limit:
+            self.store.finish(claim,status='awaiting_review',reason='review_format_exhausted')
+        else:
+            self.store.finish(claim,stage='review',status='deferred',reason=reason,
+                              changes={'review_format_retries':used+1})
+
     def repair(self,claim,evidence,visual=False):
         key = "visual_repairs" if visual else "geometry_repairs"
         limit = self.config.visual_repairs if visual else self.config.geometry_repairs
@@ -362,6 +400,7 @@ class Scheduler:
             self.store.finish(claim,status="rejected",reason="same_error_no_progress" if identical>=2 else "repair_exhausted")
             return
         directory = self.work_dir(claim)
+        self.persist_json(directory/'repair_evidence.json',evidence)
         self.persist_json(directory.parent/"feedback.json",evidence)
         self.store.finish(claim,stage="author",reason="visual_repair" if visual else "geometry_repair",changes={key:claim[key]+1,"error_fingerprint":fingerprint,"identical_errors":identical,"revision":claim["revision"]+1})
 
@@ -409,37 +448,46 @@ class Scheduler:
                 else:
                     self.store.finish(claim,stage="review",changes={"preview_artifact_id":ids[0]})
             elif claim["stage"] == "archive":
-                directory = Path(claim["build_path"])
-                geometry = json.loads((directory/"geometry.json").read_text())
-                claim["profile_qualified"] = self.config.is_qualified()
-                claim["record_kind"] = task.get("record_kind","calibration")
-                claim["is_unique"] = not self.store.asset_exists(geometry["canonical_voxel_hash"])
-                claim["versions"] = {**geometry.get("versions",{}),"rubric":"voxlush.visual.v1"}
-                claim.update(self.store.attempt_provenance(claim["sample_id"]))
-                claim["observed_tags"] = claim["review"].get("observed_tags",[])
-                model = json.loads((directory/"sample.json").read_text()).get("model",{})
-                claim["generator_declared"] = {"tags":model.get("actual_tags",[])}
-                features = await asyncio.to_thread(features_from_asset,directory)
-                candidates = self.store.dedup_candidates(features)
-                if candidates:
-                    claim["lineage_group"] = candidates[0]["lineage_group"]
-                    claim["duplicate_cluster_id"] = candidates[0]["sample_id"]
-                claim["repair_pairs"] = self.repair_pairs(claim,directory)
-                record = await asyncio.to_thread(self.archive.prepare,claim,directory,claim["review"])
-                asset = self.store.commit_asset(claim,record)
-                self.store.register_dedup(asset["asset_id"],features)
-                self.archive.acknowledge(record["commit_id"])
-                # Archive records carry paths relative to the data root. Resolve them
-                # through the Store root so a restart never scans an unrelated cwd.
-                for file in (self.store.root / record["path"]).rglob("*"):
-                    if file.is_file():
-                        self.store.register_artifact(claim["sample_id"],file,file.relative_to(self.store.root / record["path"]).as_posix(),digest(file))
+                async with self.archive_lock:
+                    await self.archive_asset(claim)
         except Exception as e:
             if claim["stage"] == "build":
                 self.repair(claim,{"error_category":"execution_failed","message":str(e)[:2000]})
             else:
                 self.store.finish(claim,status="blocked",reason=f"{claim['stage']}_failed")
             self.loop_error = type(e).__name__
+
+    async def archive_asset(self,claim):
+        task = claim["task"]
+        directory = Path(claim["build_path"])
+        geometry = json.loads((directory/"geometry.json").read_text())
+        claim["profile_qualified"] = self.config.is_qualified()
+        configs = self.store.sample_configs(claim['sample_id'])
+        if not configs or any(item['profile_hash'] != self.config.profile_hash() for item in configs):
+            claim['profile_qualified'] = False
+        claim["record_kind"] = task.get("record_kind","calibration")
+        claim["versions"] = {**geometry.get("versions",{}),"rubric":"voxlush.visual.v1"}
+        claim.update(self.store.attempt_provenance(claim["sample_id"]))
+        claim["observed_tags"] = claim["review"].get("observed_tags",[])
+        model = json.loads((directory/"sample.json").read_text()).get("model",{})
+        claim["generator_declared"] = {"tags":model.get("actual_tags",[])}
+        features = await asyncio.to_thread(features_from_asset,directory)
+        duplicate = self.store.variant_of(geometry["canonical_voxel_hash"],features,claim["lineage_group"])
+        claim["is_unique"] = duplicate is None
+        claim["dedup_features"] = features
+        claim["runtime_config_snapshot"] = {'initial':self.store.one("SELECT * FROM config_snapshots WHERE config_hash=?",(claim.get("runtime_config_hash"),)), 'attempts':configs}
+        if duplicate:
+            claim["lineage_group"] = duplicate["lineage_group"]
+            claim["duplicate_cluster_id"] = duplicate["sample_id"]
+        claim["repair_pairs"] = self.repair_pairs(claim,directory)
+        record = await asyncio.to_thread(self.archive.prepare,claim,directory,claim["review"])
+        self.store.commit_asset(claim,record)
+        self.archive.acknowledge(record["commit_id"])
+        # Archive records carry paths relative to the data root. Resolve them
+        # through the Store root so a restart never scans an unrelated cwd.
+        for file in (self.store.root / record["path"]).rglob("*"):
+            if file.is_file():
+                self.store.register_artifact(claim["sample_id"],file,file.relative_to(self.store.root / record["path"]).as_posix(),digest(file))
 
     def repair_pairs(self,claim,directory):
         pairs = []

@@ -17,6 +17,7 @@ from .resources.legacy_render import COLORS
 
 RESOURCES = Path(__file__).parent / "resources"
 VERSION = "voxlush-geometry-v1"
+MAX_SOURCE_BYTES = 256 * 1024
 FROZEN_WOODEN = {
     "minimum_main_voxels": 12000,
     "minimum_footprint_bbox_area": 1800,
@@ -29,7 +30,11 @@ FROZEN_WOODEN = {
 }
 CONTRACTS = {"inhabited", "exterior", "landscape", "ruin", "mixed", "legacy_large_wooden_v1"}
 METADATA = {"MODEL_SPEC", "DESCRIPTION", "REQUESTED_TAGS", "ACTUAL_TAGS"}
-PROTECTED = {"SPEC", "ROOT", "V", "D", "A", "SEED", "C", "P", "B", "W", "G", "K", "O", "rng", "finish"}
+INTERNAL_NAMES = {"SPEC", "ROOT", "V", "D", "A", "finish", "Path", "os", "json", "re"} | {
+    node.name for node in ast.parse((RESOURCES / "builder_core.txt").read_text()).body
+    if isinstance(node, ast.FunctionDef) and node.name.startswith('_')
+}
+PROTECTED = INTERNAL_NAMES | {"SEED", "C", "P", "B", "W", "G", "K", "O", "rng", "random"}
 BANNED = {
     "open",
     "eval",
@@ -91,10 +96,11 @@ def primitive_contract() -> str:
         """voxlush-primitives-v1. Write complete free-form Python geometry; no main guard or finish call.
 Optional top-level literal MODEL_SPEC dict (name_en, name_zh, use, floors, spaces, features),
 DESCRIPTION {zh,en}, ACTUAL_TAGS list. These are generator declarations, not observed labels.
-Allowed imports: math, random, collections. Use SEED or rng for deterministic randomness.
-Use public author variable/function names; no name may start with '_' (including loop placeholders).
-SEED and rng are supplied by the runtime: read/use them, never assign or redefine them.
-Never overwrite runtime primitives/state or use private attributes/introspection.
+floors is an integer: 0..256 for landscape, 1..256 for architectural contracts.
+Allowed imports: math, random, collections. Maximum source size: 256 KiB UTF-8.
+Ordinary local names including '_' and '_helper' are allowed.
+Use the supplied SEED (read-only integer) and rng, e.g. height = rng.randint(6, 12).
+Never reassign SEED/rng, reseed rng, overwrite primitives, or access private attributes/reflection.
 X east, Y up, Z south; integer occupied coordinates 0..255; max 600000 voxels.
 Materials accept full states such as minecraft:oak_log[axis=x]; namespace/properties are
 preserved in authoritative arrays. Only known base blocks are accepted; unknown states fail.
@@ -114,7 +120,7 @@ Signatures (extracted from the actual runtime):\n"""
         + "\n".join(signatures)
         + "\nRead-only runtime names (never assign, define, or use as function arguments): "
         + ", ".join(sorted(PROTECTED))
-        + ". Internal names SPEC, ROOT, V, D, A and finish must not be accessed."
+        + ". Runtime internals must not be accessed: " + ", ".join(sorted(INTERNAL_NAMES)) + "."
         + "\nMaterial names: "
         + ", ".join(sorted(COLORS))
         + "\nCategories: foundation,slab,exterior_wall,interior_wall,roof,door,window,column,beam,stair,decoration,environment,furniture,terrain,rock,cave,vegetation,water,path,ruin,object."
@@ -122,7 +128,7 @@ Signatures (extracted from the actual runtime):\n"""
 
 
 def decode_source(source: str) -> tuple[dict, str]:
-    if not isinstance(source, str) or len(source.encode()) > 262144:
+    if not isinstance(source, str) or len(source.encode()) > MAX_SOURCE_BYTES:
         raise ValueError("Source exceeds the 256 KiB authoring limit")
     source = source.strip()
     if source.startswith("```"):
@@ -189,19 +195,35 @@ def decode_source(source: str) -> tuple[dict, str]:
             raise ValueError("Private/frame introspection is unsupported")
         if isinstance(node, ast.Name):
             if (
-                node.id.startswith("_")
+                node.id.startswith("__")
                 or node.id in BANNED
-                or node.id in {"SPEC", "ROOT", "V", "D", "A", "finish", *METADATA}
+                or node.id in INTERNAL_NAMES | METADATA
             ):
                 raise ValueError("Reserved or unsafe author name: " + node.id)
             if isinstance(node.ctx, (ast.Store, ast.Del)) and node.id in PROTECTED:
                 raise ValueError("Cannot replace primitive state: " + node.id)
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and (
-            node.name in PROTECTED or node.name.startswith("_")
+            node.name in PROTECTED or node.name.startswith("__")
         ):
             raise ValueError("Cannot replace primitives")
-        if isinstance(node, ast.arg) and (node.arg in PROTECTED or node.arg.startswith("_")):
+        if isinstance(node, ast.arg) and (node.arg in PROTECTED or node.arg.startswith("__")):
             raise ValueError("Reserved function argument")
+        # Binding forms without ast.Name(Store), plus mutation of exposed state.
+        bindings = []
+        if isinstance(node, ast.alias):
+            bindings = [node.asname or node.name]
+            if node.name == 'random' and node.asname in (None, 'random'):
+                bindings = []  # The allowed module import is not a replacement.
+        elif isinstance(node, (ast.ExceptHandler, ast.MatchAs, ast.MatchStar)):
+            bindings = [node.name] if node.name else []
+        elif isinstance(node, ast.MatchMapping) and node.rest:
+            bindings = [node.rest]
+        if any(name in PROTECTED or name.startswith('__') for name in bindings):
+            raise ValueError('Cannot replace primitive state')
+        module_seed = isinstance(node,ast.Attribute) and node.attr == 'seed' and isinstance(node.value,ast.Name) and node.value.id == 'random'
+        if isinstance(node, ast.Attribute) and (isinstance(node.ctx,ast.Store) or
+                (node.attr in {'seed','setstate'} and not module_seed)):
+            raise ValueError('Cannot mutate runtime attributes or random seed')
     for name in ("MODEL_SPEC", "DESCRIPTION"):
         if name in metadata and not isinstance(metadata[name], dict):
             raise ValueError(name + " must be a literal object")
@@ -213,15 +235,16 @@ def decode_source(source: str) -> tuple[dict, str]:
     return metadata, ast.unparse(tree)
 
 
-def validate_model(model: dict) -> None:
+def validate_model(model: dict, contract: str | None = None) -> None:
     """Bound model-declared geometry before the trusted host validator traverses it."""
     if not isinstance(model, dict):
         raise ValueError("MODEL_SPEC must be an object")
     for name in ("name_en", "name_zh", "use", "style"):
         if name in model and (not isinstance(model[name], str) or len(model[name]) > 8192):
             raise ValueError("Invalid text metadata: " + name)
-    if "floors" in model and (type(model["floors"]) is not int or not 1 <= model["floors"] <= 256):
-        raise ValueError("floors must be an integer in 1..256")
+    minimum_floors = 0 if contract == "landscape" else 1
+    if "floors" in model and (type(model["floors"]) is not int or not minimum_floors <= model["floors"] <= 256):
+        raise ValueError(f"floors must be an integer in {minimum_floors}..256")
     for key, limit in (("spaces", 256), ("features", 1024)):
         values = model.get(key, [])
         if not isinstance(values, list) or len(values) > limit:
@@ -260,7 +283,7 @@ def inspect(sample: dict, task: dict) -> dict:
     warnings = []
     evidence = {}
     try:
-        validate_model(sample["task_spec"])
+        validate_model(sample["task_spec"], contract)
         coords, bi, ci, palette = canonical.from_sample(sample)
     except (ValueError, KeyError, TypeError) as exc:
         return {
@@ -391,13 +414,13 @@ def build(source: str, task: dict, destination: Path, config: dict | None = None
     try:
         metadata, body = decode_source(source)
         model = metadata.get("MODEL_SPEC", {})
-        validate_model(model)
+        validate_model(model, task.get("quality_contract"))
         spec = {
             "name_en": "Authored voxel scene",
             "name_zh": "独立体素场景",
             "use": task.get("instruction", ""),
             "style": "",
-            "floors": 1,
+            "floors": 0 if task.get("quality_contract") == "landscape" else 1,
             "spaces": [],
             "features": [],
             "objects": {},
