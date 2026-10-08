@@ -1,12 +1,82 @@
 # Acceptance Report
 
-Date: 2026-10-08 (Asia/Shanghai)
+Date: 2026-10-09 (Asia/Shanghai); latest live pilot began 2026-10-08
 
 Repository baseline: `4f4be137d3924b38cb7301c2c4a0081ff32a7c2a`.
 
 Environment: Python 3.12.3, Node 20.19.0, npm 10.8.2, Docker 29.1.3, APSW SQLite 3.51.3, Linux, `voxlush-sandbox:v1` (`sha256:50712f3b25dc`). The checked-in profile has `allow_live=false`, no author or visual endpoint, and global API cap 0. The acceptance data root was `/tmp/voxlush-acceptance-20261008`; it is outside the repository and is not production data.
 
-## Latest concurrent live validation
+## Review b02c362: software and supervised live validation
+
+Review baseline: `b02c362e86eb705a5f317f8e82c0e25222c73083`. Fixed code: `ad44d8162d9e2f969c2be3182b5be2d27e1e8a30`. Existing architecture, author independence, thinking preference and final quality contracts are retained. Production services and data were not changed.
+
+| Issue | Before fix | Verified result |
+|---|---|---|
+| N01 | Malformed SSE/structure/byte limit released occupancy and scheduled author repair without termination evidence. | Actual loopback HTTP → PoolClient → Store → scheduler keeps occupancy, reservations and one POST. Stop/length release execution; malformed usage after finish stays invalid/unknown-cost without occupying execution. Duplicate settlement/recovery does not double-advance. Pool 502/504/interruption-frame cases also retain occupancy. |
+| N02 | A failed skeleton changed to final because revision/repair count increased. | Explicit persistent phase keeps skeleton repair, exactly one refine, and final-only repair across owner restarts. Brief remains unchanged. Phase transitions use a patched build-boundary fixture; real geometry is verified separately. |
+| N03 | Docker/image/OSError faults spent author repair budget and could contaminate quality failures. | Injecting actual sandbox image checks preserves source/revision and spends no model calls; restored Docker builds the same source. Two local retries then block; image mismatch blocks immediately. Storage failure stops network dispatch; unrelated local work survives a rendering failure. Real source/geometry failures still use finite author repair. |
+| N04 | A capped campaign's 64 old ready rows hid another campaign. | Indexed campaign occupancy filter runs before LIMIT; the actual next scheduler tick POSTs the other campaign. |
+
+The initial review-specific run on old code had **14 failures in 1.92 s**. This is not 14 distinct behavioral defects: normal controls also failed because the new execution/phase fields did not exist. Behavioral assertions reproduced all four review issues. After additional boundary coverage, **23 review cases pass**. Complete verification: **189 passed, 1 optional private fixture skipped in 90.10 s**, Ruff passed, frontend build passed, **10 mock-transport browser tests + 1 real local backend/browser test passed**. Existing clean EOF, reasoning/heartbeat, timeout, recovery, capacity and budget tests remain included.
+
+The local recovery integration additionally exposed repair-pair records missing the exporter's source/lineage/before-and-after checks. Fixed without changing the schema: an actual failing source is repaired through loopback HTTP, survives Docker outage/restart and renderer retry, archives, and exports one verified repair pair. Passing skeletons and infrastructure failures are not training error examples.
+
+Nonempty schema-2 data was restored from the previous real stone-arch backup into an isolated root and migrated to schema 3. Unchanged DeepSeek source rebuilt and rendered **222949 voxels with the identical canonical hash**. Formal export remains empty; provisional export contains the same one existing asset. Schema-3 backup/restore and integrity checks passed; its request ledger remains exactly 4. **This is offline replay of an existing model-authored asset, not a new model call, candidate or visual review.**
+
+Reproduce software verification from the repository root:
+
+```bash
+.venv/bin/pytest -q backend/tests/test_review_b02.py --tb=short
+.venv/bin/pytest -q backend/tests --tb=short
+.venv/bin/ruff check backend/src backend/tests
+npm --prefix frontend run build
+npm --prefix frontend run test:e2e
+npm --prefix frontend run test:real
+git diff --check
+```
+
+**D01:** read-only inspection confirmed worker TLS retries and candidate-route retries; no usable upstream termination receipt/query path was found. Keep whole-pool unknown isolation. A proxy's 2400-second timeout is not a maximum upstream execution contract. See [the decision and recovery conditions](../docs/DECISIONS.md#d01-retain-shared-pool-isolation-until-termination-is-evidenced).
+
+**Real 24-task pilot completed.** Selected 8 natural, 8 direct-architecture and 8 complex two-stage briefs from the existing calibration plan. These are **24 independent tasks**, counted once across all phases. There were **79 requests** (24 initial author, 36 author repairs, 2 refinements, 17 visual reviews). 76 calls have termination evidence and 74 have complete protocol responses; these counts do not imply executable source or valid review JSON.
+
+| Task group | Tasks | Source executed | Skeleton geometry pass | Final geometry pass | Valid visual pass | Candidate archived | Formal accepted_unique |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Direct architecture | 8 | 6 | 0 | 5 | 5 | 5 | 0 |
+| Natural | 8 | 7 | 0 | 7 | 5 | 5 | 0 |
+| Two-stage architecture | 8 | 2 | 2 | 1 | 1 | 1 | 0 |
+
+The archived complex water-living task completed the real skeleton repair → exactly one refinement → final repair → image review → archive sequence. The other task that passed its skeleton also refined once, then exhausted final-stage repairs.
+
+Final task states: `{"awaiting_review": 1, "blocked": 3, "provisional_pass": 11, "rejected": 9}`. Terminal/blocking reasons: `{"outcome_unknown": 3, "repair_exhausted": 8, "review_format_exhausted": 1, "same_error_no_progress": 1, "unqualified_model_profile": 11}`. Source/build diagnostics include `{"W_cardinal_side_argument": 15, "execution_failure_without_diagnostic": 1, "metadata_list_type_or_limit": 2, "metadata_space_id": 1, "nonliteral_metadata": 1, "object_id_collision": 1, "other_source_or_runtime_diagnostic": 13, "primitive_rebinding": 1, "protected_metadata_mutation": 1, "unknown_material": 1}`; these are failure **occurrences across revisions**, not task counts. The detailed task rows and all geometric rules are in [model_qualification.json](model_qualification.json).
+
+| Phase | Source commit | New requests | Cumulative requests |
+|---|---|---:|---:|
+| initial_v4 | `ad44d8162d9e` | 25 | 25 |
+| supervised_v4 | `ad44d8162d9e` | 24 | 49 |
+| supervised_v5 | `1db2e940a7d3` | 30 | 79 |
+
+The initial implementation retained the default pool isolation and drained on a new unknown. Under the user's explicit own-pool authorization, subsequent supervised phases bypassed only the two blanket unknown-pool admission checks in a private test bootstrap. Existing/new unknown records, occupancy, budgets, blocked samples and legal caps remained. Historical 11 unknowns remain in their original ledgers/canary record; they are not included in the fresh ledger's 24 slots or proven terminated. **This is an explicit supervised policy exception, not unmodified production admission or unattended recovery validation.** Production services and production default policies were unchanged.
+
+The first continuation drained before changing code. Its harness recorded KeyboardInterrupt only after active calls and local running samples reached zero; normal finalization, export and backup succeeded. It was a planned boundary, not a killed model call. Prompt v5 and visual rubric v2 clarify W cardinal sides/coordinates, literal metadata, reserved root ownership and numeric confidence. Bounded traceback feedback now retains the exception at the end. A failing-before/passing-after regression protects that repair evidence; the final complete suite is **190 passed, 1 skipped in 84.55 s**, with Ruff passing. Patch commit: `1db2e940a7d3b1368cbaab3cc7c139332e3217e3`. The final continuation reuses the same tasks/ledgers and consumed 30 calls. 1 existing review-format-exhausted task(s) received one audited supervised reevaluation with the new schema and unchanged previews; request/retry counters were retained. No generated program, original brief, geometric threshold or model confidence value was edited to manufacture success.
+
+DeepSeek retained default thinking with max_tokens=262144, temperature=1, top_p=0.95; GLM visual retained reasoning_effort=max with max_tokens=8192. First-progress/idle/total budgets were 600/240/2300 seconds. One API/Store/scheduler instance reached **24 concurrent calls**, with a private initial adaptive-cap override and authenticated campaign ramp 8/16/24; production initial adaptive cap remains min(8, hard_cap). Thinking parameters were not reduced. Actual returned reasoning varies, so configuration alone does not prove identical upstream behavior.
+
+| Call stage (including failures) | Calls | p50 seconds | p95 seconds |
+|---|---:|---:|---:|
+| author | 24 | 1056.154 | 1525.038 |
+| repair | 36 | 1094.383 | 2186.006 |
+| review | 17 | 223.103 | 639.494 |
+| refine | 2 | 764.958 | 792.785 |
+
+Task-terminal latency: `{"n": 20, "p50_seconds": 5306.563, "p95_seconds": 6817.143, "method": "nearest rank"}`. Incomplete/blocked tasks are censored and excluded; task durations include supervised pause/restart wall time. The total observation window was 7892.695 seconds. Mixed prompt phases and this small pilot do not establish steady accepted/hour or a model comparison. Reported total tokens sum to **3320751 across 76 calls**, with 3 calls missing totals; reported reasoning tokens sum to 2482803 across 76 calls. No verified prices were available; all 79 new call costs remain unknown, not zero. Unknown executions changed **11 → 14** (3 new); none were released or replayed without evidence.
+
+Pool read-only health during peak load showed 24 active requests against capacity 512, 132/133 healthy sources and no quota block. The incomplete reasoning streams do not identify whether the disconnect occurred at worker, proxy or upstream. The demonstrated W-axis, metadata and review-schema failures are independent software/model-contract problems; they cannot be attributed to pool saturation.
+
+Actual-service browser checks passed authentication, live state, mobile layout and all three new candidate previews, with zero browser errors. Sixty authenticated overview queries had p95 **2.569 ms** (median 2.086 ms); service RSS was 136.29–137.25 MB during that short query window, excluding containers. A new model-authored dune candidate rebuilt from unchanged source with the identical **331283-voxel hash**, and rendered again without new inference. Final formal export has 0 assets; provisional export has 11 assets, 11 source-SFT rows and 17 repair pairs. Release verification and nonempty backup/restore preserved request and unknown state.
+
+**Qualification and deployment:** 11 new candidates are provisional calibration data. Formal accepted_unique=0, human blind reviews=0; model profile, long soak and unattended production yield remain unqualified. No production deployment or API-pool modification was performed. Source publication does not change that boundary. Raw responses/reasoning, configs, generated assets and backups stay outside Git; README and LICENSE are unchanged.
+
+## Earlier concurrent live validation
 
 The latest instruction authorized real higher-concurrency testing and publication after verification, with no fee constraint. This run sent **29 new requests (36 cumulative)** while retaining thinking; finite campaign/sample/repair limits remained active. Data and raw responses stayed outside Git. No production service was modified.
 

@@ -44,11 +44,13 @@ The automated backup/restore integration test restores to a new path and verifie
 
 Run legacy import in dry-run mode first. Review counts, path/coordinate warnings and duplicates; a repeated import must be idempotent. Legacy completed records remain `legacy_complete_unverified`. Export creates an immutable release with a dataset card and deterministic ordering; run `verify-release` before distributing it. Fixture/provisional records are excluded from formal accepted counts.
 
-## Schema 1 to 2 migration
+## Schema 1/2 to 3 migration
 
-The first new Store open upgrades schema 1 transactionally to schema 2, adding response application, capacity reconciliation, config history, exact upright dedup and seed summary records. Back up with the old release before opening a production database with the new release. Legacy alias mapping uses role plus alias; verify the configured route is the historical route during migration. Unknown historical snapshots remain unknown. The migration preserves existing assets, billing and unknown occupancy; it does not retroactively repair old immutable manifests or certify old accepted records.
+The first new Store open upgrades schema 1/2 through additive migrations to schema 3. Schema 2 added response application, capacity reconciliation, config history, exact upright dedup and seed summaries; schema 3 adds creative phase, local retry count and an occupied-campaign index. Back up with the old release before opening production data. Verify legacy aliases against their historical routes. Unknown historical snapshots remain unknown. Migration preserves assets, briefs, billing and unknown occupancy; it does not rewrite immutable manifests or certify historical records.
 
-The nonempty migration fixture preserves unknown reservations and passes SQLite integrity checking; a separate nonempty backup/restore fixture includes an archived asset plus failed and unknown requests. These are local test roots. No production migration was run. The previous release only reads schema 1, so rollback requires its verified pre-migration backup restored to a new root; pointing the old binary at schema 2 is not a supported rollback.
+Nonempty schema-1/2 migration fixtures preserve reservations and pass integrity checking; the existing real model asset's backup also migrated to schema 3 and survived export/backup/restore. These are local test roots, not production migration. Rollback to a schema-1/2 binary requires its verified pre-migration backup restored to a new root.
+
+Old active two-stage repairs without evidence of refinement are blocked as `phase_recovery_required`; automatic recovery and generic retry cannot infer the missing phase. Inspect saved source, build reports and attempts before any evidence-backed maintenance, retaining an audit trail. New jobs persist phase directly. Docker unavailability retries locally twice on the same source/revision, then blocks; image mismatch blocks immediately. Restore the local resource and use the normal retry command for a blocked local stage. Its accumulated automatic retry count is retained. Storage errors stop new paid dispatch. These faults do not request an author rewrite or count as theme-quality failures.
 
 ## Updates and rollback
 

@@ -29,5 +29,90 @@
     "release_tag": null,
     "reason": "No production authorization was provided; only an isolated external-root fixture was exercised."
   },
-  "recorded_at": "2026-10-08T00:00:00+08:00"
+  "recorded_at": "2026-10-09",
+  "review_b02_validation": {
+    "baseline_commit": "b02c362e86eb705a5f317f8e82c0e25222c73083",
+    "software_commit": "ad44d8162d9e2f969c2be3182b5be2d27e1e8a30",
+    "production_modified": false,
+    "schema_version": 3,
+    "additive_fields": [
+      "samples.creative_phase",
+      "samples.local_retries"
+    ],
+    "schema2_nonempty_restore_and_migration": true,
+    "ambiguous_active_two_stage_migration": "phase_recovery_required; neither recovery nor generic retry bypasses evidence review",
+    "bounded_migration_page_size": 512,
+    "immutable_briefs_and_budgets_retained": true,
+    "existing_model_asset_replay": {
+      "kind": "offline replay of previously model-authored asset; no new task or model call",
+      "source_modified": false,
+      "canonical_hash_equal": true,
+      "voxels": 222949,
+      "build_passed": true,
+      "render_passed": true,
+      "schema2_to_3": true,
+      "backup_restore": true,
+      "prior_requests_unchanged": 4,
+      "new_model_requests": 0,
+      "exports": {
+        "formal": {
+          "assets": 0,
+          "accepted": 0,
+          "provisional": 0,
+          "source_sft": 0,
+          "repair_pairs": 0,
+          "train": 0,
+          "val": 0,
+          "test": 0,
+          "calibration": 0,
+          "excluded": 0
+        },
+        "provisional": {
+          "assets": 1,
+          "accepted": 0,
+          "provisional": 1,
+          "source_sft": 1,
+          "repair_pairs": 0,
+          "train": 0,
+          "val": 0,
+          "test": 0,
+          "calibration": 1,
+          "excluded": 0
+        }
+      }
+    },
+    "rollback_requirement": "Restore a pre-upgrade backup before running a schema-1/2 binary; no production rollback was performed",
+    "new_24_task_batch": {
+      "requests": 79,
+      "new_unknown_executions": 3,
+      "backup_restore_verified": true,
+      "exports": {
+        "formal": {
+          "assets": 0,
+          "accepted": 0,
+          "provisional": 0,
+          "source_sft": 0,
+          "repair_pairs": 0,
+          "train": 0,
+          "val": 0,
+          "test": 0,
+          "calibration": 0,
+          "excluded": 0
+        },
+        "provisional": {
+          "assets": 11,
+          "accepted": 0,
+          "provisional": 11,
+          "source_sft": 11,
+          "repair_pairs": 17,
+          "train": 0,
+          "val": 0,
+          "test": 0,
+          "calibration": 11,
+          "excluded": 0
+        }
+      },
+      "source_commit": "1db2e940a7d3b1368cbaab3cc7c139332e3217e3"
+    }
+  }
 }

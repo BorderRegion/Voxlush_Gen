@@ -12,7 +12,7 @@
   "completed": [
     {
       "name": "python_unit_and_integration",
-      "result": "166 passed, 1 skipped (optional private legacy archive)",
+      "result": "190 passed, 1 skipped (optional private legacy archive); 84.55 s",
       "command": ".venv/bin/pytest -q"
     },
     {
@@ -45,12 +45,12 @@
   },
   "real_api_soak": {
     "observed": false,
-    "latest_real_concurrency_peak": 16,
-    "latest_requests": 29,
-    "cumulative_model_requests": 36,
-    "reason": "Real mixed-brief concurrent validation completed; not a long-duration soak or qualified accepted throughput."
+    "latest_real_concurrency_peak": 24,
+    "latest_requests": 79,
+    "cumulative_model_requests": 115,
+    "reason": "One actual service reached 24 active calls; finite supervised pilot with admission exception and prompt change, not long-duration soak or qualified production throughput."
   },
-  "recorded_at": "2026-10-08",
+  "recorded_at": "2026-10-09",
   "scale_fixture": {
     "schema_version": "voxlush.scale_fixture.v1",
     "scope": "synthetic metadata and real loopback HTTP/SSE; no paid calls or quality evidence",
@@ -263,5 +263,349 @@
       "source_secret_screen": "passed"
     },
     "limits": "Two isolated service instances measured 16 concurrent author requests, not a production deployment or long soak. Only one followup author profile used the increased output allowance. Historical unknowns were not replayed. Health and closed sockets do not prove upstream termination. Human calibration is absent; formal accepted_unique remains zero."
+  },
+  "review_b02_validation": {
+    "source_commit": "1db2e940a7d3b1368cbaab3cc7c139332e3217e3",
+    "source_commits": [
+      "ad44d8162d9e2f969c2be3182b5be2d27e1e8a30",
+      "1db2e940a7d3b1368cbaab3cc7c139332e3217e3"
+    ],
+    "scope": "24 independent existing-calibration tasks, counted once across prompt changes; excludes previous trials, canaries and offline replay",
+    "production_modified": false,
+    "qualified": false,
+    "human_reviews": 0,
+    "tasks_prepared": 24,
+    "tasks_dispatched": 24,
+    "groups": {
+      "natural": 8,
+      "direct_architecture": 8,
+      "two_stage_architecture": 8
+    },
+    "requests": 79,
+    "stage_calls": {
+      "author": 24,
+      "repair": 36,
+      "review": 17,
+      "refine": 2
+    },
+    "initial_author_calls": {
+      "final": 16,
+      "skeleton": 8
+    },
+    "calls_after_prompt_v5": 30,
+    "attempts_by_profile_hash": {
+      "99032f0bacc0652cbcf7a983f9cdf21001e50af8b9e7e63679748397c010dd9e": 49,
+      "edcec4d8d927229cfa026ecfe428805797692cb475742f1c81c35438acd34ffc": 30
+    },
+    "phase_results": [
+      {
+        "label": "initial_v4",
+        "source_commit": "ad44d8162d9e2f969c2be3182b5be2d27e1e8a30",
+        "cumulative_requests": 25,
+        "new_requests": 25,
+        "peak_active": 24,
+        "runner_error": null,
+        "finalize_error": null,
+        "backup_restore_verified": true,
+        "boundary": "new_unknown"
+      },
+      {
+        "label": "supervised_v4",
+        "source_commit": "ad44d8162d9e2f969c2be3182b5be2d27e1e8a30",
+        "cumulative_requests": 49,
+        "new_requests": 24,
+        "peak_active": 22,
+        "runner_error": "KeyboardInterrupt",
+        "finalize_error": null,
+        "backup_restore_verified": true,
+        "boundary": "planned drain for prompt correction; harness interrupted only after active=0 and running_samples=0"
+      },
+      {
+        "label": "supervised_v5",
+        "source_commit": "1db2e940a7d3b1368cbaab3cc7c139332e3217e3",
+        "cumulative_requests": 79,
+        "new_requests": 30,
+        "peak_active": 19,
+        "runner_error": null,
+        "finalize_error": null,
+        "backup_restore_verified": true,
+        "boundary": "all finite work settled"
+      }
+    ],
+    "operator_review_resumes": [
+      "8d9dc7ca5d03eb3c4edd526b"
+    ],
+    "operator_resume_limit": "One supervised reevaluation of each review-format-exhausted task after specifying numeric confidence; same preview/source and no request/retry counter reset. Not automatic product recovery.",
+    "execution_terminated": 76,
+    "complete_responses": 74,
+    "task_outcomes": {
+      "any_complete_response": 22,
+      "source_executed_successfully": 15,
+      "skeleton_geometry_pass": 2,
+      "final_geometry_pass": 13,
+      "visual_pass": 11,
+      "candidate_archived": 11,
+      "formal_accepted": 0,
+      "unresolved_or_unfinished": 4
+    },
+    "group_outcomes": {
+      "direct_architecture": {
+        "tasks": 8,
+        "any_complete_response": 7,
+        "source_executed_successfully": 6,
+        "skeleton_geometry_pass": 0,
+        "final_geometry_pass": 5,
+        "visual_pass": 5,
+        "candidate_archived": 5,
+        "formal_accepted": 0,
+        "unresolved_or_unfinished": 1
+      },
+      "natural": {
+        "tasks": 8,
+        "any_complete_response": 8,
+        "source_executed_successfully": 7,
+        "skeleton_geometry_pass": 0,
+        "final_geometry_pass": 7,
+        "visual_pass": 5,
+        "candidate_archived": 5,
+        "formal_accepted": 0,
+        "unresolved_or_unfinished": 1
+      },
+      "two_stage_architecture": {
+        "tasks": 8,
+        "any_complete_response": 7,
+        "source_executed_successfully": 2,
+        "skeleton_geometry_pass": 2,
+        "final_geometry_pass": 1,
+        "visual_pass": 1,
+        "candidate_archived": 1,
+        "formal_accepted": 0,
+        "unresolved_or_unfinished": 2
+      }
+    },
+    "task_statuses": {
+      "provisional_pass": 11,
+      "blocked": 3,
+      "rejected": 9,
+      "awaiting_review": 1
+    },
+    "task_terminal_reasons": {
+      "unqualified_model_profile": 11,
+      "outcome_unknown": 3,
+      "repair_exhausted": 8,
+      "review_format_exhausted": 1,
+      "same_error_no_progress": 1
+    },
+    "transport_failures": {
+      "outcome_unknown": 3,
+      "incomplete_response": 2
+    },
+    "geometry_violation_occurrences": {
+      "sandbox_execution_failed": 31,
+      "space_filled_or_wrong_box": 9,
+      "entry_blocked_or_unsupported": 10,
+      "source_or_build_invalid": 6,
+      "window_backed_by_solid_wall": 1,
+      "merged_column_instances": 3,
+      "space_missing_floor_or_wrong_level": 1,
+      "actual_floor_unreachable": 1,
+      "unapproved_environment": 8
+    },
+    "source_diagnostic_occurrences": {
+      "other_source_or_runtime_diagnostic": 13,
+      "unknown_material": 1,
+      "W_cardinal_side_argument": 15,
+      "protected_metadata_mutation": 1,
+      "object_id_collision": 1,
+      "metadata_space_id": 1,
+      "metadata_list_type_or_limit": 2,
+      "execution_failure_without_diagnostic": 1,
+      "primitive_rebinding": 1,
+      "nonliteral_metadata": 1
+    },
+    "stage_durations": {
+      "author": {
+        "n": 24,
+        "p50_seconds": 1056.154,
+        "p95_seconds": 1525.038,
+        "method": "nearest rank"
+      },
+      "repair": {
+        "n": 36,
+        "p50_seconds": 1094.383,
+        "p95_seconds": 2186.006,
+        "method": "nearest rank"
+      },
+      "review": {
+        "n": 17,
+        "p50_seconds": 223.103,
+        "p95_seconds": 639.494,
+        "method": "nearest rank"
+      },
+      "refine": {
+        "n": 2,
+        "p50_seconds": 764.958,
+        "p95_seconds": 792.785,
+        "method": "nearest rank"
+      }
+    },
+    "task_terminal_durations": {
+      "n": 20,
+      "p50_seconds": 5306.563,
+      "p95_seconds": 6817.143,
+      "method": "nearest rank"
+    },
+    "duration_limit": "Incomplete/blocked tasks are censored; terminal-task percentiles exclude them and include supervised pause/restart wall time. Stage durations include failed calls and both prompt versions; not a success-throughput or model comparison claim.",
+    "tokens": {
+      "prompt_tokens": {
+        "reported_sum": 443056,
+        "known_attempts": 76,
+        "unknown_attempts": 3
+      },
+      "completion_tokens": {
+        "reported_sum": 2877695,
+        "known_attempts": 76,
+        "unknown_attempts": 3
+      },
+      "total_tokens": {
+        "reported_sum": 3320751,
+        "known_attempts": 76,
+        "unknown_attempts": 3
+      },
+      "reasoning_tokens": {
+        "reported_sum": 2482803,
+        "known_attempts": 76,
+        "unknown_attempts": 3
+      }
+    },
+    "thinking_configuration": "DeepSeek default enabled (no disabling parameter); GLM reasoning_effort=max; no lower-effort fallback",
+    "responses_with_reasoning_content": 78,
+    "thinking_limit": "Returned reasoning length varies by request; no claim that configuring default thinking proves identical upstream execution on every route.",
+    "unknown_execution_before": 11,
+    "new_unknown_execution": 3,
+    "unknown_execution_after": 14,
+    "known_currency_cost": 0.0,
+    "unknown_cost_attempts": 79,
+    "cost_limit": "No verified endpoint prices: reported known currency cost zero is not total cost; unknown usage is not estimated as zero.",
+    "peak_active": 24,
+    "elapsed_window_seconds": 7892.695,
+    "runtime_limits": {
+      "global_cap_in_new_test_ledger": 24,
+      "provider_cap": 64,
+      "sample_request_limit": 8,
+      "campaign_request_limit": 192,
+      "author_parameters": {
+        "max_tokens": 262144,
+        "temperature": 1,
+        "top_p": 0.95
+      },
+      "visual_parameters": {
+        "max_tokens": 8192,
+        "reasoning_effort": "max"
+      },
+      "first_progress_idle_total_seconds": [
+        600,
+        240,
+        2300
+      ]
+    },
+    "test_bootstrap": "One actual API/scheduler/Store; test-only initial adaptive cap24, campaign ladder8/16/24. Production startup policy unchanged.",
+    "continuation_policy": "User-authorized supervised remaining-slot admission; historical and current unknown occupancies retained; original unknown samples stay blocked. Production isolation unchanged.",
+    "historical_isolation_limit": "The 11 historical unknowns remain in their original ledgers/canary record. They are not counted as slots in this 24-slot isolated test ledger, not cleared and not shown to have ended; user explicitly accepted the shared-pool uncertainty.",
+    "exports": {
+      "formal": {
+        "assets": 0,
+        "accepted": 0,
+        "provisional": 0,
+        "source_sft": 0,
+        "repair_pairs": 0,
+        "train": 0,
+        "val": 0,
+        "test": 0,
+        "calibration": 0,
+        "excluded": 0
+      },
+      "provisional": {
+        "assets": 11,
+        "accepted": 0,
+        "provisional": 11,
+        "source_sft": 11,
+        "repair_pairs": 17,
+        "train": 0,
+        "val": 0,
+        "test": 0,
+        "calibration": 11,
+        "excluded": 0
+      }
+    },
+    "backup_restore_verified": true,
+    "runner_error": null,
+    "finalize_error": null,
+    "live_ledger_audit": {
+      "requests_match_attempts": true,
+      "all_attempts_have_runtime_snapshots": true,
+      "unknown_replayed": false
+    },
+    "software_verification": {
+      "python_passed": 190,
+      "python_skipped": 1,
+      "python_seconds": 84.55,
+      "review_cases": 23,
+      "new_prompt_regression": 1,
+      "ruff": "passed",
+      "frontend_build": "passed",
+      "mock_browser_cases": 10,
+      "real_backend_browser_cases": 1
+    },
+    "browser_during_load": {
+      "browser_errors": [],
+      "authentication": true,
+      "read_only_during_load": true,
+      "mobile_layout": true,
+      "preview_images": 0
+    },
+    "browser_real_asset": {
+      "browser_errors": [],
+      "authentication": true,
+      "read_only_during_load": true,
+      "mobile_layout": true,
+      "preview_images": 3
+    },
+    "overview_performance": {
+      "scope": "60 actual authenticated overview reads during inference; one process RSS, excludes containers; not a soak or monitoring-overhead test",
+      "median_ms": 2.086,
+      "p95_ms": 2.569,
+      "max_ms": 3.326,
+      "rss_mb_min": 136.28515625,
+      "rss_mb_max": 137.24609375
+    },
+    "pool_health_during": {
+      "captured_at": 1791468842.2239816,
+      "pool": {
+        "status": "degraded",
+        "inFlight": 24,
+        "maxInFlight": 512,
+        "healthySources": 132,
+        "totalSources": 133,
+        "routableSources": 132,
+        "quotaBlockedSources": 0
+      },
+      "cluster": {
+        "active": 24,
+        "peak": 255,
+        "maxInFlight": 512
+      }
+    },
+    "unchanged_candidate_replay": {
+      "task_id": "33b5edfd1872fba7bfb2ebed",
+      "source_modified": false,
+      "canonical_hash_equal": true,
+      "voxels": 331283,
+      "build_passed": true,
+      "render_passed": true,
+      "new_model_requests": 0,
+      "additional_calibration_tasks": 0,
+      "initial_harness_error": "Used exported brief instead of runtime task; corrected to persisted immutable task and phase"
+    }
   }
 }
