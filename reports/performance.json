@@ -1,6 +1,6 @@
 {
   "schema_version": "voxlush.performance.v1",
-  "status": "insufficient_data",
+  "status": "offline_scale_verified_not_soak_qualified",
   "environment": {
     "python": "3.12.3",
     "node": "20.19.0",
@@ -12,12 +12,12 @@
   "completed": [
     {
       "name": "python_unit_and_integration",
-      "result": "33 passed, 1 skipped",
+      "result": "140 passed, 1 skipped (optional private legacy archive)",
       "command": ".venv/bin/pytest -q"
     },
     {
       "name": "frontend_mock_browser",
-      "result": "9 passed",
+      "result": "10 passed",
       "command": "cd frontend && npm run test:e2e"
     },
     {
@@ -34,15 +34,163 @@
   "scale_targets": {
     "sample_metadata_rows": 100000,
     "event_rows": 1000000,
-    "concurrency_ladders": [128, 256, 512],
+    "concurrency_ladders": [
+      128,
+      256,
+      512
+    ],
     "overview_p95_ms_target": 500,
-    "observed": false,
-    "reason": "No large fixture or scheduler concurrency benchmark was run in this delivery pass."
+    "observed": true,
+    "reason": "Synthetic metadata benchmark with 100000 samples, 1000000 events and 300000 historical attempts; real scheduler dispatch to loopback at 128/256/512. This short run is not a long soak or paid API throughput test."
   },
   "real_api_soak": {
     "observed": false,
-    "model_requests": 0,
-    "reason": "Live endpoints were disabled and no paid or remote API calls were authorized."
+    "model_requests": 4,
+    "reason": "Four earlier authorized DeepSeek/GLM probes, not a soak. No additional model requests in this review fix; authorization exhausted."
   },
-  "recorded_at": "2026-10-08T00:00:00+08:00"
+  "recorded_at": "2026-10-08",
+  "scale_fixture": {
+    "schema_version": "voxlush.scale_fixture.v1",
+    "scope": "synthetic metadata and real loopback HTTP/SSE; no paid calls or quality evidence",
+    "python": "3.12.3",
+    "sqlite": "3.51.3",
+    "machine": "x86_64",
+    "rows": {
+      "samples": 100000,
+      "events": 1000000,
+      "attempts": 300000
+    },
+    "seed_seconds": 9.11,
+    "timings": {
+      "overview": {
+        "n": 60,
+        "median_ms": 10.162,
+        "p95_ms": 10.509,
+        "max_ms": 11.1
+      },
+      "page": {
+        "n": 60,
+        "median_ms": 0.221,
+        "p95_ms": 0.288,
+        "max_ms": 0.307
+      },
+      "coverage": {
+        "n": 60,
+        "median_ms": 0.747,
+        "p95_ms": 0.819,
+        "max_ms": 1.14
+      },
+      "ready": {
+        "n": 60,
+        "median_ms": 0.135,
+        "p95_ms": 0.182,
+        "max_ms": 0.345
+      },
+      "idle_tick": {
+        "n": 60,
+        "median_ms": 0.459,
+        "p95_ms": 0.527,
+        "max_ms": 15.125
+      },
+      "loaded_tick": {
+        "n": 3,
+        "median_ms": 1662.462,
+        "p95_ms": 3617.112,
+        "max_ms": 3617.112
+      },
+      "reserve": {
+        "n": 896,
+        "median_ms": 5.983,
+        "p95_ms": 11.57,
+        "max_ms": 38.934
+      },
+      "settle": {
+        "n": 896,
+        "median_ms": 4.547,
+        "p95_ms": 11.693,
+        "max_ms": 58.871
+      },
+      "response_apply": {
+        "n": 896,
+        "median_ms": 4.551,
+        "p95_ms": 10.645,
+        "max_ms": 110.279
+      }
+    },
+    "rss_query_window_mb": {
+      "min": 97.41,
+      "max": 97.65,
+      "last": 97.65
+    },
+    "peak_rss_mb": 140.86,
+    "recovery_ms": 0.182,
+    "loopback_ladders": [
+      {
+        "cap": 128,
+        "posts": 128,
+        "reserved_peak": 128,
+        "server_peak": 128,
+        "dispatch_tick_ms": 831.311,
+        "remaining_occupancy": 0,
+        "seconds": 7.172,
+        "rss_mb": 108.11
+      },
+      {
+        "cap": 256,
+        "posts": 256,
+        "reserved_peak": 256,
+        "server_peak": 256,
+        "dispatch_tick_ms": 1662.462,
+        "remaining_occupancy": 0,
+        "seconds": 15.667,
+        "rss_mb": 119.54
+      },
+      {
+        "cap": 512,
+        "posts": 512,
+        "reserved_peak": 512,
+        "server_peak": 512,
+        "dispatch_tick_ms": 3617.112,
+        "remaining_occupancy": 0,
+        "seconds": 27.106,
+        "rss_mb": 139.35
+      }
+    ],
+    "query_plans": {
+      "occupancy": [
+        {
+          "id": 3,
+          "parent": 0,
+          "notused": 201,
+          "detail": "SCAN attempts USING COVERING INDEX attempts_occupied"
+        }
+      ],
+      "rpm": [
+        {
+          "id": 3,
+          "parent": 0,
+          "notused": 46,
+          "detail": "SEARCH attempts USING COVERING INDEX attempts_recent (capacity_group=? AND started_at>?)"
+        }
+      ],
+      "coverage": [
+        {
+          "id": 7,
+          "parent": 0,
+          "notused": 62,
+          "detail": "SEARCH seed_stats USING INDEX sqlite_autoindex_seed_stats_1 (campaign_id=?)"
+        }
+      ]
+    }
+  },
+  "scale_fixture_command": ".venv/bin/python scripts/benchmark_store.py --output /tmp/voxlush-review-scale.json",
+  "measurement_limits": [
+    "60 overview/page/coverage/ready/idle-tick observations; idle ticks contain no new production workload.",
+    "Only one loaded dispatch tick at each cap. The three-cap aggregate is not a meaningful steady-state p95; use the individual dispatch_tick_ms values.",
+    "896 actual loopback HTTP/SSE calls per benchmark run, with 10-30 ms handler delays and periodic 429; generated source fixtures are terminated before geometry execution.",
+    "The final recorded run overlapped local pytest and browser validation on this shared host; timings are measurements of that run, not service guarantees.",
+    "RSS includes the benchmark Python process only; it excludes geometry/render containers and browsers. No long-duration memory or less-than-5-percent monitoring-overhead claim.",
+    "recovery_ms measures an empty pending-recovery query. Nonempty recovery and fault boundaries are verified separately in pytest.",
+    "No real-model accepted_unique/hour, tokens/accepted or paid soak qualification is available."
+  ]
 }

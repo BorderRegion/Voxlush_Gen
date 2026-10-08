@@ -10,15 +10,31 @@ The SQLite `Store` is the state authority, guarded by a data-root owner lock. AP
 
 ## Qualification remains separate from implementation
 
-The four-request DeepSeek/GLM probe is recorded as model evidence, but it did not produce a usable accepted asset or any human blind-review evidence. DeepSeek and GLM thinking-mode requests timed out; DeepSeek with thinking disabled returned source that failed pre-execution source validation, including a bounded repair. The model source was never executed for those two responses. Costs remain unknown because the endpoint did not provide a usable price settlement. Local rendering and mock review fixtures remain candidates/provisional results. Model qualification therefore stays false, independent of software test status. This follows the evidence boundary in `docs/04_DELIVERY_AND_ACCEPTANCE.md`.
+The four-request DeepSeek/GLM probe is recorded as model evidence, but it did not produce a usable accepted asset or any human blind-review evidence. DeepSeek and GLM thinking-mode requests timed out; DeepSeek with thinking disabled returned source that failed pre-execution source validation, including a bounded repair. The model source was not executed during the original four-request probe. The later offline review replay reached Docker for the first response and failed because an authored C call omitted its required floor argument; no geometry or preview was produced. Costs remain unknown because the endpoint did not provide a usable price settlement. Local rendering and mock review fixtures remain candidates/provisional results. Model qualification therefore stays false, independent of software test status. This follows the evidence boundary in `docs/04_DELIVERY_AND_ACCEPTANCE.md`.
 
 ## Deployment is not inferred from local readiness
 
 No production service, production data root, or external endpoint was changed. A service unit and release checklist are documented for a later authorized deployment; deployment and rollback evidence remain outstanding.
 
-## Explicit author naming rules after the model probe
+## Review correction: shared primitive contract v3
 
-The shared author/repair primitive contract now explicitly forbids private names (including `_` loop placeholders), rebinding `SEED`/`rng`, and replacing runtime primitives. The pre-execution validator is unchanged. The prompt/profile version advances to v2 to invalidate qualification for the previous prompt. This targets the two observed DeepSeek source failures; improvement has not been verified by a new real-model call.
+The v2 blanket ban on `_` names was excessive. Ordinary `_`, `_helper` and local arguments now pass; reflection, private runtime attributes, primitive replacement and rebinding/reseeding the supplied `SEED`/`rng` remain prohibited. Extraction and validation share a 256 KiB source limit. Landscape metadata permits zero floors, while architectural and frozen timber contracts retain their requirements. The same bounded evidence and primitive contract serve author, refinement and repair. Review JSON format failures retry only review and never rebuild the source.
+
+## Review correction: execution capacity and financial uncertainty
+
+Unknown execution and unknown cost are separate fields. An unresolved pool is isolated; other pools can use remaining authorized global capacity. A service completion/cancellation receipt or an explicit dispatch-to-termination upper-bound contract releases execution occupancy only. Unknown cost and request identity remain, and the original POST is not retried. A local timeout is not termination evidence. When unknown execution fills the whole global cap, more global dispatch cannot be promised until reconciliation. Role aliases are not capacity identities; shared services use one capacity key unless documented independent pools are configured.
+
+## Review correction: bounded recovery, coverage and schema 2
+
+Schema 2 is additive and transactional. Partial active-attempt indexes and transactionally maintained seed summaries replace history-wide scheduling/coverage aggregation. Family health uses consecutive failures with cooldown/probes; lifetime statistics remain available. Saved responses are applied by sample/revision/attempt identity, independent of old leases, in batches of at most 1024; later ticks drain restart leftovers. Missing settled-response files stay blocked without changing known billing or authorizing a new POST.
+
+## Review correction: quality identity and immutable history
+
+Qualification fingerprints cover model, routing identity, output parameters, completion/time budgets, prompt/rubric and geometry/runtime versions. Concurrency/RPM/TPM changes affect the frozen runtime snapshot and revision history, without changing quality identity. Initial samples and dispatched attempts retain their own snapshot hashes; archived provenance contains redacted snapshots. Historical schema-1 configurations cannot be reconstructed and are left unknown, not retroactively qualified.
+
+## Review correction: variant counting and archive decisions
+
+Exact occupied cells under translation and four rotations preserving +Y, ignoring material choice, identify variants. Explicit lineage also prevents extra independent counts. Full cube rotations and coarse quantization only find comparison candidates; upside-down or merely similar geometry is not automatically merged. One scheduler archive lock spans uniqueness decision, immutable manifest preparation and Store commit, including when two archive workers are configured. The Store rejects a conflicting manifest rather than silently changing its acceptance. Existing immutable assets are not rewritten by migration.
 
 ## Frozen legacy resource lint scope
 

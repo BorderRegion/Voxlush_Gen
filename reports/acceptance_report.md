@@ -6,20 +6,22 @@ Repository baseline: `4f4be137d3924b38cb7301c2c4a0081ff32a7c2a`.
 
 Environment: Python 3.12.3, Node 20.19.0, npm 10.8.2, Docker 29.1.3, APSW SQLite 3.51.3, Linux, `voxlush-sandbox:v1` (`sha256:50712f3b25dc`). The checked-in profile has `allow_live=false`, no author or visual endpoint, and global API cap 0. The acceptance data root was `/tmp/voxlush-acceptance-20261008`; it is outside the repository and is not production data.
 
-## Result Boundary
+## Result Boundary — review bb556101
 
-The implementation is available and the local debug path is exercised. After the debug pass, the automated Python suite reports **86 passed, 1 skipped** (the skipped test needs a private legacy archive). Ruff passed. The frontend build (`tsc -b` plus Vite) passed. The mock dashboard suite reports **9 passed**, and the real local backend/browser suite reports **1 passed**. New fault tests use loopback HTTP/SSE and injected filesystem/readonly-DB failures. Doctor returned `ready=true` with non-root, no-network, read-only root and read-only input checks. The external-root offline campaign run made **0 model requests**, ended with 0 samples and 0 assets, and produced a verified empty release. Backup and restore to a new root were verified; restored campaign counts matched.
+Review baseline: `bb55610119dc3abe816dad573e163878337534d5`. The original architecture is retained. R01–R13 implementation corrections are present, with the operating conditions below. The first new regression run against the old code yielded **10 failed, 3 passed**; the review package separately supplied seven reproduced observations. The final complete Python run is **140 passed, 1 skipped** in 91.39 s. The skip still requires the optional private legacy archive. Ruff and frontend build passed. Browser results are **10 mock transport tests passed** and **1 real local backend/browser test passed**. The latter executes isolated geometry and rendering, immutable archive, persistent controls, authenticated artifact access and formal export exclusion for a fixture.
 
-The separate capped real-model probe made **4 remote requests**: DeepSeek thinking mode timed out after 90 seconds, GLM thinking mode timed out after 180 seconds, and DeepSeek with thinking disabled returned source for two bounded author attempts. The first source was rejected by the pre-execution source validation for reserved author name `_`; the bounded repair was rejected for attempting to overwrite protected `SEED`. Neither source reached model-code execution or Docker. The probe produced **0 accepted assets, 0 previews, and 0 visual-model requests**. Request settlement remained unknown. No human blind review, 100-candidate quality calibration, 100k/1m scale run, production migration, deployment, or rollback was performed. These are not inferred from software tests or the capped probe.
+This pass made **zero additional paid model calls** and changed no production service or data root. The earlier four-request authorization is exhausted. The saved first complete DeepSeek source now passes ordinary underscore names and landscape `floors=0` validation. Its unchanged source reaches Docker and fails on `C('ground_slope', ...)` without the required `floor` argument. The second complete source still rebinds protected `SEED`, so it is not executed. The DeepSeek and GLM thinking-mode timeouts have no source body to replay. These results distinguish client validation, authored execution errors and protocol/time-budget failures; they do not measure visual design quality.
 
-| Request | Requested/reported model | Mode | Observed result |
+| Historical paid request | Requested/reported model | Original result | This review's offline replay |
 |---|---|---|---|
-| 1 | `deepseek-ai/deepseek-v4.1-flash` | Default thinking | First-content timeout at 90 s, no source body, `outcome_unknown` |
-| 2 | `z-ai/glm-5.3` | Default thinking | First-content timeout at 180 s, no source body, `outcome_unknown` |
-| 3 | `deepseek-ai/deepseek-v4.1-flash` | Thinking disabled | Complete response in 110.07 s; source validation rejected reserved `_` |
-| 4 | `deepseek-ai/deepseek-v4.1-flash` | Thinking disabled, bounded repair | Complete response in 60.16 s; source validation rejected rebinding `SEED`; `repair_exhausted` |
+| 1 | `deepseek-ai/deepseek-v4.1-flash`, thinking | 90 s first-content timeout, `outcome_unknown` | No body; no POST replay |
+| 2 | `z-ai/glm-5.3`, thinking | 180 s first-content timeout, `outcome_unknown` | No body; no POST replay |
+| 3 | `deepseek-ai/deepseek-v4.1-flash`, thinking disabled | Complete in 110.07 s; `_` rejected before execution | Name/metadata pass; Docker execution fails at a missing component floor argument |
+| 4 | Same, bounded author repair | Complete in 60.16 s; `SEED` replacement rejected | Protected-state rejection retained |
 
-All four requests have unknown settled cost; returned token usage does not establish a price. The two unknown-outcome requests were not replayed. Model labels are endpoint-reported and do not prove the upstream route. These probes used prompt v1; the new shared naming guidance uses prompt v2 and has only local verification. Raw responses, private configuration and browser evidence remain outside Git.
+All four settled costs remain unknown. Endpoint-reported model names do not prove the upstream route. The original probes used prompt v1; the current shared contract is v3 and has no new remote-model test. **Successful model geometry=0, model previews=0, real visual-model requests=0, human blind reviews=0, production accepted_unique=0.** Neither software fixtures nor synthetic accepted-counter records qualify a model. Raw responses, private configs, credentials, datasets and backups remain outside Git.
+
+The required short synthetic load was run with **100000 samples, 1000000 events and 300000 historical attempts**, plus loopback dispatch at **128/256/512**. Nonempty migration and asset/failed/unknown backup restoration passed in local test roots. This is not long-duration fault/soak, production migration, canary or rollback evidence. No production deployment or release tag exists.
 
 Evidence labels:
 
@@ -30,6 +32,52 @@ Evidence labels:
 - **R**: external-root offline acceptance run.
 - **M**: real model API evidence from the capped DeepSeek/GLM probe; it does not qualify a model.
 - **H**: human blind-review evidence (none in this report).
+
+## R01–R13 review acceptance
+
+Run all backend review regressions with `.venv/bin/pytest -q backend/tests/test_review_regressions.py`. Per-item commands below use `R="backend/tests/test_review_regressions.py"` as a shell variable. “Before” is the reviewed defect/reproduction, not a claim that every expanded test was run against the old commit. “After” reports local evidence only.
+
+| ID | Before → implemented correction | Minimal command / final result | Conditions and limits |
+|---|---|---|---|
+| R01 | 500 successes + 8 lifetime failures suppressed planning → consecutive failure health, cooldown and one probe; success resets the streak | `.venv/bin/pytest -q "$R" -k r01` — pass: productive family plans, cooldown expires, one probe, success restores availability | Fixture terminal outcomes; global budget and zero-yield stop rules remain |
+| R02 | Unknown attempts had no execution reconciliation → separate occupancy from billing, isolate affected pool, authenticated receipt command or documented server deadline | `.venv/bin/pytest -q "$R" -k r02` — pass: independent route dispatch, restart/deadline, ledger unchanged, no original retry, API evidence required | Local timeout never releases remote occupancy. A full global cap still requires termination evidence. The command records an operator/service confirmation; no provider-specific query/cancel integration was invented |
+| R03 | Author 128/visual 2 reduced global cap to 2; visual 0 disabled author → global/campaign and per-pool limits enforced independently; unavailable routes filtered before candidate LIMIT | `.venv/bin/pytest -q "$R" -k r03` — pass: independent caps, shared roles, legacy alias/role mapping and visual 0/unknown prefix | Same service shares one pool unless independent pools are explicitly configured; global authorization is always enforced |
+| R04 | Saved/settled response disappeared from recovery after callback cleared lease → durable application flag, identity matching and new local lease | `.venv/bin/pytest -q "$R" -k r04` — pass: saved/settled/consume/finish faults advance the original sample with one POST; 1025 responses drain across batches; missing/corrupt files preserve billing | Missing complete files require restoring the saved response; blocked state never authorizes another paid POST. Delayed reapplication is local |
+| R05 | Invalid review JSON incremented author revision → bounded review-format retry using unchanged build and render | `.venv/bin/pytest -q "$R" -k r05` — pass: no author revision/visual repair for malformed JSON; exhausted format retries await review; concrete visual defects still request author repair | No added calls on the normal successful path; sample/campaign request budgets still apply |
+| R06 | Global sequence selected only 8 of 64 natural seeds → family-local accepted/active deficit and planned-count tie break | `.venv/bin/pytest -q "$R" -k r06` — pass: production plan covers all 64 seeds under ordered and shuffled completion | Accepted outcomes injected for planner verification, not model quality evidence; rejected outcomes do not repay accepted debt |
+| R07 | Translation/yaw/recolor/lineage counted independently → exact material-independent occupancy under translation and four +Y rotations plus explicit lineage | `.venv/bin/pytest -q "$R" -k r07` — pass: synthetic accepted-counter branches count variants once; coarse collision and upside-down design stay distinct; actual fixture DB/manifest/export agree | Coarse and full-cube hashes are candidates only. Fixtures remain unqualified and excluded from formal training; rejected duplicates remain archived and are omitted from export. Existing immutable assets are not rewritten |
+| R08 | `_` rejected, size limits disagreed, full error trees entered prompts → safe local names, common 256 KiB bound, read-only primitive/seed protections and private runtime guards, bounded root-cause view and complete local evidence | `.venv/bin/pytest -q "$R" -k r08` — pass: safe/unsafe syntax, private runtime access and alias reseeding rejection, size edge, feedback bound, natural metadata; saved response replay reaches real Docker | Landscape floors=0 no longer inherits the architecture minimum. Missing component floor in saved source still fails; SEED repair still fails. No positive model asset or aesthetic claim |
+| R09 | Repeated old SSE timestamps kept showing live → only increasing server_time refreshes snapshot age | `cd frontend && npm run test:e2e -- --grep R09` — pass in the 10-test browser suite; repeated old snapshots age out, fresh idle timestamps remain live | Connection, snapshot age and task progress remain separate; browser clock is virtualized in the regression |
+| R10 | Occupancy/RPM/coverage depended on historical scans; scale evidence absent → partial active indexes, pool/time range index, transactional seed summaries | `.venv/bin/python scripts/benchmark_store.py --output /tmp/voxlush-review-scale.json` — pass: 100k/1m/300k, real 128/256/512 loopback dispatch, capped peaks, zero final occupancy | Short synthetic workload only. Loaded ticks include reservation writes; no geometry workers or real-model throughput, long soak or monitoring-overhead qualification |
+| R11 | Provider caps polluted qualification hash; no frozen config history → quality identity separated from immutable redacted runtime/config revisions | `.venv/bin/pytest -q "$R" -k r11` — pass: cap/RPM preserve quality hash, temperature changes it, samples keep initial snapshot, API hides secret/route values | Model/output/protocol/time-budget/prompt/rubric/runtime changes invalidate identity. Old configurations cannot be reconstructed and remain unqualified |
+| R12 | Two archives could publish accepted manifests before DB demoted the loser → one archive decision lock through manifest publication and commit; DB rejects conflicting decisions | `.venv/bin/pytest -q "$R" -k r12` — pass for simultaneous identical and translated geometry at archive_workers=2; one independent candidate, one duplicate, manifests equal DB | One Store owner is required. Lock serializes the archive stage; existing inconsistent historical manifests are not silently rewritten |
+| R13 | 64 older blocked-campaign tasks filled LIMIT before eligibility checks → campaign dispatch eligibility inside SQL before LIMIT | `.venv/bin/pytest -q "$R" -k r13` — pass: healthy activity selected immediately; local drain still available | Running/cap/budget eligibility applies to network work; blocked/degraded/draining local finalization remains possible |
+
+### Scale observations and scope
+
+The exact sanitized run is in [performance.json](performance.json); the reproducible script uses a temporary root and loopback only. The final run overlapped local pytest/browser work on the shared host. Query measurements comprise 60 observations each; concurrency ladders comprise one dispatch tick per cap, so their three-value aggregate is not a steady-state tick p95. SQL occupancy uses the partial active-only index, RPM uses a pool/time range, and coverage scans catalog-sized summaries.
+
+| Operation | p95 ms |
+|---|---:|
+| overview | 10.509 |
+| page | 0.288 |
+| coverage | 0.819 |
+| ready | 0.182 |
+| reserve | 11.57 |
+| settle | 11.693 |
+| response_apply | 10.645 |
+| idle_tick | 0.527 |
+
+| Loopback cap / observed server peak | Dispatch tick ms | HTTP/SSE drain seconds | Occupancy after settlement |
+|---|---:|---:|---:|
+| 128 / 128 | 831.311 | 7.172 | 0 |
+| 256 / 256 | 1662.462 | 15.667 | 0 |
+| 512 / 512 | 3617.112 | 27.106 | 0 |
+
+Query-window RSS: 97.41–97.65 MiB; process peak RSS: 140.86 MiB. Per run:896 loopback requests, zero external model requests. No accepted_unique/hour or tokens/accepted result can be inferred.
+
+
+Recovery timing in the benchmark is an empty pending query. Nonempty recovery evidence comes from the callback-boundary, 1025-response, unknown-restart, migration and `test_nonempty_backup_restores_assets_failed_and_unknown_requests` regressions. The latter verifies the archived fixture, failed/unknown attempts and request/cost/occupancy counters after backup restoration to a new root. The schema-1 migration fixture verifies preserved unknown reservations, populated seed summaries and SQLite integrity. Neither test modifies production data.
 
 ## T01-T32
 
@@ -45,16 +93,16 @@ Evidence labels:
 | T08 | Pass | `test_post_disconnect_keeps_unknown_budget_and_rejects_retry` sends one loopback POST, retains unknown cost/reservation/occupancy and rejects retry; client disconnect behavior also passes. | N,L |
 | T09 | Pass | `test_durable_response_recovers_after_restart_without_second_post` closes/reopens the Store after saving a complete response, restores build readiness and actual cost, and observes exactly one POST. | N,L,F |
 | T10 | Pass | `test_fixture_archive_is_never_accepted_and_commit_recoverable`, `test_real_build_render_archive_export_backup_restore`, and integrity checks cover rename/commit recovery and exact-once registration for local artifacts. | L,F |
-| T11 | Partial | `test_failed_finish_preserves_complete_response_and_other_work_continues` injects callback exception/cancellation, preserves complete response and billing, and completes another sample. Long-running loop continuation is not separately tested. | N,L,F |
+| T11 | Partial | `test_failed_finish_preserves_complete_response_and_other_work_continues` injects callback exception/cancellation, preserves complete response and billing, and completes another sample. R04 additionally verifies advancement of the original failed sample at all four response boundaries; long-running soak remains untested. | N,L,F |
 | T12 | Partial | `test_persistent_response_storage_failure_settles_and_stops_paid_dispatch` and `test_readonly_store_retains_response_and_stops_dispatch_until_recovery` cover request/response write failures, conservative accounting, blocked dispatch and saved-response recovery. Disk-near-reserve behavior remains unverified. | N,L,F |
 | T13 | Pass | `test_actual_isolation_host_secret_network_root_and_recovery` exercises timeout, memory, file/output bounds and confirms a later build continues. | L |
 | T14 | Pass | `test_single_store_owner_and_stale_callback_are_enforced` rejects a late callback after a newer revision is claimed and preserves its lease. | L |
 | T15 | Partial | Browser duplicate-click/uncertain-command tests and real persistent pause/reload pass. Saved-response restart preserves request/cost accounting; unknown retry is rejected. A full command/process-restart lifecycle remains unverified. | N,B,L |
 | T16 | Unverified | No slow/crashed renderer backpressure run was recorded. | - |
 | T17 | Unverified | No optional pool-health outage with successful calls was recorded. | - |
-| T18 | Partial | `test_bad_endpoint_is_isolated_without_repair_loop` covers loopback 401/400/402/insufficient-quota isolation. No remote model endpoint was tested. | N,L |
+| T18 | Partial | `test_bad_endpoint_is_isolated_without_repair_loop` covers loopback 401/400/402/insufficient-quota isolation. No real endpoint auth/quota failure was reproduced. | N,L |
 | T19 | Partial | `test_adding_visual_endpoint_resumes_waiting_reviews` requeues awaiting_visual after configuring an image-capable endpoint without sending a request. Real local browser evidence shows fixture/provisional visual output and empty formal export; actual image capability remains unqualified. | L,B |
-| T20 | Partial | `test_candidate_signature_ignores_translation_rotation_and_materials` covers candidate rotation/translation signatures; a full same-lineage archive/export material-derivative case was not run. | F |
+| T20 | Partial | R07 covers exact translation/yaw/material/lineage accounting, coarse collisions, inverted designs and actual fixture archive/export consistency; no qualified model variant set exists. | F |
 | T21 | Pass | `test_real_natural_and_ruin_contracts` builds islands, cave and ruin contracts and renders them without the wooden-house gate. | L |
 | T22 | Partial | Frozen wooden negative checks run in `test_opening_overdraw_and_frozen_legacy_gate`; the three private saved failures were skipped because the private archive was not supplied. | L |
 | T23 | Pass | `test_opening_overdraw_and_frozen_legacy_gate` rejects filled openings and a missing required room, including skeleton/final contract differences. | L |
@@ -64,9 +112,9 @@ Evidence labels:
 | T27 | Pass | Export grouping and leakage checks are covered by `test_source_and_geometry_and_lineage_groups_join` and deterministic export tests. | F |
 | T28 | Pass | Path traversal, symlink, corrupted artifact and inert script-text tests pass; downloads are restricted to registered artifact paths. | F,B |
 | T29 | Unverified | No run reached a global target or exhausted a real budget with surplus accounting. | - |
-| T30 | Partial | Theme catalog and coverage planning are tested, but a live zero-output theme alongside healthy themes was not run. | L |
+| T30 | Partial | R01/R06 verify historical success, consecutive-failure cooldown/probes and all 64 natural seeds under production planning. Real-model coverage and sustained mixed healthy/failing themes remain unqualified. | L |
 | T31 | Unverified | No long-lived zero-output stop-loss run was recorded. | - |
-| T32 | Pass | `test_backup_restore_uses_sqlite_snapshot_and_preserves_assets`, the full local fixture integration test, and the external-root acceptance run verify backup, new-path restore, verification, and matching campaign counts. | F,L,R |
+| T32 | Pass | `test_backup_restore_uses_sqlite_snapshot_and_preserves_assets`, the full local fixture integration test, and the external-root acceptance run verify backup, new-path restore, verification, and matching campaign counts. The review adds an archived asset together with failed/unknown requests and verifies restored financial/execution counters. | F,L,R |
 
 ## Acceptance Run Details
 
@@ -76,4 +124,4 @@ The local real fixture uses an islands scene and is explicitly marked `record_ki
 
 ## Remaining Release Gates
 
-Model qualification requires a configured, authorized endpoint, actual image-capable calls, a pre-recorded profile, and human blind review. Scale qualification requires the specified 100,000 sample / 1,000,000 event fixtures and concurrency/latency measurements. Deployment requires an authorized production root, migration, canary, restart recovery and rollback evidence. All three remain open.
+Model qualification remains open: renewed explicit budget, successful ordinary/complex/natural author-to-image-review chains, recorded profiles and human blind review are required. Short synthetic scale targets were exercised; long-duration fault/soak, real accepted throughput and monitoring overhead remain open. Deployment remains open: pinned release, authorized production root, verified pre-migration backup, schema-2 migration, canary and tested rollback. The older schema-1 binary requires restoring its pre-upgrade database backup. No production migration, rollback or release tag is claimed.

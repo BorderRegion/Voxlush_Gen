@@ -1,14 +1,14 @@
 {
   "schema_version": "voxlush.model_qualification.v1",
   "status": "unqualified_model_profile",
-  "profile_hash": "01442690ef76a10ae6b1968f183063d6467d9b58ee7ff785bc9fe0d57d575f66",
+  "profile_hash": "806a3d83e2a8bdf9e8999407e1db3ffda4b564df9eb2633846c52e79a3e73951",
   "config": {
     "allow_live": false,
     "author_endpoint": null,
     "visual_endpoint": null,
     "global_api_cap": 0,
     "qualification_flag": false,
-    "prompt_version": "voxlush.prompt.v2"
+    "prompt_version": "voxlush.prompt.v3"
   },
   "budget": {
     "model_requests": 4,
@@ -37,9 +37,9 @@
     "same_task_quality_noninferior": true,
     "cost_or_throughput_improvement": true
   },
-  "reason": "The authorized four-request DeepSeek/GLM probe produced no accepted asset: two thinking-mode requests had unknown outcomes, and two complete DeepSeek responses failed pre-execution source validation. All settled costs remain unknown. No visual-model or human blind-review evidence exists. The revised prompt-v2 profile has not been tested against a real model.",
+  "reason": "The four-request probe budget is exhausted. Offline replay of the first complete DeepSeek source now passes name and landscape-floor metadata validation, reaches Docker, then fails because an authored C call omits its required floor argument. The repair still attempts to rebind SEED. Neither thinking timeout has a source body. No successful model geometry, preview, image-model review or human calibration exists. Prompt v3 has no new remote-model test.",
   "recorded_at": "2026-10-08",
-  "profile_scope": "Checked-in offline configuration with prompt v2; the separate prompt-v1 probe profiles below remain unqualified.",
+  "profile_scope": "Checked-in offline configuration with prompt v3 and revised validator identity; historical prompt-v1 probes below remain unqualified.",
   "probe_outcomes": {
     "response_complete": 2,
     "outcome_unknown": 2,
@@ -143,5 +143,33 @@
       ]
     }
   ],
-  "evidence_scope": "Sanitized facts from locally retained raw responses and attempt records; private configurations, credentials, source responses, logs, screenshots and data are excluded from Git."
+  "evidence_scope": "Historical paid probe facts plus offline replay of unchanged locally retained responses. Raw responses, private configuration, credentials, data and logs remain outside Git. Original probe_outcomes describe the original probe, not the later replay.",
+  "offline_review_replay": {
+    "paid_requests": 0,
+    "raw_sources_modified": false,
+    "first_complete_deepseek": {
+      "source_decode": "passed",
+      "landscape_floors_zero": "allowed",
+      "sandbox_execution_attempted": true,
+      "sandbox_execution_succeeded": false,
+      "failure": "C(ground_slope) omitted required floor argument",
+      "geometry_artifacts": 0,
+      "previews": 0
+    },
+    "repair_deepseek": {
+      "source_decode": "rejected: Cannot replace primitive state: SEED",
+      "sandbox_execution_attempted": false
+    },
+    "deepseek_thinking": {
+      "replayable_body": false,
+      "original_outcome": "outcome_unknown"
+    },
+    "glm_thinking": {
+      "replayable_body": false,
+      "original_outcome": "outcome_unknown"
+    },
+    "accepted_unique": 0,
+    "visual_model_requests": 0,
+    "human_reviews": 0
+  }
 }

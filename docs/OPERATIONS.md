@@ -10,6 +10,22 @@ The example profile intentionally has no endpoints and cannot create live reques
 
 Use the dashboard or CLI campaign commands. They submit idempotent commands to the API; do not edit `runtime.db` directly. Pause stops further campaign dispatch while allowing local work to settle; drain stops new paid work and lets returned results finish local stages. For normal shutdown, drain active campaigns and then stop the process. `emergency_stop` can leave an external request with unknown billing/outcome; inspect the attempt record before retrying.
 
+## Unknown execution reconciliation
+
+Inspect attempt details in `GET /api/v1/samples/<sample_id>`. An `outcome_unknown` request keeps its financial reservation and blocks further dispatch to the same capacity pool. Independent routes can continue within the remaining global cap. If unknown execution occupies the full global authorization, obtain termination evidence before expecting new dispatch.
+
+After the service confirms completion or cancellation, use:
+
+```bash
+voxlush --config <config> campaign reconcile_execution <campaign_id> \
+  --attempt-id <attempt_id> --outcome cancelled \
+  --evidence 'service cancellation receipt reference'
+```
+
+This releases execution occupancy, retains unknown cost, and does not retry the original POST. An endpoint may instead configure `server_max_execution_seconds` together with `execution_contract_ref`, but only if the service guarantees termination within that duration **from dispatch**, including queue time. Client idle/total timeouts do not supply that guarantee.
+
+Roles on one service share capacity by default. Configure `capacity_pool` only for documented independent pools; roles sharing a pool must agree on cap/RPM/TPM. Config revision history is available from authenticated `GET /api/v1/config/history?campaign_id=<id>`; `before=<revision>` pages older records. Pure cap changes do not invalidate model qualification.
+
 ## Backup and restore
 
 1. Pause or drain the campaign and wait for leases and pending archive commits to settle.
@@ -23,6 +39,12 @@ The automated backup/restore integration test restores to a new path and verifie
 ## Import and release
 
 Run legacy import in dry-run mode first. Review counts, path/coordinate warnings and duplicates; a repeated import must be idempotent. Legacy completed records remain `legacy_complete_unverified`. Export creates an immutable release with a dataset card and deterministic ordering; run `verify-release` before distributing it. Fixture/provisional records are excluded from formal accepted counts.
+
+## Schema 1 to 2 migration
+
+The first new Store open upgrades schema 1 transactionally to schema 2, adding response application, capacity reconciliation, config history, exact upright dedup and seed summary records. Back up with the old release before opening a production database with the new release. Legacy alias mapping uses role plus alias; verify the configured route is the historical route during migration. Unknown historical snapshots remain unknown. The migration preserves existing assets, billing and unknown occupancy; it does not retroactively repair old immutable manifests or certify old accepted records.
+
+The nonempty migration fixture preserves unknown reservations and passes SQLite integrity checking; a separate nonempty backup/restore fixture includes an archived asset plus failed and unknown requests. These are local test roots. No production migration was run. The previous release only reads schema 1, so rollback requires its verified pre-migration backup restored to a new root; pointing the old binary at schema 2 is not a supported rollback.
 
 ## Updates and rollback
 
