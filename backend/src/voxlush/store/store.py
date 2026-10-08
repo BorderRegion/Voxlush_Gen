@@ -11,6 +11,7 @@ from pathlib import Path
 from voxlush.store import sqlite as sqlite3
 from voxlush.themes.planner import FAMILIES, SEEDS, family_targets
 from voxlush.store.migrations import migrate
+from voxlush.inference import execution_state
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS campaigns (
@@ -246,6 +247,8 @@ class Store:
                             reason = "sample_not_found"
                         elif c["state"] != "running":
                             reason = "campaign_not_running"
+                        elif s["reason_code"] == "phase_recovery_required":
+                            reason = "phase_recovery_required"
                         elif s["status"] not in ("rejected", "blocked", "deferred") or s["lease_token"]:
                             reason = "sample_not_retryable"
                         elif db.execute("SELECT 1 FROM attempts WHERE attempt_id=? AND status='complete' AND response_applied=0",(s['attempt_id'],)).fetchone():
@@ -290,7 +293,8 @@ class Store:
                 (task["sample_id"],task["campaign_id"],task["theme_seed_id"],task.get("theme_family_id","unknown"),task["scene_type"],dump(task),"build" if source_path else "author","ready",source_path,now,now,now,task.get("lineage_group",task["sample_id"])))
             if db.execute("SELECT changes()").fetchone()[0]:
                 db.execute("UPDATE campaigns SET sequence=sequence+1 WHERE campaign_id=?",(task["campaign_id"],))
-                db.execute("UPDATE samples SET runtime_config_hash=? WHERE sample_id=?",(self.runtime_config_hash,task['sample_id']))
+                db.execute("UPDATE samples SET runtime_config_hash=?,creative_phase=? WHERE sample_id=?",
+                           (self.runtime_config_hash,'skeleton' if task.get('generation_mode') == 'two_stage' else 'final',task['sample_id']))
                 self._event(db,task["campaign_id"],"sample_created",{},task["sample_id"])
         return self.sample(task["sample_id"])
 
@@ -321,7 +325,7 @@ class Store:
 
     def ready(self, stages, limit=32, allow_network=True):
         marks = ",".join("?" for _ in stages)
-        network = "s.stage IN ('author','refine','review') AND c.state='running' AND c.requests_used<c.request_limit AND c.api_cap>0" if allow_network else "0"
+        network = "s.stage IN ('author','refine','review') AND c.state='running' AND c.requests_used<c.request_limit AND c.api_cap>0 AND (SELECT COUNT(*) FROM attempts a WHERE a.campaign_id=c.campaign_id AND a.occupancy=1)<c.api_cap" if allow_network else "0"
         local = "s.stage IN ('build','render','archive') AND c.state IN ('running','draining','completed','blocked','degraded')"
         return self.rows(f"SELECT s.* FROM samples s JOIN campaigns c USING(campaign_id) WHERE s.status IN ('ready','deferred') AND s.next_ready_at<=? AND s.stage IN ({marks}) AND (({network}) OR ({local})) ORDER BY s.updated_at LIMIT ?",
                          [time.time(),*stages,max(0,min(limit,1024))])
@@ -386,7 +390,7 @@ class Store:
             a = db.execute("SELECT * FROM attempts WHERE attempt_id=?",(attempt_id,)).fetchone()
             if not a or a["status"] != "running":
                 return False
-            unknown = result.get("error_category") == "outcome_unknown"
+            unknown = execution_state(result) == "execution_unknown"
             cost = result.get("cost")
             release = 0 if cost is None else a["reserved_cost"] or 0
             billing = "unknown_reserved" if cost is None else "actual"
@@ -398,8 +402,15 @@ class Store:
             self._event(db,a["campaign_id"],"settled",{"attempt_id":attempt_id,"billing_status":billing},a["sample_id"])
             return True
 
+    def set_build_path(self, claim, path):
+        with self.transaction() as db:
+            db.execute("UPDATE samples SET build_path=? WHERE sample_id=? AND revision=? AND lease_token=?",
+                       (Path(path).relative_to(self.root).as_posix(),claim['sample_id'],claim['revision'],claim['lease_token']))
+            if not db.execute("SELECT changes()").fetchone()[0]:
+                raise ValueError("stale build lease")
+
     def finish(self, claim, *, stage=None, status="ready", reason=None, changes=None, delay=0, response_applied=True):
-        allowed = {"source_path","source_hash","build_path","review_json","geometry_repairs","visual_repairs","review_format_retries","transport_retries","error_fingerprint","identical_errors","revision","preview_artifact_id"}
+        allowed = {"source_path","source_hash","build_path","review_json","geometry_repairs","visual_repairs","review_format_retries","transport_retries","error_fingerprint","identical_errors","revision","preview_artifact_id","creative_phase","local_retries"}
         changes = changes or {}
         changes = dict(changes)
         for key in ("source_path", "build_path"):
@@ -421,7 +432,7 @@ class Store:
                     db.execute("UPDATE attempts SET response_applied=1 WHERE attempt_id=? AND revision=? AND role=?",(claim['attempt_id'],claim['revision'],claim['stage']))
                 if status in ('accepted','provisional_pass','rejected'):
                     self._family_outcome(db,claim,status != 'rejected')
-                self._event(db,claim["campaign_id"],"transition",{"stage":updates["stage"],"status":status,"reason_code":reason},claim["sample_id"])
+                self._event(db,claim["campaign_id"],"transition",{"stage":updates["stage"],"status":status,"reason_code":reason,"creative_phase":changes.get("creative_phase",claim.get("creative_phase"))},claim["sample_id"])
         return ok
 
     def _family_outcome(self, db, sample, success):
@@ -449,7 +460,7 @@ class Store:
         # Restart batches beyond the first 1024 are processed by later ticks.
         # Never reclaim an HTTP request owned by the current scheduler.
         eligibility = "(s.status='blocked' AND s.reason_code IN ('finish_callback_failed','response_pending','response_recovery_failed') AND s.next_ready_at<=?) OR (s.status='running' AND COALESCE(s.lease_owner,'')!=?)" if pending_only else "s.status IN ('running','blocked')"
-        running = self.rows("SELECT a.* FROM attempts a JOIN samples s ON s.attempt_id=a.attempt_id AND s.revision=a.revision AND s.stage=a.role WHERE a.response_applied=0 AND ("+eligibility+") LIMIT 1024",(time.time(),self.owner) if pending_only else ())
+        running = self.rows("SELECT a.* FROM attempts a JOIN samples s ON s.attempt_id=a.attempt_id AND s.revision=a.revision AND s.stage=a.role WHERE a.response_applied=0 AND COALESCE(s.reason_code,'')!='phase_recovery_required' AND ("+eligibility+") LIMIT 1024",(time.time(),self.owner) if pending_only else ())
         replay = []
         for a in running:
             with self.transaction() as db:

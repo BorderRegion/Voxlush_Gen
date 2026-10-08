@@ -161,6 +161,10 @@ def run(
         if reason or overflow.is_set():
             raise SandboxError(reason or "sandbox_output_limit", stderr)
         if process.returncode != 0:
+            if process.returncode == 125:
+                raise SandboxError("sandbox_unavailable", stderr)
+            if process.returncode in (126, 127):
+                raise SandboxError("sandbox_image_version_mismatch", stderr)
             raise SandboxError("sandbox_execution_failed", stderr)
         artifacts = unpack(b"".join(chunks), max_output)
     return artifacts, {

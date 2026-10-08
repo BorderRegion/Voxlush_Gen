@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import json
 import shutil
+import tempfile
 import time
 from pathlib import Path
 from voxlush.core.config import Config
@@ -11,9 +12,11 @@ from voxlush.core.files import atomic_json,digest
 from voxlush.store.store import Store
 from voxlush.store.sqlite import OperationalError
 from voxlush.inference.client import PoolClient
+from voxlush.inference import execution_state
 from voxlush.themes.planner import runtime_task, task_for
 from voxlush.pipeline.prompts import author_messages,extract_source,review_messages,parse_review
 from voxlush.voxel.adapter import build,render
+from voxlush.voxel.sandbox import SandboxError
 from voxlush.dataset.archive import Archive
 from voxlush.voxel.canonical import load_and_validate
 from voxlush.dataset.dedup import features_from_asset
@@ -134,6 +137,8 @@ class Scheduler:
             self.backpressure = True
         elif local_backlog<low:
             self.backpressure = False
+        if self.store.one("SELECT 1 FROM samples WHERE status IN ('deferred','blocked') AND stage IN ('build','render') AND reason_code IN ('sandbox_unavailable','sandbox_image_version_mismatch','build_failed','render_failed') LIMIT 1"):
+            self.backpressure = True
         self.adapt()
         for c0 in self.store.campaigns():
             c = self.store.campaign(c0["campaign_id"])
@@ -285,7 +290,7 @@ class Scheduler:
         try:
             if self.storage_failed:
                 raise OSError("response storage is unavailable")
-            task = claim["task"]
+            task = {**claim["task"], "phase": claim["creative_phase"]}
             directory = self.work_dir(claim)
             if claim["stage"] == "review":
                 messages,_ = review_messages(task,Path(claim["build_path"]))
@@ -293,8 +298,6 @@ class Scheduler:
                 source = Path(claim["source_path"]).read_text() if claim.get("source_path") else None
                 feedback_path = directory.parent/"feedback.json"
                 feedback = json.loads(feedback_path.read_text()) if feedback_path.exists() else None
-                if claim["stage"] == "refine" or claim["revision"] > 1:
-                    task = {**task,"phase":"final"}
                 messages = author_messages(task,source,feedback,refine=claim["stage"] == "refine")
             request_path = self.store.root/claim["attempt"]["response_path"].replace(".json",".request.json")
             self.persist_json(request_path,{"messages":messages,"endpoint_alias":endpoint.alias,"model":endpoint.model,"parameters":endpoint.parameters})
@@ -322,7 +325,7 @@ class Scheduler:
                     self.persist_json(response_path,result)
                 except OSError:
                     pass
-            reason = "outcome_unknown" if result.get("error_category") == "outcome_unknown" else "storage_unavailable" if self.storage_failed else "finish_callback_failed"
+            reason = "outcome_unknown" if execution_state(result) == "execution_unknown" else "storage_unavailable" if self.storage_failed else "finish_callback_failed"
             try:
                 self.store.settle(claim["attempt_id"],result)
                 self.store.finish(claim,status="blocked",reason=reason,delay=1,response_applied=False)
@@ -338,6 +341,9 @@ class Scheduler:
 
     async def consume(self,claim,result):
         category = result.get("error_category")
+        if execution_state(result) == "execution_unknown":
+            self.store.finish(claim,status="blocked",reason="outcome_unknown")
+            return
         if not result.get("response_complete"):
             if category in ("endpoint_auth","endpoint_configuration","endpoint_quota"):
                 endpoint = self.config.visual if claim["stage"] == "review" else self.config.author
@@ -345,8 +351,6 @@ class Scheduler:
                 self.store.finish(claim,status="blocked",reason=category)
             elif category in ("not_sent","rate_limited","service_busy") and claim["transport_retries"]<self.config.transport_retries:
                 self.store.finish(claim,status="deferred",reason=category,delay=result.get("retry_after") or 2**(claim["transport_retries"]+1),changes={"transport_retries":claim["transport_retries"]+1})
-            elif category == "outcome_unknown":
-                self.store.finish(claim,status="blocked",reason=category)
             else:
                 if claim['stage'] == 'review':
                     self.retry_review(claim,category or 'incomplete_review')
@@ -381,7 +385,7 @@ class Scheduler:
             except OSError:
                 self.storage_failed = True
                 raise
-            self.store.finish(claim,stage="build",changes={"source_path":str(source_path),"source_hash":hashlib.sha256(source.encode()).hexdigest()})
+            self.store.finish(claim,stage="build",changes={"source_path":str(source_path),"source_hash":hashlib.sha256(source.encode()).hexdigest(),"local_retries":0})
 
     def retry_review(self, claim, reason):
         used = claim['review_format_retries']
@@ -402,40 +406,56 @@ class Scheduler:
         directory = self.work_dir(claim)
         self.persist_json(directory/'repair_evidence.json',evidence)
         self.persist_json(directory.parent/"feedback.json",evidence)
-        self.store.finish(claim,stage="author",reason="visual_repair" if visual else "geometry_repair",changes={key:claim[key]+1,"error_fingerprint":fingerprint,"identical_errors":identical,"revision":claim["revision"]+1})
+        self.store.finish(claim,stage="author",reason="visual_repair" if visual else "geometry_repair",changes={key:claim[key]+1,"error_fingerprint":fingerprint,"identical_errors":identical,"revision":claim["revision"]+1,"local_retries":0})
+
+    def local_failure(self, claim, reason, *, retryable=True):
+        """Environment work stays on the same source/revision and never costs a POST."""
+        used = claim["local_retries"]
+        retry = retryable and used < 2
+        self.store.finish(claim,status="deferred" if retry else "blocked",reason=reason,
+                          delay=2**(used+1) if retry else 0,changes={"local_retries":used+1})
 
     async def local(self,claim):
         try:
             directory = self.work_dir(claim)
-            task = claim["task"]
+            task = {**claim["task"], "phase": claim["creative_phase"]}
             if claim["stage"] == "build":
-                if task["generation_mode"] == "two_stage" and claim["geometry_repairs"] == 0 and claim["revision"] == 1:
-                    task = {**task,"phase":"skeleton"}
-                else:
-                    task = {**task,"phase":"final"}
+                directory = Path(claim["build_path"]) if claim.get("build_path") and Path(claim["build_path"]).is_relative_to(directory) else directory
                 result = None
                 if (directory/"geometry.json").exists():
                     try:
                         canonical = await asyncio.to_thread(load_and_validate,directory)
                         cached = json.loads((directory/"geometry.json").read_text())
-                        if cached.get("canonical_voxel_hash") == canonical["canonical_voxel_hash"]:
+                        if (cached.get("canonical_voxel_hash") == canonical["canonical_voxel_hash"]
+                                and cached.get("phase") == task["phase"]):
                             result = cached
                     except (ValueError,OSError,KeyError):
                         pass
                 if result is None:
                     # Recover partial local work into a new isolated destination.
-                    output = directory if not (directory/"sample.json").exists() else directory/"retry-build"
-                    result = await asyncio.to_thread(build,Path(claim["source_path"]).read_text(),task,output)
+                    output = directory
+                    if any((directory/name).exists() for name in ("sample.json","voxels.npz","geometry.json")):
+                        output = Path(tempfile.mkdtemp(prefix="retry-build-",dir=self.work_dir(claim)))
+                    # Persist the local destination before execution, so restart
+                    # can inspect it without overwriting the previous evidence.
+                    self.store.set_build_path(claim,output)
+                    result = await asyncio.to_thread(build,Path(claim["source_path"]).read_text(),task,output,self.config.model_dump())
                     directory = output
                 if not result.get("passed"):
-                    self.repair(claim,result)
+                    reasons = {v.get("rule") for v in result.get("violations",[])}
+                    environment = reasons & {"sandbox_unavailable","sandbox_image_version_mismatch"}
+                    if environment:
+                        reason = sorted(environment)[0]
+                        self.local_failure(claim,reason,retryable=reason == "sandbox_unavailable")
+                    else:
+                        self.repair(claim,result)
                 elif task["phase"] == "skeleton":
-                    self.store.finish(claim,stage="refine",changes={"build_path":str(directory),"revision":claim["revision"]+1})
+                    self.store.finish(claim,stage="refine",changes={"build_path":str(directory),"revision":claim["revision"]+1,"creative_phase":"final","local_retries":0})
                 else:
-                    self.store.finish(claim,stage="render",changes={"build_path":str(directory)})
+                    self.store.finish(claim,stage="render",changes={"build_path":str(directory),"local_retries":0})
             elif claim["stage"] == "render":
                 directory = Path(claim["build_path"])
-                await asyncio.to_thread(render,directory)
+                await asyncio.to_thread(render,directory,self.config.model_dump())
                 ids = []
                 for name in ("view_a.webp","view_b.webp","contact.webp"):
                     p = directory/"previews"/name
@@ -444,17 +464,20 @@ class Scheduler:
                     geometry = json.loads((directory/"geometry.json").read_text())
                     review = {"status":"pass","passed":True,"input_voxel_sha256":geometry["canonical_voxel_hash"],"image_sha256":[digest(directory/"previews"/f"view_{v}.webp") for v in ("a","b")],"evidence_kind":"fixture_mock","profile_qualified":False,"observed_tags":[]}
                     self.persist_json(directory/"review.json",review)
-                    self.store.finish(claim,stage="archive",changes={"preview_artifact_id":ids[0],"review_json":json.dumps(review)})
+                    self.store.finish(claim,stage="archive",changes={"preview_artifact_id":ids[0],"review_json":json.dumps(review),"local_retries":0})
                 else:
-                    self.store.finish(claim,stage="review",changes={"preview_artifact_id":ids[0]})
+                    self.store.finish(claim,stage="review",changes={"preview_artifact_id":ids[0],"local_retries":0})
             elif claim["stage"] == "archive":
                 async with self.archive_lock:
                     await self.archive_asset(claim)
         except Exception as e:
-            if claim["stage"] == "build":
-                self.repair(claim,{"error_category":"execution_failed","message":str(e)[:2000]})
+            if isinstance(e,(OSError,OperationalError)):
+                self.storage_failed = True
+                self.store.finish(claim,status="blocked",reason="storage_unavailable")
+            elif isinstance(e,SandboxError):
+                self.local_failure(claim,e.reason,retryable=e.reason != "sandbox_image_version_mismatch")
             else:
-                self.store.finish(claim,status="blocked",reason=f"{claim['stage']}_failed")
+                self.local_failure(claim,f"{claim['stage']}_failed")
             self.loop_error = type(e).__name__
 
     async def archive_asset(self,claim):
@@ -492,11 +515,19 @@ class Scheduler:
     def repair_pairs(self,claim,directory):
         pairs = []
         for revision in range(1,claim["revision"]):
-            before = directory.parent/f"v{revision:04d}"
-            if not (before/"geometry.json").is_file() or not (before/"authored_source.py").is_file():
+            before = self.work_dir(claim).parent/f"v{revision:04d}"
+            if not (before/"repair_evidence.json").is_file() or not (before/"authored_source.py").is_file():
                 continue
-            report = json.loads((before/"geometry.json").read_text())
+            report = json.loads((before/"repair_evidence.json").read_text())
+            # Passing skeletons and infrastructure failures are not bad examples.
+            if report.get('passed') is not False or 'violations' not in report:
+                continue
             pairs.append({"before_revision":revision,"after_revision":claim["revision"],
+                          "lineage_group":claim["lineage_group"],
+                          "before_source":(before/"authored_source.py").read_text(),
+                          "after_source":(directory/"authored_source.py").read_text(),
+                          "before_geometry":report,
+                          "after_geometry":json.loads((directory/"geometry.json").read_text()),
                           "before_source_sha256":digest(before/"authored_source.py"),
                           "after_source_sha256":digest(directory/"authored_source.py"),
                           "before_voxel_sha256":report.get("canonical_voxel_hash"),

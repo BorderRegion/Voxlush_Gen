@@ -1,9 +1,45 @@
-"""One additive migration; old assets and request/billing history stay intact."""
+"""Additive migrations; old assets, briefs and request/billing history stay intact."""
+
+import json
 
 
 def migrate(db):
+    migrate_v2(db)
     version = db.execute("SELECT value FROM meta WHERE key='schema'").fetchone()[0]
-    if version == "2":
+    if version == "3":
+        return
+    db.execute("BEGIN IMMEDIATE")
+    try:
+        db.execute("ALTER TABLE samples ADD COLUMN creative_phase TEXT NOT NULL DEFAULT 'final' CHECK(creative_phase IN ('skeleton','final'))")
+        db.execute("ALTER TABLE samples ADD COLUMN local_retries INTEGER NOT NULL DEFAULT 0")
+        db.execute("CREATE INDEX attempts_campaign_occupied ON attempts(campaign_id) WHERE occupancy=1")
+        cursor = ''
+        while True:
+            rows = db.execute("SELECT sample_id,task_json,revision,stage,status FROM samples WHERE sample_id>? AND status NOT IN ('accepted','provisional_pass','rejected') ORDER BY sample_id LIMIT 512", (cursor,)).fetchall()
+            if not rows:
+                break
+            for row in rows:
+                if json.loads(row['task_json']).get('generation_mode') != 'two_stage':
+                    continue
+                refined = db.execute("SELECT 1 FROM attempts WHERE sample_id=? AND role='refine' LIMIT 1", (row['sample_id'],)).fetchone()
+                if row['stage'] == 'refine' or refined:
+                    continue
+                db.execute("UPDATE samples SET creative_phase='skeleton' WHERE sample_id=?", (row['sample_id'],))
+                # v2 inferred phase from revision. Ambiguous in-progress old
+                # repairs need evidence review, never another paid POST.
+                if row['revision'] > 1:
+                    db.execute("UPDATE samples SET status='blocked',reason_code='phase_recovery_required',lease_token=NULL,lease_owner=NULL,lease_until=NULL WHERE sample_id=?", (row['sample_id'],))
+            cursor = rows[-1]['sample_id']
+        db.execute("UPDATE meta SET value='3' WHERE key='schema'")
+        db.execute("COMMIT")
+    except BaseException:
+        db.execute("ROLLBACK")
+        raise
+
+
+def migrate_v2(db):
+    version = db.execute("SELECT value FROM meta WHERE key='schema'").fetchone()[0]
+    if version in ("2", "3"):
         return
     if version != "1":
         raise RuntimeError("unsupported schema: migration required")

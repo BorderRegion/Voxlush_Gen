@@ -87,6 +87,7 @@ class ModelResult:
     reasoning_content_characters: int = 0
     elapsed_ms: float = 0
     error_category: str | None = None
+    execution_state: str = "not_sent"
     retry_after: float | None = None
     raw: str = ""
 
@@ -109,11 +110,14 @@ class PoolClient:
         payload = {**endpoint.parameters,"model":endpoint.model,"messages":messages,"stream":endpoint.stream}
         url = endpoint.base_url.rstrip("/") + "/chat/completions"
         try:
+            r.execution_state = "execution_unknown"
             async with asyncio.timeout(endpoint.total_timeout):
                 async with self.client.stream("POST",url,json=payload,headers=headers,
                     timeout=httpx.Timeout(connect=endpoint.connect_timeout,read=endpoint.idle_timeout,write=endpoint.connect_timeout,pool=endpoint.connect_timeout)) as response:
                     r.request_id = response.headers.get("x-request-id")
                     if response.status_code >= 300:
+                        # A gateway failure can happen after the upstream POST.
+                        r.execution_state = "execution_unknown" if response.status_code in (502,504) else "terminated"
                         if response.status_code == 429:
                             r.error_category = "rate_limited"
                         elif response.status_code in (401,403):
@@ -147,9 +151,12 @@ class PoolClient:
                             r.error_category = r.error_category or "incomplete_response"
         except (httpx.ConnectError,httpx.ConnectTimeout,httpx.PoolTimeout):
             r.error_category = "not_sent"
+            r.execution_state = "not_sent"
         except (httpx.ReadError,httpx.WriteError,httpx.ReadTimeout,httpx.WriteTimeout,httpx.RemoteProtocolError,TimeoutError,asyncio.CancelledError):
-            r.error_category = r.error_category or "outcome_unknown"
+            r.response_complete = False
+            r.error_category = r.error_category or ("outcome_unknown" if r.execution_state == "execution_unknown" else "incomplete_response")
         except (ValueError,KeyError,TypeError,IndexError):
+            r.response_complete = False
             r.error_category = "malformed_response"
         r.elapsed_ms = (time.monotonic()-start)*1000
         if r.usage and endpoint.input_per_million is not None and endpoint.output_per_million is not None:
@@ -169,12 +176,28 @@ class PoolClient:
         if not isinstance(obj,dict):
             raise ValueError("response must be a JSON object")
         if obj.get("error"):
+            error = obj["error"]
+            # The inspected pool emits this frame on upstream read interruption;
+            # it is not an upstream cancellation or completion receipt.
+            if not (isinstance(error,dict) and error.get("type") == "pool_error"):
+                r.execution_state = "terminated"
             r.error_category = provider_error(obj["error"])
             return
+        # Read termination evidence before optional usage or answer fields. A bad
+        # usage record after a known finish must not recreate execution occupancy.
+        choices = obj.get("choices", [])
+        if isinstance(choices, list):
+            for choice in choices:
+                if (isinstance(choice, dict) and choice.get("index", 0) == 0
+                        and choice.get("finish_reason") in ("stop", "length", "tool_calls", "function_call", "content_filter")):
+                    r.finish_reason = choice["finish_reason"]
+                    r.execution_state = "terminated"
         r.request_id = obj.get("id",r.request_id)
         r.reported_model = obj.get("model",r.reported_model)
         usage = obj.get("usage")
         if usage is not None:
+            # A later invalid settlement must not bill from earlier partial usage.
+            r.usage = {}
             if not isinstance(usage,dict):
                 raise ValueError("usage must be an object")
             for key in ("prompt_tokens", "completion_tokens"):
@@ -235,6 +258,7 @@ class PoolClient:
                     event = []
                     if data == "[DONE]":
                         done = True
+                        r.execution_state = "terminated"
                         break
                     before = len(r.content) + r.reasoning_content_characters
                     self._consume(json.loads(data),r)
