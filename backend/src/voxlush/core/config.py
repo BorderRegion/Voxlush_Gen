@@ -95,7 +95,7 @@ class Config(StrictModel):
     def profile_hash(self) -> str:
         fields = {"author": self.author.model_dump() if self.author else None,
                   "visual": self.visual.model_dump() if self.visual else None,
-                  "prompt": "voxlush.prompt.v1", "rubric": "voxlush.visual.v1"}
+                  "prompt": "voxlush.prompt.v2", "rubric": "voxlush.visual.v1"}
         return hashlib.sha256(json.dumps(fields, sort_keys=True).encode()).hexdigest()
 
     def is_qualified(self) -> bool:

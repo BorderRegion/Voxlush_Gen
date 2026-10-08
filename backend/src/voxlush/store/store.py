@@ -512,7 +512,7 @@ class Store:
         if not c:
             return {"items":[],"totals":{}}
         targets = family_targets(c["target"],c["scene_weights"])
-        stats = {r["family_id"]:r for r in self.rows("SELECT family_id,SUM(status='accepted') accepted,SUM(status IN ('ready','running','deferred','awaiting_review')) active,SUM(status='rejected' AND COALESCE(reason_code,'')!='duplicate') rejected,SUM(reason_code='duplicate') duplicate FROM samples WHERE campaign_id=? GROUP BY family_id",(campaign_id,))}
+        stats = {r["family_id"]:r for r in self.rows("SELECT family_id,SUM(status='accepted') accepted,SUM(status IN ('ready','running','deferred','awaiting_review')) active,SUM(status='rejected' AND COALESCE(reason_code,'')!='duplicate') rejected,SUM(COALESCE(reason_code,'')='duplicate') duplicate FROM samples WHERE campaign_id=? GROUP BY family_id",(campaign_id,))}
         items = []
         for fid,f in FAMILIES.items():
             s = stats.get(fid,{})

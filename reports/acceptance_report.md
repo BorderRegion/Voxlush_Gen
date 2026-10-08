@@ -8,9 +8,18 @@ Environment: Python 3.12.3, Node 20.19.0, npm 10.8.2, Docker 29.1.3, APSW SQLite
 
 ## Result Boundary
 
-The implementation is available and the offline local path is exercised. After the debug pass, the automated Python suite reports **85 passed, 1 skipped** (the skipped test needs a private legacy archive). Ruff passed. The frontend build (`tsc -b` plus Vite) passed. The mock dashboard suite reports **9 passed**, and the real local backend/browser suite reports **1 passed**. New fault tests use loopback HTTP/SSE and injected filesystem/readonly-DB failures; no model provider is contacted. Doctor returned `ready=true` with non-root, no-network, read-only root and read-only input checks. The external-root campaign run made **0 model requests**, ended with 0 samples and 0 assets, and produced a verified empty release. Backup and restore to a new root were verified; restored campaign counts matched.
+The implementation is available and the local debug path is exercised. After the debug pass, the automated Python suite reports **86 passed, 1 skipped** (the skipped test needs a private legacy archive). Ruff passed. The frontend build (`tsc -b` plus Vite) passed. The mock dashboard suite reports **9 passed**, and the real local backend/browser suite reports **1 passed**. New fault tests use loopback HTTP/SSE and injected filesystem/readonly-DB failures. Doctor returned `ready=true` with non-root, no-network, read-only root and read-only input checks. The external-root offline campaign run made **0 model requests**, ended with 0 samples and 0 assets, and produced a verified empty release. Backup and restore to a new root were verified; restored campaign counts matched.
 
-No paid model request, real remote API test, human blind review, 100-candidate quality calibration, 100k/1m scale run, production migration, deployment, or rollback was performed. Those are not inferred from software tests.
+The separate capped real-model probe made **4 remote requests**: DeepSeek thinking mode timed out after 90 seconds, GLM thinking mode timed out after 180 seconds, and DeepSeek with thinking disabled returned source for two bounded author attempts. The first source was rejected by the pre-execution source validation for reserved author name `_`; the bounded repair was rejected for attempting to overwrite protected `SEED`. Neither source reached model-code execution or Docker. The probe produced **0 accepted assets, 0 previews, and 0 visual-model requests**. Request settlement remained unknown. No human blind review, 100-candidate quality calibration, 100k/1m scale run, production migration, deployment, or rollback was performed. These are not inferred from software tests or the capped probe.
+
+| Request | Requested/reported model | Mode | Observed result |
+|---|---|---|---|
+| 1 | `deepseek-ai/deepseek-v4.1-flash` | Default thinking | First-content timeout at 90 s, no source body, `outcome_unknown` |
+| 2 | `z-ai/glm-5.3` | Default thinking | First-content timeout at 180 s, no source body, `outcome_unknown` |
+| 3 | `deepseek-ai/deepseek-v4.1-flash` | Thinking disabled | Complete response in 110.07 s; source validation rejected reserved `_` |
+| 4 | `deepseek-ai/deepseek-v4.1-flash` | Thinking disabled, bounded repair | Complete response in 60.16 s; source validation rejected rebinding `SEED`; `repair_exhausted` |
+
+All four requests have unknown settled cost; returned token usage does not establish a price. The two unknown-outcome requests were not replayed. Model labels are endpoint-reported and do not prove the upstream route. These probes used prompt v1; the new shared naming guidance uses prompt v2 and has only local verification. Raw responses, private configuration and browser evidence remain outside Git.
 
 Evidence labels:
 
@@ -19,7 +28,7 @@ Evidence labels:
 - **F**: filesystem/archive/security unit evidence.
 - **B**: browser/UI evidence against the mock transport.
 - **R**: external-root offline acceptance run.
-- **M**: real model API evidence (none in this report).
+- **M**: real model API evidence from the capped DeepSeek/GLM probe; it does not qualify a model.
 - **H**: human blind-review evidence (none in this report).
 
 ## T01-T32

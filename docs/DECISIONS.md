@@ -10,11 +10,15 @@ The SQLite `Store` is the state authority, guarded by a data-root owner lock. AP
 
 ## Qualification remains separate from implementation
 
-No paid endpoint requests or human blind review were performed in this delivery pass. Local rendering and mock review fixtures remain candidates/provisional results. Model qualification therefore stays false, independent of software test status. This follows the evidence boundary in `docs/04_DELIVERY_AND_ACCEPTANCE.md`.
+The four-request DeepSeek/GLM probe is recorded as model evidence, but it did not produce a usable accepted asset or any human blind-review evidence. DeepSeek and GLM thinking-mode requests timed out; DeepSeek with thinking disabled returned source that failed pre-execution source validation, including a bounded repair. The model source was never executed for those two responses. Costs remain unknown because the endpoint did not provide a usable price settlement. Local rendering and mock review fixtures remain candidates/provisional results. Model qualification therefore stays false, independent of software test status. This follows the evidence boundary in `docs/04_DELIVERY_AND_ACCEPTANCE.md`.
 
 ## Deployment is not inferred from local readiness
 
 No production service, production data root, or external endpoint was changed. A service unit and release checklist are documented for a later authorized deployment; deployment and rollback evidence remain outstanding.
+
+## Explicit author naming rules after the model probe
+
+The shared author/repair primitive contract now explicitly forbids private names (including `_` loop placeholders), rebinding `SEED`/`rng`, and replacing runtime primitives. The pre-execution validator is unchanged. The prompt/profile version advances to v2 to invalidate qualification for the previous prompt. This targets the two observed DeepSeek source failures; improvement has not been verified by a new real-model call.
 
 ## Frozen legacy resource lint scope
 

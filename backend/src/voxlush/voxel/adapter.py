@@ -92,6 +92,9 @@ def primitive_contract() -> str:
 Optional top-level literal MODEL_SPEC dict (name_en, name_zh, use, floors, spaces, features),
 DESCRIPTION {zh,en}, ACTUAL_TAGS list. These are generator declarations, not observed labels.
 Allowed imports: math, random, collections. Use SEED or rng for deterministic randomness.
+Use public author variable/function names; no name may start with '_' (including loop placeholders).
+SEED and rng are supplied by the runtime: read/use them, never assign or redefine them.
+Never overwrite runtime primitives/state or use private attributes/introspection.
 X east, Y up, Z south; integer occupied coordinates 0..255; max 600000 voxels.
 Materials accept full states such as minecraft:oak_log[axis=x]; namespace/properties are
 preserved in authoritative arrays. Only known base blocks are accepted; unknown states fail.
@@ -109,6 +112,9 @@ entry:[x,y,z],component_ids:[...]}] must describe actual walkable interiors, not
 features=[{id,component_ids:[...]}] refer to actually occupied owners.
 Signatures (extracted from the actual runtime):\n"""
         + "\n".join(signatures)
+        + "\nRead-only runtime names (never assign, define, or use as function arguments): "
+        + ", ".join(sorted(PROTECTED))
+        + ". Internal names SPEC, ROOT, V, D, A and finish must not be accessed."
         + "\nMaterial names: "
         + ", ".join(sorted(COLORS))
         + "\nCategories: foundation,slab,exterior_wall,interior_wall,roof,door,window,column,beam,stair,decoration,environment,furniture,terrain,rock,cave,vegetation,water,path,ruin,object."

@@ -1,3 +1,4 @@
+import asyncio
 import json
 import time
 
@@ -152,6 +153,31 @@ def test_reservations_never_exceed_cap(tmp_path, cap):
         assert store.one("SELECT COALESCE(SUM(occupancy),0) n FROM attempts")["n"] == cap
         assert store.campaign("debug")["requests_used"] == cap
     finally:
+        store.close()
+
+
+async def test_fresh_live_campaign_dispatches_from_scheduler_tick(tmp_path, fake_http):
+    url, requests = await fake_http(complete_response())
+    store = Store(tmp_path / "data")
+    endpoint = Endpoint(base_url=url, model="fixture", provider_cap=1)
+    scheduler = Scheduler(store, Config(data_root=store.root, allow_live=True, global_api_cap=1, author=endpoint))
+    try:
+        campaign = store.create_campaign("fresh", "Fresh live campaign", 1, 2, 1, {"natural":1})
+        store.set_campaign_state("fresh", "running")
+        sample = store.add_sample(runtime_task(task_for(campaign, "geology", 0, "calibration")))
+        # Fresh samples have no reason code; SQLite comparisons with NULL must
+        # still count zero duplicates, and must not block the first dispatch.
+        coverage = store.coverage("fresh")
+        assert coverage["totals"]["active"] == 1
+        assert coverage["totals"]["duplicate"] == 0
+        await scheduler.tick()
+        assert len(scheduler.active) == 1
+        await asyncio.gather(*scheduler.active)
+        assert len(requests) == 1
+        assert store.sample(sample["sample_id"])["stage"] == "build"
+        assert store.campaign("fresh")["state"] == "running"
+    finally:
+        await scheduler.stop()
         store.close()
 
 

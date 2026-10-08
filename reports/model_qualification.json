@@ -1,18 +1,21 @@
 {
   "schema_version": "voxlush.model_qualification.v1",
   "status": "unqualified_model_profile",
-  "profile_hash": "80c1b85bb323d5a69cd58a0705d7e1e5ebb29bab9d8cda0d159f055cba46d499",
+  "profile_hash": "01442690ef76a10ae6b1968f183063d6467d9b58ee7ff785bc9fe0d57d575f66",
   "config": {
     "allow_live": false,
     "author_endpoint": null,
     "visual_endpoint": null,
     "global_api_cap": 0,
-    "qualification_flag": false
+    "qualification_flag": false,
+    "prompt_version": "voxlush.prompt.v2"
   },
   "budget": {
-    "model_requests": 0,
-    "known_cost": 0.0,
-    "unknown_cost_requests": 0,
+    "model_requests": 4,
+    "request_limit": 4,
+    "known_cost": null,
+    "known_cost_requests": 0,
+    "unknown_cost_requests": 4,
     "currency": null
   },
   "calibration": {
@@ -34,6 +37,111 @@
     "same_task_quality_noninferior": true,
     "cost_or_throughput_improvement": true
   },
-  "reason": "No paid endpoint authorization or human blind-review evidence was available. Offline software and fixture tests do not qualify a model profile.",
-  "recorded_at": "2026-10-08T00:00:00+08:00"
+  "reason": "The authorized four-request DeepSeek/GLM probe produced no accepted asset: two thinking-mode requests had unknown outcomes, and two complete DeepSeek responses failed pre-execution source validation. All settled costs remain unknown. No visual-model or human blind-review evidence exists. The revised prompt-v2 profile has not been tested against a real model.",
+  "recorded_at": "2026-10-08",
+  "profile_scope": "Checked-in offline configuration with prompt v2; the separate prompt-v1 probe profiles below remain unqualified.",
+  "probe_outcomes": {
+    "response_complete": 2,
+    "outcome_unknown": 2,
+    "source_validation_rejected": 2,
+    "model_sources_executed": 0,
+    "repair_exhausted_samples": 1,
+    "accepted_unique": 0,
+    "previews": 0,
+    "visual_model_requests": 0
+  },
+  "probes": [
+    {
+      "probe_id": "deepseek_thinking",
+      "profile_hash": "3d049b1467b546ae0940a87c25566f2e7a7a49007df6e5db4877bf929098966b",
+      "prompt_version": "voxlush.prompt.v1",
+      "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+      "mode": "default_thinking",
+      "max_tokens": 4096,
+      "first_content_timeout_seconds": 90.0,
+      "attempts": [
+        {
+          "role": "author",
+          "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+          "response_complete": false,
+          "finish_reason": null,
+          "error_category": "outcome_unknown",
+          "elapsed_seconds": 90.0,
+          "billing_status": "unknown",
+          "settled_cost": null,
+          "usage": {}
+        }
+      ]
+    },
+    {
+      "probe_id": "glm_thinking",
+      "profile_hash": "032dfd944c1133c3fe961716347293bebcd18b89dcd79ae5eb8b6866f25dc846",
+      "prompt_version": "voxlush.prompt.v1",
+      "requested_model": "z-ai/glm-5.3",
+      "mode": "default_thinking",
+      "max_tokens": 8192,
+      "first_content_timeout_seconds": 180.0,
+      "attempts": [
+        {
+          "role": "author",
+          "reported_model": "z-ai/glm-5.3",
+          "response_complete": false,
+          "finish_reason": null,
+          "error_category": "outcome_unknown",
+          "elapsed_seconds": 180.0,
+          "billing_status": "unknown",
+          "settled_cost": null,
+          "usage": {}
+        }
+      ]
+    },
+    {
+      "probe_id": "deepseek_disabled",
+      "profile_hash": "ea7ea22ccefaa4edcb9f9bf2cece41dbe0eddaab4b3aca33f29378cb4f8ad38a",
+      "prompt_version": "voxlush.prompt.v1",
+      "requested_model": "deepseek-ai/deepseek-v4.1-flash",
+      "mode": "thinking_disabled",
+      "max_tokens": 8192,
+      "first_content_timeout_seconds": 120.0,
+      "attempts": [
+        {
+          "role": "author",
+          "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+          "response_complete": true,
+          "finish_reason": "stop",
+          "error_category": null,
+          "elapsed_seconds": 110.07,
+          "billing_status": "unknown",
+          "settled_cost": null,
+          "usage": {
+            "prompt_tokens": 1776,
+            "completion_tokens": 4102,
+            "total_tokens": 5878,
+            "reasoning_tokens": 0
+          },
+          "source_validation_error": "Reserved or unsafe author name: _",
+          "model_source_executed": false
+        },
+        {
+          "role": "author",
+          "reported_model": "deepseek-ai/deepseek-v4.1-flash",
+          "response_complete": true,
+          "finish_reason": "stop",
+          "error_category": null,
+          "elapsed_seconds": 60.16,
+          "billing_status": "unknown",
+          "settled_cost": null,
+          "usage": {
+            "prompt_tokens": 6521,
+            "completion_tokens": 3065,
+            "total_tokens": 9586,
+            "reasoning_tokens": 0
+          },
+          "source_validation_error": "Cannot replace primitive state: SEED",
+          "model_source_executed": false
+        }
+      ]
+    }
+  ],
+  "evidence_scope": "Sanitized facts from locally retained raw responses and attempt records; private configurations, credentials, source responses, logs, screenshots and data are excluded from Git."
 }

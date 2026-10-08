@@ -7,7 +7,7 @@ from pathlib import Path
 from voxlush.voxel.adapter import primitive_contract
 from voxlush.core.files import digest
 
-PROMPT_VERSION = "voxlush.prompt.v1"
+PROMPT_VERSION = "voxlush.prompt.v2"
 RUBRIC_VERSION = "voxlush.visual.v1"
 RUBRIC_TEXT = "Inspect actual multi-view images for coherent structure/landforms, usable spatial composition, visible design focus and defects. Do not infer requested tags without evidence. Return JSON only: verdict=pass/fail/gray, issues=[concrete visible defects], observed_tags=[{tag,evidence,confidence}]."
 RUBRIC_HASH = hashlib.sha256((RUBRIC_VERSION + "\0" + RUBRIC_TEXT).encode()).hexdigest()
