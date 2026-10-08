@@ -243,6 +243,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/config/history": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Config History */
+    get: operations["config_history_api_v1_config_history_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/events": {
     parameters: {
       query?: never;
@@ -351,7 +368,8 @@ export interface components {
         | "pause"
         | "emergency_stop"
         | "set_cap"
-        | "retry";
+        | "retry"
+        | "reconcile_execution";
       /** Expected Config Revision */
       expected_config_revision: number;
       /** Payload */
@@ -910,6 +928,38 @@ export interface operations {
     parameters: {
       query: {
         campaign_id: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  config_history_api_v1_config_history_get: {
+    parameters: {
+      query: {
+        campaign_id: string;
+        before?: number;
       };
       header?: never;
       path?: never;

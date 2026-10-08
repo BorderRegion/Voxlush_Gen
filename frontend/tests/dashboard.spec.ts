@@ -4,6 +4,23 @@ test.beforeEach(async ({ request }) => {
   await request.post("http://127.0.0.1:8067/__test/reset");
 });
 
+test("R09: repeated snapshot stays stale while fresh idle snapshots stay live", async ({ page, request }) => {
+  await page.clock.install();
+  await request.post("http://127.0.0.1:8067/__test/change", { data: { frozenTime: 123 } });
+  await page.goto("/");
+  await expect(page.getByText("实时连接", { exact: true })).toBeVisible();
+  await page.clock.fastForward(17000);
+  await expect(page.getByRole("status").filter({ hasText: "快照已过期" })).toBeVisible();
+  // The stream continues sending the same old server_time every second.
+  await page.waitForTimeout(1200);
+  await expect(page.getByRole("status").filter({ hasText: "快照已过期" })).toBeVisible();
+  await request.post("http://127.0.0.1:8067/__test/change", { data: { frozenTime: null } });
+  await expect(page.getByText("实时连接", { exact: true })).toBeVisible();
+  await page.clock.fastForward(17000);
+  await page.waitForTimeout(1200);
+  await expect(page.getByText("实时连接", { exact: true })).toBeVisible();
+});
+
 test("T25: one live stream, disconnect freezes counters, reconnect reconciles snapshot", async ({
   page,
   request,

@@ -63,7 +63,7 @@ const overview = () => ({
     }),
   ),
   event_cursor: state.event,
-  server_time: Date.now() / 1000,
+  server_time: state.frozenTime ?? Date.now() / 1000,
   schema_version: "voxlush.overview.v1",
 });
 const sample = (i) => ({

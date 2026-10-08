@@ -110,6 +110,7 @@ export function useOverview(campaignId: string | null, refreshKey: number) {
     if (!campaignId) return;
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let latestServerTime = -Infinity;
     const accept = (value: Overview) => {
       if (
         controller.signal.aborted ||
@@ -118,9 +119,14 @@ export function useOverview(campaignId: string | null, refreshKey: number) {
         !Array.isArray(value.queues)
       )
         return;
-      setOverview(value);
-      cursor.current = value.event_cursor ?? cursor.current;
-      setReceivedAt(Date.now());
+      // SSE bytes prove connectivity. Only a newly generated snapshot proves
+      // freshness; an idle engine may advance server_time without new events.
+      if (Number.isFinite(value.server_time) && value.server_time > latestServerTime) {
+        latestServerTime = value.server_time;
+        setOverview(value);
+        cursor.current = value.event_cursor ?? cursor.current;
+        setReceivedAt(Date.now());
+      }
       setError(null);
       setConnection("live");
     };
