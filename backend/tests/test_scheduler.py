@@ -317,8 +317,9 @@ async def test_failed_finish_preserves_complete_response_and_other_work_continue
         store.close()
 
 
-async def test_post_disconnect_keeps_unknown_budget_and_rejects_retry(tmp_path, fake_http):
-    url, requests = await fake_http(None)
+@pytest.mark.parametrize("body", [None, b'data: {"choices":[{"delta":{"reasoning_content":"Working"}}]}\n\n'])
+async def test_post_disconnect_keeps_unknown_budget_and_rejects_retry(tmp_path, fake_http, body):
+    url, requests = await fake_http(body)
     store = Store(tmp_path / "data")
     endpoint = Endpoint(base_url=url, model="fixture", cost_upper_bound=1)
     config, claim = setup(store, endpoint)

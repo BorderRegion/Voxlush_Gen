@@ -109,6 +109,38 @@ def test_parse_review_records_rubric_identity():
     assert review["rubric_hash"] == RUBRIC_HASH
 
 
+def test_nonempty_visual_observations_archive_and_export_without_losing_evidence(tmp_path):
+    record, fixture_review = artifact_fixture(tmp_path / "build")
+    response = {"verdict": "pass", "issues": [], "observed_tags": [
+        {"tag": "天然石拱", "evidence": "两侧岩柱之间可见贯通的拱洞", "confidence": 0.88},
+    ]}
+    review = parse_review(json.dumps(response), fixture_review["input_voxel_sha256"], fixture_review["image_sha256"])
+    # Round-trip models the persisted review when retrying only local archive.
+    review = json.loads(json.dumps(review))
+    deterministic = {"key": "voxel_count", "value": 8, "source": "deterministic", "evidence_ref": "geometry.json"}
+    record["observed_tags"] = [*review["observed_tags"], deterministic]
+    record["task"]["requested_tags"] = {"unobserved": "forest"}
+    original_review = json.loads(json.dumps(review))
+    root = tmp_path / "data"
+    archive = Archive(root)
+    asset = archive.prepare(record, tmp_path / "build", review)
+    manifest = verify_asset(root / asset["path"])
+    assert manifest["tags"]["observed_tags"] == [
+        {**review["observed_tags"][0], "key": "visual_tag", "value": "天然石拱"}, deterministic,
+    ]
+    assert review == original_review
+    assert json.loads((root / asset["path"] / "review.json").read_text()) == original_review
+    assert archive.prepare(record, tmp_path / "build", review) == asset
+    assert not asset["accepted_unique"]
+    asset["status"] = "provisional_pass"
+    store = AssetStore([asset])
+    release = export(store, root, "dataset-fixture", tmp_path / "release", include_provisional=True)
+    assert release["counts"]["assets"] == 1
+    assert release["counts"]["accepted"] == 0
+    assert verify_release(tmp_path / "release") == release
+    assert export(store, root, "dataset-fixture", tmp_path / "formal")["counts"]["assets"] == 0
+
+
 @pytest.mark.parametrize("name", ["../../outside", "/etc/passwd", "previews/../passwd", "..\\passwd"])
 def test_artifact_path_traversal_is_rejected(tmp_path, name):
     with pytest.raises(ValueError):

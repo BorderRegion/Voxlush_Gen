@@ -7,7 +7,7 @@ from pathlib import Path
 from voxlush.voxel.adapter import primitive_contract, MAX_SOURCE_BYTES
 from voxlush.core.files import digest
 
-PROMPT_VERSION = "voxlush.prompt.v3"
+PROMPT_VERSION = "voxlush.prompt.v4"
 RUBRIC_VERSION = "voxlush.visual.v1"
 RUBRIC_TEXT = "Inspect actual multi-view images for coherent structure/landforms, usable spatial composition, visible design focus and defects. Do not infer requested tags without evidence. Return JSON only: verdict=pass/fail/gray, issues=[concrete visible defects], observed_tags=[{tag,evidence,confidence}]."
 RUBRIC_HASH = hashlib.sha256((RUBRIC_VERSION + "\0" + RUBRIC_TEXT).encode()).hexdigest()
@@ -16,9 +16,13 @@ def extract_source(content: str) -> str:
     text = content.strip()
     if text.startswith("```"):
         lines = text.splitlines()
-        if lines[0] not in ("```python","```py","```") or lines[-1] != "```" or any(line.startswith("```") for line in lines[1:-1]):
+        fences = [i for i, line in enumerate(lines) if line.startswith("```")]
+        if (lines[0] not in ("```python","```py","```") or len(fences) != 2
+                or lines[fences[1]].strip() != "```"):
             raise ValueError("expected exactly one complete Python fence")
-        text = "\n".join(lines[1:-1])
+        # A single leading, explicitly closed block is unambiguous. Preserve its
+        # entire program; trailing model commentary is neither code nor a repair.
+        text = "\n".join(lines[1:fences[1]])
     if not text or len((text+'\n').encode())>MAX_SOURCE_BYTES:
         raise ValueError("source size limit or empty source")
     ast.parse(text)

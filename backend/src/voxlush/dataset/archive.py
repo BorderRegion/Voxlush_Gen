@@ -60,6 +60,21 @@ def _validate_manifest(manifest: dict) -> None:
         raise ValueError(f"invalid asset manifest: {exc.message}") from exc
 
 
+def _manifest_observed_tags(tags: list) -> list:
+    """Adapt the visual rubric's free-form tags without rewriting review evidence.
+
+    Also applies when a persisted review resumes at archive after a restart.
+    Deterministic/human key-value observations already use the manifest contract.
+    """
+    return [
+        {**tag, "key": "visual_tag", "value": tag["tag"]}
+        if isinstance(tag, dict) and tag.get("source") == "visual_review"
+        and "tag" in tag and "key" not in tag and "value" not in tag
+        else tag
+        for tag in tags
+    ]
+
+
 def verify_asset(directory: Path) -> dict:
     """Read hashes and evidence; a manifest alone never proves an accepted asset."""
     directory = Path(directory)
@@ -230,7 +245,7 @@ class Archive:
             "hashes": {"source_sha256": source_hash, "canonical_voxel_sha256": canonical["canonical_voxel_hash"], "annotation_sha256": canonical["annotation_hash"]},
             "versions": {key: versions.get(key) for key in ("runtime", "material_catalog", "geometry", "renderer", "rubric")},
             "files": [file_record(stage, name) for name in sorted(names)],
-            "tags": {"sampling_tags": task.get("sampling_tags", {}), "requested_tags": task.get("requested_tags", {}), "generator_declared": sample.get("generator_declared", {}), "observed_tags": sample.get("observed_tags", [])},
+            "tags": {"sampling_tags": task.get("sampling_tags", {}), "requested_tags": task.get("requested_tags", {}), "generator_declared": sample.get("generator_declared", {}), "observed_tags": _manifest_observed_tags(sample.get("observed_tags", []))},
             "quality": {"geometry": {"status": "pass", "report_ref": "geometry.json"}, "visual": {"status": "pass", "report_ref": "review.json", "input_voxel_sha256": canonical["canonical_voxel_hash"], "image_sha256": images}},
             "archive": {"state": "committed", "commit_id": commit_id},
             "provenance": {"seed": task["seed"], "generation_mode": runtime_task.get("generation_mode", "direct"), "endpoint_alias": sample.get("endpoint_alias"), "requested_model": sample.get("requested_model"), "reported_model": sample.get("reported_model"), "request_refs": sample.get("request_refs", [])},

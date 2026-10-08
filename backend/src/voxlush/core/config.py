@@ -25,8 +25,10 @@ class Endpoint(StrictModel):
     execution_contract_ref: str | None = Field(default=None, min_length=1, max_length=500)
     supports_images: bool = False
     connect_timeout: float = Field(default=10, gt=0)
-    first_content_timeout: float = Field(default=90, gt=0)
-    idle_timeout: float = Field(default=60, gt=0)
+    first_content_timeout: float = Field(default=90, gt=0,
+        description="Seconds to the first nonempty answer or reasoning delta; heartbeats do not count.")
+    idle_timeout: float = Field(default=60, gt=0,
+        description="Maximum gap between answer or reasoning progress, also the HTTP read timeout.")
     total_timeout: float = Field(default=240, gt=0)
     rpm: int | None = Field(default=None, gt=0)
     tpm: int | None = Field(default=None, gt=0)
@@ -108,6 +110,7 @@ class Config(StrictModel):
         return self
 
     def profile_hash(self) -> str:
+        from voxlush.inference import STREAM_POLICY_VERSION
         from voxlush.pipeline.prompts import PROMPT_VERSION, RUBRIC_HASH
         from voxlush.voxel.adapter import versions
         def identity(endpoint):
@@ -117,7 +120,8 @@ class Config(StrictModel):
                     **endpoint.model_dump(include={"model", "parameters", "stream", "completion", "supports_images",
                                                    "first_content_timeout", "idle_timeout", "total_timeout"})}
         fields = {"author": identity(self.author), "visual": identity(self.visual),
-                  "prompt": PROMPT_VERSION, "rubric": RUBRIC_HASH, "quality_runtime":versions()}
+                  "prompt": PROMPT_VERSION, "rubric": RUBRIC_HASH, "quality_runtime":versions(),
+                  "stream_policy": STREAM_POLICY_VERSION}
         return hashlib.sha256(json.dumps(fields, sort_keys=True).encode()).hexdigest()
 
     def snapshot(self) -> dict:

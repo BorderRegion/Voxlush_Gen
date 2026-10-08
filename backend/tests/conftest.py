@@ -9,7 +9,7 @@ async def fake_http():
     """Actual loopback HTTP/SSE transport; it never contacts a model provider."""
     servers, writers, handlers = [], set(), set()
 
-    async def start(body, *, status=200, headers=None, hold_open=False):
+    async def start(body, *, status=200, headers=None, hold_open=False, chunk_delay=0):
         requests = []
 
         async def handle(reader, writer):
@@ -27,23 +27,31 @@ async def fake_http():
                 chunks = body if isinstance(body,list) else [body]
                 if hold_open or isinstance(body,list):
                     response_headers["Transfer-Encoding"] = "chunked"
-                    payload = b"".join(f"{len(chunk):x}\r\n".encode() + chunk + b"\r\n" for chunk in chunks)
+                    payloads = [f"{len(chunk):x}\r\n".encode() + chunk + b"\r\n" for chunk in chunks]
                     if not hold_open:
-                        payload += b"0\r\n\r\n"
+                        payloads.append(b"0\r\n\r\n")
                 else:
                     response_headers.update({"Content-Length": str(len(body)), "Connection": "close"})
-                    payload = body
+                    payloads = [body]
                 head = f"HTTP/1.1 {status} Fixture\r\n".encode()
                 head += b"".join(f"{key}: {value}\r\n".encode() for key, value in response_headers.items())
-                writer.write(head + b"\r\n" + payload)
+                writer.write(head + b"\r\n")
                 await writer.drain()
+                for index, payload in enumerate(payloads):
+                    if index and chunk_delay:
+                        await asyncio.sleep(chunk_delay)
+                    writer.write(payload)
+                    await writer.drain()
                 if hold_open:
                     await reader.read()
             except (ConnectionError, asyncio.IncompleteReadError):
                 pass
             finally:
                 writer.close()
-                await writer.wait_closed()
+                try:
+                    await writer.wait_closed()
+                except ConnectionError:
+                    pass
                 writers.discard(writer)
                 handlers.discard(task)
 

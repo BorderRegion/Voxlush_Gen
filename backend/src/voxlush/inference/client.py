@@ -83,6 +83,8 @@ class ModelResult:
     billing_status: str = "unknown"
     cost: float | None = None
     first_content_at: float | None = None
+    first_reasoning_at: float | None = None
+    reasoning_content_characters: int = 0
     elapsed_ms: float = 0
     error_category: str | None = None
     retry_after: float | None = None
@@ -194,6 +196,12 @@ class PoolClient:
                 data = {}
             if not isinstance(data,dict):
                 raise ValueError("message/delta must be an object")
+            reasoning = data.get("reasoning_content")
+            if isinstance(reasoning,str) and reasoning:
+                if r.first_reasoning_at is None:
+                    r.first_reasoning_at = time.time()
+                # Raw SSE retains reasoning; it must never enter executable content.
+                r.reasoning_content_characters += len(reasoning)
             content = data.get("content")
             if isinstance(content,str) and content:
                 if r.first_content_at is None:
@@ -206,13 +214,15 @@ class PoolClient:
         lines = bounded_lines(response).__aiter__()
         done = False
         event = []
-        last_content = start
+        last_progress = start
         raw = []
         try:
             while True:
-                timeout = ((last_content+endpoint.idle_timeout) if r.content else (start+endpoint.first_content_timeout))-time.monotonic()
+                has_progress = bool(r.content) or r.reasoning_content_characters > 0
+                deadline = last_progress+endpoint.idle_timeout if has_progress else start+endpoint.first_content_timeout
+                timeout = deadline-time.monotonic()
                 if timeout <= 0:
-                    raise TimeoutError("no effective content progress")
+                    raise TimeoutError("no answer or reasoning progress")
                 try:
                     line = await asyncio.wait_for(anext(lines),timeout)
                 except StopAsyncIteration:
@@ -226,10 +236,10 @@ class PoolClient:
                     if data == "[DONE]":
                         done = True
                         break
-                    before = len(r.content)
+                    before = len(r.content) + r.reasoning_content_characters
                     self._consume(json.loads(data),r)
-                    if len(r.content)>before:
-                        last_content = time.monotonic()
+                    if len(r.content) + r.reasoning_content_characters > before:
+                        last_progress = time.monotonic()
                     if endpoint.completion == "finish" and r.finish_reason:
                         break
         finally:
@@ -237,4 +247,7 @@ class PoolClient:
         r.response_complete = (bool(r.content.strip()) and r.finish_reason == "stop" and
             (done or endpoint.completion == "finish") and not r.error_category and not event)
         if not r.response_complete and not r.error_category:
-            r.error_category = "incomplete_response"
+            # A proxy may close HTTP cleanly while upstream generation is still
+            # running. EOF alone cannot release execution occupancy or authorize
+            # another POST; require semantic termination even for a failed answer.
+            r.error_category = "incomplete_response" if done or r.finish_reason else "outcome_unknown"

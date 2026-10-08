@@ -107,6 +107,8 @@ preserved in authoritative arrays. Only known base blocks are accepted; unknown 
 Every occupied P/B must specify component_id; P/B with material None clears voxels.
 C defines semantic ownership, never draws geometry; floor is mandatory, parent is an existing
 object/component or building_01. Each separate door/window/column needs its own component ID.
+Every C call, including natural terrain/rock, needs a non-None floor such as 'ground'.
+Example: C('rock_a', '岩体', 'rock mass', 'rock', floor='ground'). MODEL_SPEC.floors=0 does not replace this.
 O declares an object only; natural/multiple objects use C(...,parent_id=object_id).
 B bounds are inclusive. W wall_id is the EXISTING owner of the real wall, cardinal axis,
 plane/depth must cover actual wall thickness, opening width/height >=3 inclusive.
