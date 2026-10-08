@@ -1,0 +1,39 @@
+{
+  "schema_version": "voxlush.model_qualification.v1",
+  "status": "unqualified_model_profile",
+  "profile_hash": "80c1b85bb323d5a69cd58a0705d7e1e5ebb29bab9d8cda0d159f055cba46d499",
+  "config": {
+    "allow_live": false,
+    "author_endpoint": null,
+    "visual_endpoint": null,
+    "global_api_cap": 0,
+    "qualification_flag": false
+  },
+  "budget": {
+    "model_requests": 0,
+    "known_cost": 0.0,
+    "unknown_cost_requests": 0,
+    "currency": null
+  },
+  "calibration": {
+    "representative_briefs": 0,
+    "paired_direct_two_stage": 0,
+    "holdout_tasks": 0,
+    "automatic_pass_candidates": 0
+  },
+  "human_review": {
+    "reviewed": 0,
+    "pass": 0,
+    "pass_rate": null,
+    "wilson_interval": null,
+    "evidence": null
+  },
+  "qualification_targets": {
+    "blind_review_sample": 100,
+    "minimum_pass_rate": 0.96,
+    "same_task_quality_noninferior": true,
+    "cost_or_throughput_improvement": true
+  },
+  "reason": "No paid endpoint authorization or human blind-review evidence was available. Offline software and fixture tests do not qualify a model profile.",
+  "recorded_at": "2026-10-08T00:00:00+08:00"
+}

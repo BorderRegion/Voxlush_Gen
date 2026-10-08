@@ -1,0 +1,33 @@
+{
+  "schema_version": "voxlush.migration_report.v1",
+  "status": "not_deployed",
+  "baseline_commit": "4f4be137d3924b38cb7301c2c4a0081ff32a7c2a",
+  "production_modified": false,
+  "production_data_root": null,
+  "legacy_import": {
+    "dry_run_exercised": true,
+    "fixture_double_import_exercised": true,
+    "first_fixture_imported": 1,
+    "second_fixture_already_registered": 1,
+    "accepted_added": 0,
+    "status_policy": "legacy_complete_unverified",
+    "production_source": null
+  },
+  "backup_restore": {
+    "external_root": "/tmp/voxlush-acceptance-20261008",
+    "backup_manifest": "backup/backup_manifest.json",
+    "restore_receipt": "restored/restore_receipt.json",
+    "database_integrity": "ok",
+    "paths_rebased": true,
+    "counts_reconciled": true,
+    "model_requests": 0
+  },
+  "deployment": {
+    "service_unit_installed": false,
+    "production_canary": false,
+    "rollback_test": false,
+    "release_tag": null,
+    "reason": "No production authorization was provided; only an isolated external-root fixture was exercised."
+  },
+  "recorded_at": "2026-10-08T00:00:00+08:00"
+}

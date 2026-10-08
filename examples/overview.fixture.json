@@ -1,0 +1,44 @@
+{
+  "schema_version": "voxlush.overview.v1",
+  "fixture": true,
+  "server_time": "2026-10-06T00:00:00Z",
+  "event_cursor": "example:1",
+  "campaign_id": "example-campaign",
+  "run_state": "idle",
+  "reason_code": "configuration_required",
+  "target_accepted_unique": 10000,
+  "counts": {
+    "accepted_unique": 0,
+    "qualified_pending_archive": 0,
+    "rejected": 0,
+    "duplicate": 0,
+    "awaiting_visual": 0
+  },
+  "throughput": {
+    "accepted_per_hour": null,
+    "window_seconds": 0,
+    "window_accepted": 0,
+    "eta_seconds": null
+  },
+  "api": {
+    "active": 0,
+    "provider_unresolved": 0,
+    "configured_cap": null,
+    "effective_cap": 0,
+    "observed_pool_cap": null
+  },
+  "cost": {
+    "known": null,
+    "unknown_reserved": null,
+    "currency": null
+  },
+  "queues": {
+    "author": 0,
+    "build": 0,
+    "geometry": 0,
+    "render": 0,
+    "review": 0,
+    "archive": 0
+  },
+  "note": "Fixture only. Production must never silently fall back to this snapshot."
+}

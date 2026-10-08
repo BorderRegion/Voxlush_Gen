@@ -1,0 +1,10 @@
+*
+!backend/
+!backend/src/
+!backend/src/voxlush/
+!backend/src/voxlush/voxel/
+!backend/src/voxlush/voxel/resources/
+!backend/src/voxlush/voxel/resources/sandbox_worker.py
+!backend/src/voxlush/voxel/resources/legacy_render.py
+!sandbox/
+!sandbox/Dockerfile

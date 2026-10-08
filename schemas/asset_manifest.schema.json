@@ -1,0 +1,697 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:voxlush:asset:v1",
+  "title": "Voxlush asset manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_kind",
+    "sample_id",
+    "task_id",
+    "campaign_id",
+    "revision",
+    "theme_seed_id",
+    "scene_type",
+    "quality_contract",
+    "lifecycle",
+    "accepted_at",
+    "grid",
+    "coordinate_system",
+    "hashes",
+    "versions",
+    "files",
+    "tags",
+    "quality",
+    "archive",
+    "provenance",
+    "usage",
+    "lineage",
+    "split",
+    "license"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "voxlush.asset.v1"
+    },
+    "record_kind": {
+      "enum": [
+        "production",
+        "calibration",
+        "fixture",
+        "example"
+      ]
+    },
+    "sample_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "theme_seed_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scene_type": {
+      "enum": [
+        "architecture",
+        "natural",
+        "hybrid"
+      ]
+    },
+    "quality_contract": {
+      "enum": [
+        "inhabited",
+        "exterior",
+        "ruin",
+        "landscape",
+        "mixed",
+        "legacy_large_wooden_v1"
+      ]
+    },
+    "lifecycle": {
+      "enum": [
+        "candidate",
+        "accepted",
+        "rejected",
+        "duplicate",
+        "quarantined"
+      ]
+    },
+    "accepted_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "grid": {
+      "const": [
+        256,
+        256,
+        256
+      ]
+    },
+    "coordinate_system": {
+      "const": {
+        "up": "Y",
+        "north": "-Z",
+        "south": "+Z",
+        "east": "+X",
+        "west": "-X"
+      }
+    },
+    "hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_sha256",
+        "canonical_voxel_sha256",
+        "annotation_sha256"
+      ],
+      "properties": {
+        "source_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "canonical_voxel_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "annotation_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime",
+        "material_catalog",
+        "geometry",
+        "renderer",
+        "rubric"
+      ],
+      "properties": {
+        "runtime": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "material_catalog": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "geometry": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "renderer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rubric": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "path",
+          "sha256",
+          "bytes"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sampling_tags",
+        "requested_tags",
+        "generator_declared",
+        "observed_tags"
+      ],
+      "properties": {
+        "sampling_tags": {
+          "type": "object"
+        },
+        "requested_tags": {
+          "type": "object"
+        },
+        "generator_declared": {
+          "type": "object"
+        },
+        "observed_tags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "key",
+              "value",
+              "source",
+              "evidence_ref"
+            ],
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "value": {},
+              "source": {
+                "enum": [
+                  "deterministic",
+                  "visual_review",
+                  "human"
+                ]
+              },
+              "evidence_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "confidence": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "required": [
+        "geometry",
+        "visual"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "geometry": {
+          "type": "object",
+          "required": [
+            "status",
+            "report_ref"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "enum": [
+                "not_run",
+                "pass",
+                "fail"
+              ]
+            },
+            "report_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "visual": {
+          "type": "object",
+          "required": [
+            "status",
+            "report_ref",
+            "input_voxel_sha256",
+            "image_sha256"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "enum": [
+                "not_run",
+                "pass",
+                "borderline",
+                "reject"
+              ]
+            },
+            "report_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "input_voxel_sha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "image_sha256": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "archive": {
+      "type": "object",
+      "required": [
+        "state",
+        "commit_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "enum": [
+            "uncommitted",
+            "staged",
+            "committed"
+          ]
+        },
+        "commit_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "seed",
+        "generation_mode",
+        "endpoint_alias",
+        "requested_model",
+        "reported_model",
+        "request_refs"
+      ],
+      "properties": {
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "generation_mode": {
+          "enum": [
+            "unselected",
+            "direct",
+            "two_stage",
+            "legacy_import"
+          ]
+        },
+        "endpoint_alias": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "requested_model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reported_model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "request_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": [
+        "model_requests",
+        "input_tokens",
+        "output_tokens",
+        "reasoning_tokens",
+        "cost_known",
+        "cost_unknown_reserved",
+        "currency"
+      ],
+      "properties": {
+        "model_requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "input_tokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "output_tokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "reasoning_tokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "cost_known": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "cost_unknown_reserved": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "lineage": {
+      "type": "object",
+      "required": [
+        "group_id",
+        "parent_sample_id",
+        "duplicate_cluster_id",
+        "is_unique"
+      ],
+      "properties": {
+        "group_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parent_sample_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "duplicate_cluster_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "is_unique": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "split": {
+      "enum": [
+        null,
+        "train",
+        "val",
+        "test",
+        "calibration",
+        "excluded"
+      ]
+    },
+    "license": {
+      "type": "object",
+      "required": [
+        "status",
+        "identifier"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "unknown",
+            "internal_only",
+            "verified"
+          ]
+        },
+        "identifier": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "lifecycle": {
+            "const": "accepted"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "record_kind": {
+            "const": "production"
+          },
+          "accepted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "hashes": {
+            "properties": {
+              "source_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "canonical_voxel_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "annotation_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          },
+          "versions": {
+            "properties": {
+              "runtime": {
+                "type": "string",
+                "minLength": 1
+              },
+              "material_catalog": {
+                "type": "string",
+                "minLength": 1
+              },
+              "geometry": {
+                "type": "string",
+                "minLength": 1
+              },
+              "renderer": {
+                "type": "string",
+                "minLength": 1
+              },
+              "rubric": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "files": {
+            "minItems": 8
+          },
+          "quality": {
+            "properties": {
+              "geometry": {
+                "properties": {
+                  "status": {
+                    "const": "pass"
+                  },
+                  "report_ref": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "visual": {
+                "properties": {
+                  "status": {
+                    "const": "pass"
+                  },
+                  "report_ref": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "input_voxel_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "image_sha256": {
+                    "minItems": 1
+                  }
+                }
+              }
+            }
+          },
+          "archive": {
+            "properties": {
+              "state": {
+                "const": "committed"
+              },
+              "commit_id": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "lineage": {
+            "properties": {
+              "is_unique": {
+                "const": true
+              }
+            }
+          },
+          "provenance": {
+            "properties": {
+              "generation_mode": {
+                "enum": [
+                  "direct",
+                  "two_stage",
+                  "legacy_import"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

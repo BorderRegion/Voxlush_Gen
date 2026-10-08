@@ -1,0 +1,7 @@
+{
+  "command_id": "example-command-001",
+  "campaign_id": "example-campaign",
+  "action": "drain",
+  "expected_config_revision": 1,
+  "payload": {}
+}

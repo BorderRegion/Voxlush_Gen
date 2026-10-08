@@ -1,0 +1,268 @@
+"""Standalone architecture program; full voxels and measured ownership, stdlib only."""
+import json,math,random,os,re
+from pathlib import Path
+from collections import Counter,deque
+ROOT=Path(__file__).resolve().parent
+import ast as __voxel_guard_ast
+for __voxel_guard_node in __voxel_guard_ast.walk(__voxel_guard_ast.parse(Path(__file__).read_text(encoding='utf-8'))):
+    if isinstance(__voxel_guard_node,__voxel_guard_ast.ImportFrom) and any(a.name.startswith('_') or a.name=='*' for a in __voxel_guard_node.names):
+        raise ValueError('Private and wildcard imports are forbidden in architecture programs')
+    if isinstance(__voxel_guard_node,__voxel_guard_ast.Import) and any(any(part.startswith('_') for part in a.name.split('.')) for a in __voxel_guard_node.names):
+        raise ValueError('Private module imports are forbidden in architecture programs')
+    if isinstance(__voxel_guard_node,__voxel_guard_ast.Attribute) and (__voxel_guard_node.attr in ('gi_frame','gi_code','cr_frame','cr_code','ag_frame','ag_code','f_globals','f_locals','f_builtins','f_back','f_code','tb_frame','tb_next') or __voxel_guard_node.attr.startswith('co_')):
+        raise ValueError('Frame and bytecode introspection are forbidden in architecture programs')
+SEED=SPEC['seed']
+MODEL_SPEC=json.loads(json.dumps(SPEC))
+rng=random.Random(SEED)
+random.seed(SEED)
+V,D,A={},{},None
+def _state(material):
+    if not isinstance(material,str):raise ValueError('Block state must be a string')
+    match=re.fullmatch(r'([a-z0-9_.:-]+)(?:\[([^\]]*)\])?',material)
+    if not match:raise ValueError('Invalid block state: '+str(material))
+    name=match[1]
+    if ':' not in name:name='minecraft:'+name
+    if not name.startswith('minecraft:') or name.count(':')!=1:raise ValueError('Unresolved block namespace: '+name)
+    props={}
+    for entry in match[2].split(',') if match[2] else []:
+        pair=entry.split('=')
+        if len(pair)!=2 or pair[0] in props or any(not re.fullmatch(r'[a-z0-9_.-]+',part) for part in pair):raise ValueError('Invalid block property')
+        props[pair[0]]=pair[1]
+    return name+('['+','.join(key+'='+props[key] for key in sorted(props))+']' if props else '')
+def _material(state):return state.split('[',1)[0].removeprefix('minecraft:')
+def C(cid, zh, en, cat, floor=None, room=None, orientation=None, parent_id='building_01', **attrs):
+    global A
+    if cid in D: raise ValueError('Duplicate component id: '+cid)
+    if cat not in ('foundation','slab','exterior_wall','interior_wall','roof','door','window','column','beam','stair','decoration','environment','furniture','terrain','rock','cave','vegetation','water','path','ruin','object'):
+        raise ValueError('Use a specific supported semantic category for '+cid+': '+str(cat))
+    if floor is None: raise ValueError('Explicit floor/level required for component '+cid+'; use foundation, ground, upper, roof, or an explicit level span')
+    if cat in ('exterior_wall','interior_wall'):
+        for required in ('construction_appearance','shape','thickness_voxels','surface'):
+            attrs.setdefault(required,'unknown')
+        if orientation is None: orientation='unknown'
+    A = cid
+    D[cid] = dict(id=cid, name=en, name_zh=zh, category=cat, parent_id=parent_id,
+        building_id=parent_id if parent_id in SPEC.get('objects',{}) else D.get(parent_id,{}).get('building_id','building_01'), floor=floor, room=room, orientation=orientation,
+        annotation_source='generator_declared', verification_status='not_independently_verified', attributes=attrs)
+    return cid
+
+def P(x, y, z, m, component_id=None):
+    if any(type(t) is not int or not 0 <= t <= 255 for t in (x,y,z)):
+        raise ValueError('Invalid voxel coordinate: '+repr((x,y,z)))
+    if m is None: V.pop((x,y,z), None)
+    else:
+        m=_state(m)
+        if _material(m) not in SPEC['allowlisted_block_types']: raise ValueError('Invalid material: '+str(m))
+        if SPEC.get('generation',{}).get('explicit_component_ids') and component_id is None: raise ValueError('Explicit component_id is required for each occupied voxel')
+        owner=component_id if component_id is not None else A
+        if owner not in D: raise ValueError('Unknown component id: '+str(owner))
+        V[x,y,z] = (m,owner)
+        if len(V)>600000:raise ValueError('Per-sample resource budget exceeded; correct accidental solid volume')
+
+def B(x0,x1,y0,y1,z0,z1,m,component_id=None):
+    if x1 < x0 or y1 < y0 or z1 < z0: raise ValueError('Reversed box bounds: '+repr((x0,x1,y0,y1,z0,z1)))
+    for x in range(x0,x1+1):
+        for y in range(y0,y1+1):
+            for z in range(z0,z1+1): P(x,y,z,m,component_id if component_id is not None else (None if SPEC.get('generation',{}).get('explicit_component_ids') else A))
+
+def W(cid,zh,en,wall_id,axis,plane,a0,a1,y0,y1,frame='oak_log',glazing='glass',depth=2,floor=None,room=None):
+    """True through-wall aperture. axis is north, south, east or west.
+    Plane aliases north/south and east/west require a matching cardinal wall.
+    glazing=None gives an open door; surviving frame voxels own this component."""
+    if axis in ('north/south','east/west'):
+        sides=('north','south') if axis=='north/south' else ('east','west')
+        wall_orientation=D[wall_id]['orientation']
+        if wall_orientation not in sides:
+            raise ValueError('Aperture plane alias disagrees with its wall: '+cid)
+        axis=wall_orientation
+    if axis not in ('north','south','east','west'):
+        raise ValueError('Aperture axis must name a cardinal side: '+cid)
+    if a1-a0<2 or y1-y0<2: raise ValueError('Framed aperture '+cid+' has no usable interior; use >=3 inclusive coordinates across and high')
+    wall_points=[p for p,(mat,owner) in V.items() if owner==wall_id and y0<=p[1]<=y1 and a0<=(p[0] if axis in ('north','south') else p[2])<=a1]
+    if not wall_points:
+        nearby=sorted({owner for (x,y,z),(material,owner) in V.items() if D[owner]['category'] in ('exterior_wall','interior_wall') and y0<=y<=y1 and a0<=(x if axis in ('north','south') else z)<=a1 and plane-2<=(z if axis in ('north','south') else x)<=plane+depth+1})
+        raise ValueError('Opening '+cid+' misses actual wall_id='+repr(wall_id)+'. W fourth argument must be the EXISTING wall owner already used in B/P, not a new window id. Actual nearby wall owners at this aperture: '+repr(nearby[:12])+'. Correct wall_id/plane/extents; do not delete the window.')
+    planes=[p[2] if axis in ('north','south') else p[0] for p in wall_points]
+    if depth>max(planes)-min(planes)+2 or plane>min(planes) or plane+depth-1<max(planes):raise ValueError('Opening '+cid+' plane/depth mismatch: actual wall planes '+str([min(planes),max(planes)])+' requested '+str([plane,plane+depth-1]))
+    if cid in D:
+        if D[cid]['category'] not in ('door','window') or D[cid]['attributes'].get('aperture_instance_created'):
+            raise ValueError('Different/repeated aperture instances must use unique ids: '+cid)
+        D[cid].update(name=en,name_zh=zh,category='door' if glazing is None else 'window',orientation=axis)
+        if floor is not None:D[cid]['floor']=floor
+        if room is not None:D[cid]['room']=room
+        D[cid]['attributes'].update(aperture_kind='through-wall opening',state='open' if glazing is None else 'glazed',thickness_voxels=depth,aperture_instance_created=True)
+    else:
+        C(cid,zh,en,'door' if glazing is None else 'window',floor,room,axis,
+          aperture_kind='through-wall opening',state='open' if glazing is None else 'glazed',thickness_voxels=depth,aperture_instance_created=True)
+    def strip(a,b,lo,hi,mat,d=depth):
+        if axis in ('north','south'): B(a,b,lo,hi,plane,plane+d-1,mat,cid)
+        else: B(plane,plane+d-1,lo,hi,a,b,mat,cid)
+    strip(a0,a1,y0,y1,None)
+    if glazing: strip(a0,a1,y0,y1,glazing,1)
+    strip(a0,a0,y0,y1,frame); strip(a1,a1,y0,y1,frame)
+    strip(a0,a1,y1,y1,frame)
+    if glazing: strip(a0,a1,y0,y0,frame)
+    bounds = [a0,a1,y0,y1,plane,plane+depth-1] if axis in ('north','south') else [plane,plane+depth-1,y0,y1,a0,a1]
+    D[wall_id]['attributes'].setdefault('actual_openings',[]).append({'component_id':cid,'type':'door' if glazing is None else 'window','glazing_material':_material(_state(glazing)) if glazing else None,'bounds':bounds})
+    return cid
+
+def G(cid,zh,en,x0,x1,z0,z1,eave_y,ridge_y,axis='x',m='gray_wool',gable_m=None,room=None):
+    """Generic gable drawing stroke, not a building template. Axis is ridge direction.
+    Covers the FULL supplied rectangle; closes both end gables with separate labels."""
+    if axis not in ('x','z') or ridge_y<eave_y:raise ValueError('Invalid gable geometry')
+    if cid in D and D[cid]['category']=='roof' and not any(owner==cid for mat,owner in V.values()):D.pop(cid)
+    C(cid,zh,en,'roof',floor='roof',room=room,orientation='east_west' if axis=='x' else 'north_south',shape='gabled' if ridge_y>eave_y else 'flat',eave_y=eave_y,ridge_y=ridge_y)
+    lo,hi=(z0,z1) if axis=='x' else (x0,x1);half=(hi-lo)//2
+    heights={a:eave_y+int(round((ridge_y-eave_y)*min(a-lo,hi-a)/max(1,half))) for a in range(lo,hi+1)}
+    for x in range(x0,x1+1):
+        for z in range(z0,z1+1):
+            a=z if axis=='x' else x;y=heights[a]
+            neighboring=min(heights.get(a-1,y),heights.get(a+1,y))
+            B(x,x,neighboring,y,z,z,m,cid)
+    for side,plane in [('west' if axis=='x' else'north',x0 if axis=='x' else z0),('east' if axis=='x' else'south',x1 if axis=='x' else z1)]:
+        gid=cid+'_gable_'+side
+        C(gid,zh+side+'山墙',en+' '+side+' end gable','exterior_wall',floor='roof',room=room,orientation=side,construction_appearance='filled gable in '+(gable_m or m),shape='stepped triangular',thickness_voxels=1,surface='voxel-flat')
+        for a,y in heights.items():
+            if y>eave_y:
+                if axis=='x':B(plane,plane,eave_y,y-1,a,a,gable_m or m,gid)
+                else:B(a,a,eave_y,y-1,plane,plane,gable_m or m,gid)
+    return cid
+
+def K(cid,zh,en,cx,cz,base_y,base_radius,top_y,top_radius=0,m='gray_wool',room=None,oculus_radius=None):
+    """Generic hollow octagonal cone drawing stroke. The model chooses every dimension."""
+    if top_y<base_y or base_radius<top_radius or top_radius<0:raise ValueError('Invalid cone geometry')
+    if cid in D and D[cid]['category']=='roof' and not any(owner==cid for mat,owner in V.values()):D.pop(cid)
+    C(cid,zh,en,'roof',floor='roof',room=room,orientation='up',shape='octagonal cone',base_radius=base_radius,top_radius=top_radius,base_y=base_y,top_y=top_y,oculus_radius=oculus_radius)
+    def octagon(dx,dz,r):return r>=0 and max(abs(dx),abs(dz))<=r and abs(dx)+abs(dz)<=math.ceil(13*r/8)
+    previous=base_radius
+    for y in range(base_y,top_y+1):
+        r=int(round(base_radius-(base_radius-top_radius)*(y-base_y)/max(1,top_y-base_y)))
+        thick=max(2,previous-r+1);inner=r-thick
+        for x in range(cx-r,cx+r+1):
+            for z in range(cz-r,cz+r+1):
+                dx,dz=x-cx,z-cz
+                if oculus_radius is not None and max(abs(dx),abs(dz))<=oculus_radius:continue
+                if octagon(dx,dz,r) and not octagon(dx,dz,inner):P(x,y,z,m,cid)
+        previous=r
+    return cid
+
+
+def _components(voxels):
+    groups={}
+    for p,(m,cid) in sorted(voxels.items()):groups.setdefault(cid,[]).append((p,m))
+    result=[]
+    for cid,values in groups.items():
+        c=json.loads(json.dumps(D[cid],ensure_ascii=False))
+        pts=[p for p,m in values];mats=Counter(_material(m) for p,m in values)
+        c['materials']=sorted(mats)
+        c['geometry']={'voxel_count':len(values),'material_counts':dict(sorted(mats.items())),
+          'bbox':{'min':[min(p[i] for p in pts) for i in range(3)],'max':[max(p[i] for p in pts) for i in range(3)]},
+          'membership':'exact blocks[].component_id; bbox is summary only'}
+        c['attributes'].setdefault('engineering_properties','unknown')
+        if SPEC.get('recovery_origin'):
+            c['attributes'].pop('damage_pattern',None)
+            c['attributes'].pop('preservation_state',None)
+        result.append(c)
+    return result
+
+def _blocks(voxels):
+    return [{'x':p[0],'y':p[1],'z':p[2],'type':_material(m),'block_state':m,'component_id':cid} for p,(m,cid) in sorted(voxels.items())]
+
+def _connected_count(points):
+    if not points:return 0
+    remaining=set(points);count=0
+    directions=[(x,y,z) for x in (-1,0,1) for y in (-1,0,1) for z in (-1,0,1) if (x,y,z)!=(0,0,0)]
+    while remaining:
+        count+=1;stack=[remaining.pop()]
+        while stack:
+            x,y,z=stack.pop()
+            for a,b,c in directions:
+                p=(x+a,y+b,z+c)
+                if p in remaining:remaining.remove(p);stack.append(p)
+    return count
+
+def _weather():
+    """Measured, tiny edge cuts after model-designed architecture; never invented cut boxes."""
+    counts=Counter(cid for m,cid in V.values())
+    hints=SPEC.get('weathering_candidates') or []
+    protected={cid for cid in SPEC.get('protected_component_ids',[]) if counts[cid]}|{cid for cid,c in D.items() if counts[cid] and (c['category'] in ('door','window','column','beam','stair') or c['attributes'].get('protected'))}
+    choices=[cid for cid in hints if counts[cid]]
+    choices+=sorted(cid for cid,c in D.items() if counts[cid] and c['category'] in ('exterior_wall','roof','decoration') and cid not in choices and cid not in protected)
+    SPEC['protected_component_ids']=sorted(cid for cid in protected if counts[cid])
+    SPEC['weathering_candidates']=[cid for cid in choices if counts[cid]]
+    SPEC['unused_weathering_hints']=[cid for cid in hints if not counts[cid]]
+    candidates=[cid for cid in choices if cid not in protected and D[cid]['category'] in ('exterior_wall','decoration','roof') and counts[cid]>=16]
+    SPEC['weathering_status']='not_applied_no_safe_eligible_edge'
+    if not candidates:return []
+    groups=_connected_count(V);cuts=[];budget=max(1,int(len(V)*.01))
+    if groups!=1:
+        SPEC['weathering_status']='not_applied_pending_connectivity_repair';return []
+    # Stable seeded order; geometry remains designed by the model.
+    order=list(candidates);rng.shuffle(order)
+    for cid in order[:8]:
+        pts=[p for p,(m,c) in V.items() if c==cid]
+        pts.sort(key=lambda p:(-p[1],p[0],p[2]))
+        top=pts[:min(len(pts),max(8,len(pts)//5))]
+        rng.shuffle(top)
+        for anchor in top[:16]:
+            cluster={p for p in pts if all(abs(p[i]-anchor[i])<=1 for i in (0,2)) and anchor[1]-1<=p[1]<=anchor[1] and (p[0],p[1]+1,p[2]) not in V}
+            cluster=set(sorted(cluster)[:min(12,budget,max(1,counts[cid]//10))])
+            if not cluster or _connected_count(set(V)-cluster)>groups:continue
+            removed=[{'x':p[0],'y':p[1],'z':p[2],'type':V[p][0],'component_id':cid} for p in sorted(cluster)]
+            for p in cluster:V.pop(p)
+            cuts.append({'id':'weather_'+str(len(cuts)+1),'component_id':cid,'removed_voxels':removed,
+              'bbox':{'min':[min(p[i] for p in cluster) for i in range(3)],'max':[max(p[i] for p in cluster) for i in range(3)]}})
+            budget-=len(cluster);break
+        if len(cuts)>=2 or budget<=0:break
+    if cuts:SPEC['weathering_status']='measured_minor_cuts_applied'
+    return cuts
+
+def _save_new(name,data):
+    path=ROOT/name
+    # Exclusive creation prevents accidentally replacing any completed sample.
+    with path.open('x',encoding='utf-8') as f:
+        json.dump(data,f,ensure_ascii=False,separators=(',',':'));f.write('\n');f.flush();os.fsync(f.fileno())
+
+def finish():
+    if not V:raise ValueError('Empty architecture')
+    reference=dict(V)
+    reference_components=_components(reference)
+    cuts=_weather() if SPEC.get('asset_type')=='fantasy_ruin' else []
+    components=_components(V);blocks=_blocks(V);cs={c['id']:c for c in components}
+    for c in components:
+        if c['parent_id']!='building_01' and c['parent_id'] not in cs and c['parent_id'] not in SPEC.get('objects',{}):raise ValueError('Unknown component parent: '+c['id'])
+    materials=Counter(_material(m) for m,c in V.values())
+    bbox={'min':[min(p[i] for p in V) for i in range(3)],'max':[max(p[i] for p in V) for i in range(3)]}
+    structural={'exterior_wall','interior_wall','roof','column','beam','stair','door','window','slab'}
+    main={p for p,(m,c) in reference.items() if D[c]['category'] in structural}
+    retained=len(main&set(V))/len(main) if main else 1.0
+    if retained<.98:raise ValueError('Mostly preserved requirement failed')
+    SPEC['measured_weathering']=cuts
+    SPEC['materials']=sorted(materials)
+    actual=['category:'+cat for cat in sorted({c['category'] for c in components})]+['material:'+m for m in sorted(materials)]
+    description=DESCRIPTION
+    if SPEC.get('recovery_origin'):
+        cats=Counter(c['category'] for c in components);dims=[bbox['max'][i]-bbox['min'][i]+1 for i in range(3)]
+        description={'zh':f"{SPEC['name_zh']}：{SPEC['use']}。实际体量为 {dims[0]}×{dims[1]}×{dims[2]} 格（X/Y/Z），使用 {', '.join(sorted(materials)[:8])}。保存 {cats['exterior_wall']} 个外墙部件、{cats['roof']} 个屋顶部件、{cats['column']} 个柱部件、{cats['door']} 个门部件和 {cats['window']} 个窗部件。完整建筑程序仅施加了局部轻微边缘缺损，主体体素保留 {retained:.2%}。部件语义为生成器声明。",
+          'en':f"{SPEC['name_en']}, intended as {SPEC['use']}. The saved X/Y/Z extent is {dims[0]} by {dims[1]} by {dims[2]} voxels. The geometry contains {cats['exterior_wall']} exterior-wall components, {cats['roof']} roof components, {cats['column']} column components, {cats['door']} door components and {cats['window']} window components. Only minor local edge chips were applied to the complete authored structure; {retained:.2%} of its structural voxels remain. Semantic roles are generator-declared."}
+        description['zh']=description['zh'].replace(SPEC['use']+'。','')
+        if not cuts:
+            description['zh']=description['zh'].replace('完整建筑程序仅施加了局部轻微边缘缺损，','未找到安全的边缘缺损位置，本次保留完整结构，')
+            description['en']=description['en'].replace('Only minor local edge chips were applied to the complete authored structure;','No additional cuts were applied because no safe eligible edge was available;')
+    result={'sample_id':SPEC['sample_id'],'format_version':'1.1','grid':SPEC['grid'],'seed':SEED,
+      'task_spec':SPEC,'dataset_collection':SPEC['dataset_collection'],'asset_type':SPEC['asset_type'],
+      'annotation_source':'generator_declared','annotation_verification':'not_independently_verified',
+      'description':description,'requested_tags':REQUESTED_TAGS,'actual_tags':actual,
+      'generator_claimed_tags':ACTUAL_TAGS,
+      'building':{'id':'building_01','name':SPEC['name_en'],'name_zh':SPEC['name_zh'],'count':1,'annotation_source':'generator_declared'},
+      'objects':list(SPEC.get('objects',{}).values()),'components':components,'blocks':blocks,
+      'preservation_metrics':{'mode':'intact','reference_kind':'complete_generator_authored_structure',
+        'reference_main_voxels':len(main),'retained_main_voxels':len(main&set(V)),'main_retained_fraction':round(retained,8),
+        'removed_voxels':sum(len(c['removed_voxels']) for c in cuts),'protected_component_ids':SPEC.get('protected_component_ids',[]),
+        'damage_cuts':cuts,'historical_reconstruction_verified':False},
+      'summary':{'block_count':len(blocks),'component_count':len(components),'material_counts':dict(sorted(materials.items())),'bbox':bbox},
+      'local_consistency':{'unique_integer_in_range_coordinates':True,'materials_allowlisted':True,
+        'component_references_valid':True,'component_counts_from_final_voxels':True,'independent_geometry_semantics_verification':False}}
+    _save_new('preservation_reference.json',{'sample_id':SPEC['sample_id'],'components':reference_components,'blocks':_blocks(reference)})
+    _save_new('sample.json',result)
+    _save_new('spec.json',SPEC)

@@ -1,0 +1,26 @@
+[
+  {
+    "resource": "builder_core.txt",
+    "origin": "user-provided wooden_pipeline_20261006/builder_core.txt",
+    "origin_sha256": "b928966f2d7ec9c1046d3e67331650aca2cc0c1069a4a0d62fb4d7213cd38bc3",
+    "license": "not supplied; provenance retained; dataset rights not inferred"
+  },
+  {
+    "resource": "legacy_render.py",
+    "origin": "user-provided wooden_pipeline_20261006/render.py",
+    "origin_sha256": "63eab67bdc8e6572627a864b08f8ffe62dd8404979eaebf7ffb5e84f9577f229",
+    "license": "not supplied; provenance retained; dataset rights not inferred"
+  },
+  {
+    "resource": "legacy_quality.py",
+    "origin": "user-provided wooden_pipeline_20261006/quality_gate.py",
+    "origin_sha256": "9c15ba192d966b71c51ea8ff19b511488cf5da0a42332039878f3941d57ec1db",
+    "license": "not supplied; provenance retained; dataset rights not inferred"
+  },
+  {
+    "resource": "legacy_wooden.py",
+    "origin": "user-provided wooden_pipeline_20261006/wooden_quality_v2.py",
+    "origin_sha256": "72d0738dc5856199d89488930be67ef25fa02d60deb805d8316ea1bc1172ac19",
+    "license": "not supplied; provenance retained; dataset rights not inferred"
+  }
+]

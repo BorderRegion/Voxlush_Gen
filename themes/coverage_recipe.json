@@ -1,0 +1,73 @@
+{
+  "schema_version": "voxlush.recipe.v1",
+  "name": "broad_coverage_v1",
+  "scene_weights": {
+    "architecture": 0.6,
+    "natural": 0.25,
+    "hybrid": 0.15
+  },
+  "scale_weights": {
+    "S": 0.2,
+    "M": 0.45,
+    "L": 0.25,
+    "XL": 0.1
+  },
+  "sampling_policy": "hierarchical_accepted_deficit",
+  "exploration_request_share": 0.1,
+  "seed_minimum_goal_at_10000": 10,
+  "note": "Minimum goals apply only to selected and qualified seeds within their scene quotas; unqualified seeds remain visible as coverage debt. Never silently redistribute all difficult themes away.",
+  "batch_brief_expansion": {
+    "enabled": false,
+    "batch_size": 16,
+    "max_batch_repairs": 1
+  },
+  "axes": {
+    "site": [
+      "flat",
+      "gentle_slope",
+      "steep_slope",
+      "waterside",
+      "cliff_edge",
+      "dense_street",
+      "forest_edge",
+      "cave_interface",
+      "desert_edge",
+      "snowline"
+    ],
+    "spatial_intent": [
+      "courtyard_relation",
+      "vertical_layers",
+      "linear_sequence",
+      "clustered_volumes",
+      "central_shared_space",
+      "terrain_integration",
+      "water_land_relation",
+      "porous_boundary",
+      "interior_exterior_transition"
+    ],
+    "material_intent": [
+      "warm_timber",
+      "contrasting_stone",
+      "muted_brick",
+      "earth_and_plaster",
+      "glass_and_frame",
+      "weathered_mixed",
+      "local_rock",
+      "ice_and_snow",
+      "water_and_vegetation"
+    ],
+    "condition": [
+      "intact",
+      "weathered",
+      "abandoned",
+      "ruined",
+      "regrown"
+    ]
+  },
+  "compatibility_notes": [
+    "Axes are optional prompts, not a Cartesian product and not a geometric grammar.",
+    "Task contract must match intended condition and use; inhabited tasks cannot silently switch to ruined or exterior.",
+    "Scale is a sampling hint; use resource-tested bounds inside the 256 grid, not rescaling duplicates.",
+    "Observe actual accepted diversity, not only requested tags."
+  ]
+}

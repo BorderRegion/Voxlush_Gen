@@ -1,0 +1,32 @@
+{
+  "schema_version": "voxlush.task.v1",
+  "record_kind": "example",
+  "task_id": "example-landscape-task-001",
+  "campaign_id": "example-campaign",
+  "theme_seed_id": "geology_03",
+  "scene_type": "natural",
+  "quality_contract": "landscape",
+  "seed": 26061002,
+  "brief": {
+    "language": "zh-CN",
+    "instruction": "独立设计一段包含天然石拱的Minecraft体素地景。拱洞、基部、周围岩体与地面形成完整构图；无需房间、窗户或家具。每个自然组件具有真实体素所有权。具体形状由你编写本样本代码自由实现。",
+    "design_focus": "空洞与岩体之间的比例和空间层次，不使用统一地形模板批量改参数。"
+  },
+  "bounds": {
+    "grid": [
+      256,
+      256,
+      256
+    ],
+    "scale_class": "M"
+  },
+  "interior_requirement": "not_required",
+  "requested_tags": {
+    "spatial_intent": "terrain_integration"
+  },
+  "sampling_tags": {
+    "family_id": "geology",
+    "site": "gentle_slope"
+  },
+  "lineage_group_id": null
+}

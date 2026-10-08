@@ -1,0 +1,25 @@
+{
+  "schema_version": "voxlush.config.v1",
+  "data_root": "./data",
+  "host": "127.0.0.1",
+  "port": 8740,
+  "allow_live": false,
+  "global_api_cap": 0,
+  "build_workers": 1,
+  "render_workers": 1,
+  "archive_workers": 1,
+  "local_memory_mb": 4096,
+  "disk_reserve_bytes": 1073741824,
+  "sample_request_limit": 8,
+  "geometry_repairs": 2,
+  "visual_repairs": 1,
+  "transport_retries": 1,
+  "author": null,
+  "visual": null,
+  "qualification": {
+    "qualified": false,
+    "human_reviewed": 0,
+    "human_pass": 0
+  },
+  "frontend_dist": "./frontend/dist"
+}

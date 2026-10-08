@@ -1,0 +1,286 @@
+{
+  "upstream_commit": "4f4be137d3924b38cb7301c2c4a0081ff32a7c2a",
+  "local_baseline": [
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "targeted_patch.focused-candidate.py",
+      "sha256": "174168a55beba5c62d4cc7d9993635e7a86e95dd007dd2641382ae4bcbb8e7aa"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "publish_checkpoint.py",
+      "sha256": "78fdf9f10d6e492fc1ae8896145b2df742907c453a557d71136699a2ed2d2f87"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "patching.py",
+      "sha256": "626df520584375f9334e75b2f06f0d01f39441016a7348d531f079dbaed96924"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "resource_broker.py",
+      "sha256": "9fa2d6c046d976bf35134d79271fa71e6cc89a4cc87da7c975c110fd6a3ce574"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "focused_repair_pilots.py",
+      "sha256": "ec2225b762b7890492fba3c249db89531a9304f389da403abfe82fba912c811b"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "quality_gate.py",
+      "sha256": "9c15ba192d966b71c51ea8ff19b511488cf5da0a42332039878f3941d57ec1db"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "runtime.py",
+      "sha256": "51ab5824c9294e849f97de2c31c20eba2ff4e53c0bf0702bcbf0a606adfa2fbc"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "wooden_quality_v2.focused-candidate.py",
+      "sha256": "72d0738dc5856199d89488930be67ef25fa02d60deb805d8316ea1bc1172ac19"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "workflow.py",
+      "sha256": "17371b73ceed11a89930608767f8d2cbe5cf9f1ed76a73448d6948db85c4a250"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "production.py",
+      "sha256": "1918b1515996210b1a81e7bcf0defd4321f9a02582979556797b62110fffbfc3"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "sandbox_exec.py",
+      "sha256": "bec550276d964ee88b849007b4257334af24b2f51c01ee9f6e5b751065cca2d3"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "recover_source.py",
+      "sha256": "4893aaff0e84a201bb3791fb0f6d06ddd67d10ac35fa730fa9933a55dc5624ea"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "finish_pending.py",
+      "sha256": "0692dcbd5cae6e1d55080c79a3f34e0faf507ef5ffea66cec042faf79249e2f0"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "prompt.txt",
+      "sha256": "3634a31087812344cfbd1d113742805dcb8cdbace80bf1795ed853dc7cc331e5"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "render.py",
+      "sha256": "63eab67bdc8e6572627a864b08f8ffe62dd8404979eaebf7ffb5e84f9577f229"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "builder_core.txt",
+      "sha256": "b928966f2d7ec9c1046d3e67331650aca2cc0c1069a4a0d62fb4d7213cd38bc3"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "targeted_pilot.py",
+      "sha256": "ab537165dff492da112d3bb746254cfaf5c8ec44823a0fc89601193bfea6ef17"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "test_stage_dispatch.py",
+      "sha256": "4e81cf1bb011654136277d13e76f0371f9d941da3d266ba7071f5d85ec7d35db"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "continuity.py",
+      "sha256": "1b2f2d3f52ae51bc22e2c0e96c92c42edf59ba69c2764e5ad75fcc62d07e8f93"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "wooden_quality_v2.py",
+      "sha256": "72d0738dc5856199d89488930be67ef25fa02d60deb805d8316ea1bc1172ac19"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "test_focused_repair_contracts.py",
+      "sha256": "9d6e689a160f6f60333a99785ffbb1bd4822e786682abb857d1248c7b4e43e8f"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "targeted_patch.py",
+      "sha256": "174168a55beba5c62d4cc7d9993635e7a86e95dd007dd2641382ae4bcbb8e7aa"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "continuous_runner.py",
+      "sha256": "c9e3c3ab6d5c7aa2265f7256fcad7774d065009b75ee17713680fad11cd4e822"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "stage_dispatch.py",
+      "sha256": "dd8c7f594df82e492ba1f035be6ec9b5fe1f621fa121fd0406b1b9bf72aa26c8"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "api_client.py",
+      "sha256": "f0a3a11d13fd7d4e53bb6812f4b75179ae355f635ad3987b845413b867d7a151"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "wooden_entry.py",
+      "sha256": "0c7c0a4e9f8d73530a801838a570c7e12c8c920542d60b4a8ee42f1ee17480cd"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "diagnostic_core.txt",
+      "sha256": "4df909be0bb14b0e56e1064f69cab97c7d6b05527d840561b1cffcaf13312e9f"
+    },
+    {
+      "group": "wooden_pipeline_20261006",
+      "file": "test_invariants.py",
+      "sha256": "1832a6fa34a878eb1f7e01f0f514574baabcee66d13dad867ae8e55e59f6768a"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "publish_checkpoint.py",
+      "sha256": "2df14aef7a90e0ea3663a5c510e851d3a797f373acad6f1b7004277057eae05a"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "pilot_requests.py",
+      "sha256": "acaa6e7bf1dd034fb64a893cee553aaa554bf7c10354d19588597d61b26e7393"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "patching.py",
+      "sha256": "626df520584375f9334e75b2f06f0d01f39441016a7348d531f079dbaed96924"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "local_compat32.py",
+      "sha256": "bd66521c6b06a92c02f05c0a7b3537e9b786982f222956e07d54f625f8d92653"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "pilot_flash_low.py",
+      "sha256": "cca1d44f4f5a2dba77d49a9eb467158c3d1cbc4a1aaf8d3d98ffa79e88253963"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "quality_gate.py",
+      "sha256": "2b0de1528c898200bacc7760bedb2e9ab43017dd057ce722cedd8a9bd825056e"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "runtime.py",
+      "sha256": "51ab5824c9294e849f97de2c31c20eba2ff4e53c0bf0702bcbf0a606adfa2fbc"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "workflow.py",
+      "sha256": "17371b73ceed11a89930608767f8d2cbe5cf9f1ed76a73448d6948db85c4a250"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "compat32_and_resume.py",
+      "sha256": "c0561773a43c352b4e2d846e8c8031ea4bb22f1914c7bb8e36df66072e5e0811"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "production.py",
+      "sha256": "1918b1515996210b1a81e7bcf0defd4321f9a02582979556797b62110fffbfc3"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "sandbox_exec.py",
+      "sha256": "bec550276d964ee88b849007b4257334af24b2f51c01ee9f6e5b751065cca2d3"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "recover_source.py",
+      "sha256": "4893aaff0e84a201bb3791fb0f6d06ddd67d10ac35fa730fa9933a55dc5624ea"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "audit_legacy.py",
+      "sha256": "9692a4ca95f547bbf71baa3d8a40b450dc777e8368e0a6a46199aeeb13ab842d"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "finish_pending.py",
+      "sha256": "0692dcbd5cae6e1d55080c79a3f34e0faf507ef5ffea66cec042faf79249e2f0"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "prompt.txt",
+      "sha256": "5c7013745ca6bd836f957a52ad6b9e39f4fc0c999d7300e8b7d72a0485f11be4"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "concise_pilots.py",
+      "sha256": "aea43f9ffbe3c5360bed7bffd8e20f059c3293769c9374846abc88779e4c76d8"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "render.py",
+      "sha256": "63eab67bdc8e6572627a864b08f8ffe62dd8404979eaebf7ffb5e84f9577f229"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "continuous_rollout.py",
+      "sha256": "de6d56a352561329e41bac5d809997758b92c7d9cc0f14561b6b6c7b1c26e909"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "pilot_recovery.py",
+      "sha256": "518f2bcb7c5361bc7c9fbfd56e90835056944e330ef8b323566fb8dc3f27e5d7"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "builder_core.txt",
+      "sha256": "969148a4dbd56a5101696f66a831b4d965cfc432f2b89778c060a4779ca6384c"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "capacity_rollout.py",
+      "sha256": "3103e790eab65382a056f654123490a6b92f7d631b198caac62078f731d11d6d"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "continuity.py",
+      "sha256": "1b2f2d3f52ae51bc22e2c0e96c92c42edf59ba69c2764e5ad75fcc62d07e8f93"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "targeted_patch.py",
+      "sha256": "174168a55beba5c62d4cc7d9993635e7a86e95dd007dd2641382ae4bcbb8e7aa"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "continuous_runner.py",
+      "sha256": "390cf28af881d6b6644322ec7c9621f12a8411cf1fe2e8e9f300adb07ef47e88"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "stage_dispatch.py",
+      "sha256": "dd8c7f594df82e492ba1f035be6ec9b5fe1f621fa121fd0406b1b9bf72aa26c8"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "api_client.py",
+      "sha256": "a00a680844ab750b248539591e987816b72b018506191271ddaed1cef77234a3"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "diagnostic_core.txt",
+      "sha256": "4df909be0bb14b0e56e1064f69cab97c7d6b05527d840561b1cffcaf13312e9f"
+    },
+    {
+      "group": "pipeline_v2_20261006",
+      "file": "test_invariants.py",
+      "sha256": "1832a6fa34a878eb1f7e01f0f514574baabcee66d13dad867ae8e55e59f6768a"
+    }
+  ],
+  "production_modified": false
+}

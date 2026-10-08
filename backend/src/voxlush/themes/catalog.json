@@ -1,0 +1,2504 @@
+{
+  "schema_version": "voxlush.catalog.v1",
+  "status": "creative_seed_catalog_not_geometry_templates",
+  "families": [
+    {
+      "id": "timber",
+      "name_zh": "木构与林地住居",
+      "scene_type": "architecture",
+      "default_quality_contract": "inhabited"
+    },
+    {
+      "id": "masonry",
+      "name_zh": "石砌、砖建与土建住居",
+      "scene_type": "architecture",
+      "default_quality_contract": "inhabited"
+    },
+    {
+      "id": "courtyard_east",
+      "name_zh": "庭院与东亚启发空间",
+      "scene_type": "architecture",
+      "default_quality_contract": "inhabited"
+    },
+    {
+      "id": "hot_dry",
+      "name_zh": "热干气候启发建筑",
+      "scene_type": "architecture",
+      "default_quality_contract": "inhabited"
+    },
+    {
+      "id": "cold_shelter",
+      "name_zh": "寒冷气候与避寒建筑",
+      "scene_type": "architecture",
+      "default_quality_contract": "inhabited"
+    },
+    {
+      "id": "water_living",
+      "name_zh": "水岸与适水居住",
+      "scene_type": "architecture",
+      "default_quality_contract": "inhabited"
+    },
+    {
+      "id": "urban_home",
+      "name_zh": "现代都市居住",
+      "scene_type": "architecture",
+      "default_quality_contract": "inhabited"
+    },
+    {
+      "id": "commerce",
+      "name_zh": "商铺、市集与服务",
+      "scene_type": "architecture",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "civic_learning",
+      "name_zh": "教育、知识与公共服务",
+      "scene_type": "architecture",
+      "default_quality_contract": "inhabited"
+    },
+    {
+      "id": "culture",
+      "name_zh": "展览、音乐与表演",
+      "scene_type": "architecture",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "agriculture",
+      "name_zh": "农业、牧养与食物生产",
+      "scene_type": "architecture",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "craft",
+      "name_zh": "手作与传统工坊",
+      "scene_type": "architecture",
+      "default_quality_contract": "inhabited"
+    },
+    {
+      "id": "industry",
+      "name_zh": "工业、能源与市政设施",
+      "scene_type": "architecture",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "transport",
+      "name_zh": "交通、桥梁与物流",
+      "scene_type": "architecture",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "maritime",
+      "name_zh": "海岸、航运与海洋设施",
+      "scene_type": "architecture",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "frontier",
+      "name_zh": "山地、荒野与边缘设施",
+      "scene_type": "architecture",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "ritual",
+      "name_zh": "纪念、仪式与静思空间",
+      "scene_type": "architecture",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "fortification",
+      "name_zh": "城防、关隘与历史启发设施",
+      "scene_type": "architecture",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "leisure",
+      "name_zh": "园林、休闲与度假设施",
+      "scene_type": "architecture",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "ruins",
+      "name_zh": "遗迹、废弃与自然重占",
+      "scene_type": "architecture",
+      "default_quality_contract": "ruin"
+    },
+    {
+      "id": "fantasy",
+      "name_zh": "奇幻、童话与想象建筑",
+      "scene_type": "architecture",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "science_fiction",
+      "name_zh": "科幻与未来设施",
+      "scene_type": "architecture",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "settlement",
+      "name_zh": "聚落、街区与公共空间组合",
+      "scene_type": "hybrid",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "landscape_hybrid",
+      "name_zh": "建筑与地景融合",
+      "scene_type": "hybrid",
+      "default_quality_contract": "mixed"
+    },
+    {
+      "id": "geology",
+      "name_zh": "岩体、山体与地貌构成",
+      "scene_type": "natural",
+      "default_quality_contract": "landscape"
+    },
+    {
+      "id": "caves",
+      "name_zh": "洞穴、地下与岩腔",
+      "scene_type": "natural",
+      "default_quality_contract": "landscape"
+    },
+    {
+      "id": "freshwater",
+      "name_zh": "河流、湖泊与湿地",
+      "scene_type": "natural",
+      "default_quality_contract": "landscape"
+    },
+    {
+      "id": "coast",
+      "name_zh": "海岸、海岛与潮间带",
+      "scene_type": "natural",
+      "default_quality_contract": "landscape"
+    },
+    {
+      "id": "arid",
+      "name_zh": "干旱、沙地与风蚀意象",
+      "scene_type": "natural",
+      "default_quality_contract": "landscape"
+    },
+    {
+      "id": "forest",
+      "name_zh": "森林、植被与生态片段",
+      "scene_type": "natural",
+      "default_quality_contract": "landscape"
+    },
+    {
+      "id": "snow_ice",
+      "name_zh": "冰雪、高寒与冻土地景",
+      "scene_type": "natural",
+      "default_quality_contract": "landscape"
+    },
+    {
+      "id": "volcanic_fantasy",
+      "name_zh": "火山与幻想生态地景",
+      "scene_type": "natural",
+      "default_quality_contract": "landscape"
+    }
+  ],
+  "seeds": [
+    {
+      "id": "timber_01",
+      "family_id": "timber",
+      "name_zh": "林地木匠住宅",
+      "design_focus": "让工作区与居住区通过体量和入口区分，而非仅更换房间标签",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "timber_02",
+      "family_id": "timber",
+      "name_zh": "坡地双层木屋",
+      "design_focus": "设计与坡度相适应的楼层和室外到达关系",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "timber_03",
+      "family_id": "timber",
+      "name_zh": "围炉共居木宅",
+      "design_focus": "围绕共享活动组织空间，避免重复卧室机械堆叠",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "timber_04",
+      "family_id": "timber",
+      "name_zh": "采光中庭木宅",
+      "design_focus": "让中庭真正影响房间朝向、通路与外部轮廓",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "timber_05",
+      "family_id": "timber",
+      "name_zh": "临溪架空木宅",
+      "design_focus": "处理水边落脚、支承与可达入口之间的关系",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "timber_06",
+      "family_id": "timber",
+      "name_zh": "长檐连廊木宅",
+      "design_focus": "探索连廊、进深与不同室内空间的层次",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "timber_07",
+      "family_id": "timber",
+      "name_zh": "多代家庭木宅",
+      "design_focus": "兼顾共享活动和相对独立的生活空间",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "timber_08",
+      "family_id": "timber",
+      "name_zh": "山林大型木构庄园",
+      "design_focus": "构思多个独立但协调的体量与完整室内动线",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "masonry_01",
+      "family_id": "masonry",
+      "name_zh": "山谷石砌农舍",
+      "design_focus": "表现厚重墙体与柔和生活尺度之间的对比",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "masonry_02",
+      "family_id": "masonry",
+      "name_zh": "窄面砖砌联排宅",
+      "design_focus": "在有限面宽中创造有辨识度的层次与采光",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "masonry_03",
+      "family_id": "masonry",
+      "name_zh": "内向庭院土屋",
+      "design_focus": "让庭院、阴影和居住空间共同构成主形体",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "masonry_04",
+      "family_id": "masonry",
+      "name_zh": "岩台嵌入式石宅",
+      "design_focus": "处理岩台与建筑交接，而不把房屋简单放在方块底座上",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "masonry_05",
+      "family_id": "masonry",
+      "name_zh": "拱券庭院住宅",
+      "design_focus": "让拱券与通路形成一致的空间逻辑",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "masonry_06",
+      "family_id": "masonry",
+      "name_zh": "阶梯式山城住宅",
+      "design_focus": "将高差变成室内外连接的设计主题",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "masonry_07",
+      "family_id": "masonry",
+      "name_zh": "砖石混合艺术家住宅",
+      "design_focus": "组织创作采光空间与日常生活尺度",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "masonry_08",
+      "family_id": "masonry",
+      "name_zh": "雨庭聚合式石宅",
+      "design_focus": "以若干庭院组织丰富而非随机拼接的居住体量",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "courtyard_east_01",
+      "family_id": "courtyard_east",
+      "name_zh": "小型庭院茶屋",
+      "design_focus": "让入院过程与主要品茶空间形成清晰体验",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "courtyard_east_02",
+      "family_id": "courtyard_east",
+      "name_zh": "临水书斋院落",
+      "design_focus": "围绕水面、阅览和安静入口安排空间",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "courtyard_east_03",
+      "family_id": "courtyard_east",
+      "name_zh": "巷弄工艺店宅",
+      "design_focus": "区分面向街巷的商用空间与后部生活空间",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "courtyard_east_04",
+      "family_id": "courtyard_east",
+      "name_zh": "山间客舍院落",
+      "design_focus": "在高差和小庭院之间安排住宿与公共活动",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "courtyard_east_05",
+      "family_id": "courtyard_east",
+      "name_zh": "雨廊围合住宅",
+      "design_focus": "探索雨廊、开放院子与封闭房间的不同层次",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "courtyard_east_06",
+      "family_id": "courtyard_east",
+      "name_zh": "园中画室",
+      "design_focus": "让观察花园的方向影响形体与采光",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "courtyard_east_07",
+      "family_id": "courtyard_east",
+      "name_zh": "层叠台院居所",
+      "design_focus": "形成连贯而有变化的台地、院落和生活区",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "courtyard_east_08",
+      "family_id": "courtyard_east",
+      "name_zh": "公共庭院文化驿站",
+      "design_focus": "将小型展览、休息与庭院通行结合",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "hot_dry_01",
+      "family_id": "hot_dry",
+      "name_zh": "绿洲旅舍",
+      "design_focus": "围绕遮阴与公共水院组织住宿空间",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "hot_dry_02",
+      "family_id": "hot_dry",
+      "name_zh": "沙地厚墙住宅",
+      "design_focus": "用进深、阴影和墙体转折形成特色",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "hot_dry_03",
+      "family_id": "hot_dry",
+      "name_zh": "风廊市镇客栈",
+      "design_focus": "让通风通路与公共活动体量协调",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "hot_dry_04",
+      "family_id": "hot_dry",
+      "name_zh": "岩漠半地下居所",
+      "design_focus": "呈现地表入口与地下生活层之间的关系",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "hot_dry_05",
+      "family_id": "hot_dry",
+      "name_zh": "遮棚工匠宅",
+      "design_focus": "处理室外作业区与封闭生活区的衔接",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "hot_dry_06",
+      "family_id": "hot_dry",
+      "name_zh": "沙丘边缘观景居所",
+      "design_focus": "回应沙丘轮廓但避免复制一座普通方盒",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "hot_dry_07",
+      "family_id": "hot_dry",
+      "name_zh": "干旱高地集会所",
+      "design_focus": "以遮阴与聚集空间组织体量而非堆装饰",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "hot_dry_08",
+      "family_id": "hot_dry",
+      "name_zh": "水院学舍",
+      "design_focus": "让稀少水景成为空间组织中心而非附加物",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "cold_shelter_01",
+      "family_id": "cold_shelter",
+      "name_zh": "雪线巡护小屋",
+      "design_focus": "明确入口缓冲、生活区域与避寒主体",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "cold_shelter_02",
+      "family_id": "cold_shelter",
+      "name_zh": "冰原科研宿舍",
+      "design_focus": "组织人员生活、共享区与外部工作接口",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "cold_shelter_03",
+      "family_id": "cold_shelter",
+      "name_zh": "极夜社区会所",
+      "design_focus": "用室内公共空间与外部轮廓体现聚集感",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "cold_shelter_04",
+      "family_id": "cold_shelter",
+      "name_zh": "坡地防雪旅馆",
+      "design_focus": "处理积雪意象、入口可达与体量层次",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "cold_shelter_05",
+      "family_id": "cold_shelter",
+      "name_zh": "冻土边缘工坊",
+      "design_focus": "让作业与休息空间各有合理尺度",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "cold_shelter_06",
+      "family_id": "cold_shelter",
+      "name_zh": "峡湾避风住宅",
+      "design_focus": "回应风向和地形围护而非单纯贴雪材质",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "cold_shelter_07",
+      "family_id": "cold_shelter",
+      "name_zh": "雪林阅读屋",
+      "design_focus": "探索封闭避寒与对外观景之间的对比",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "cold_shelter_08",
+      "family_id": "cold_shelter",
+      "name_zh": "高寒温室住宅",
+      "design_focus": "组织种植、生活与缓冲空间的真实关系",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "water_living_01",
+      "family_id": "water_living",
+      "name_zh": "河湾桩上住宅",
+      "design_focus": "入口、承托与水下留空都要真实形成",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "water_living_02",
+      "family_id": "water_living",
+      "name_zh": "运河窄宅",
+      "design_focus": "结合临水界面、巷道入口与纵深布局",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "water_living_03",
+      "family_id": "water_living",
+      "name_zh": "芦苇湿地客舍",
+      "design_focus": "形成轻巧生活体量与湿地观景关系",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "water_living_04",
+      "family_id": "water_living",
+      "name_zh": "潮汐岸边旅舍",
+      "design_focus": "让岸线高差与上岸通路参与建筑组织",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "water_living_05",
+      "family_id": "water_living",
+      "name_zh": "浮台共同生活屋",
+      "design_focus": "组织平台、生活体量与开放共享区",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "water_living_06",
+      "family_id": "water_living",
+      "name_zh": "水院渔家居所",
+      "design_focus": "区分工具整理、休息与日常生活空间",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "water_living_07",
+      "family_id": "water_living",
+      "name_zh": "滨湖多层别居",
+      "design_focus": "避免一面墙重复开窗，建立面湖空间层次",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "water_living_08",
+      "family_id": "water_living",
+      "name_zh": "双岸连桥住宅",
+      "design_focus": "让连接结构成为空间逻辑而非装饰杆件",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "urban_home_01",
+      "family_id": "urban_home",
+      "name_zh": "街角复式住宅",
+      "design_focus": "处理两侧街面的差异与入口识别",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "urban_home_02",
+      "family_id": "urban_home",
+      "name_zh": "窄地采光住宅",
+      "design_focus": "在受限面宽中组织垂直交通与真实采光",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "urban_home_03",
+      "family_id": "urban_home",
+      "name_zh": "屋顶共享公寓",
+      "design_focus": "让共享活动区与独立居住单元分层清晰",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "urban_home_04",
+      "family_id": "urban_home",
+      "name_zh": "退台绿色住宅",
+      "design_focus": "使退台对应实际室内与平台关系",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "urban_home_05",
+      "family_id": "urban_home",
+      "name_zh": "夹缝庭院住宅",
+      "design_focus": "通过小型空隙创造独特空间组织",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "urban_home_06",
+      "family_id": "urban_home",
+      "name_zh": "混合办公住宅",
+      "design_focus": "区分公共到访与私人生活动线",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "urban_home_07",
+      "family_id": "urban_home",
+      "name_zh": "小型集合公寓",
+      "design_focus": "避免整齐复制同一个房间作为全部设计",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "urban_home_08",
+      "family_id": "urban_home",
+      "name_zh": "街坊公共厨房住宅",
+      "design_focus": "将共享厨房与不同生活单元连成整体",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "commerce_01",
+      "family_id": "commerce",
+      "name_zh": "街角烘焙铺",
+      "design_focus": "用生产、陈列与街边停留形成清晰层次",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "commerce_02",
+      "family_id": "commerce",
+      "name_zh": "有顶果蔬市场",
+      "design_focus": "组织摊位、通行与屋盖，不只摆同款方盒",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "commerce_03",
+      "family_id": "commerce",
+      "name_zh": "跨巷书店",
+      "design_focus": "让狭窄连通与阅览空间创造独特体验",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "commerce_04",
+      "family_id": "commerce",
+      "name_zh": "庭院陶器商行",
+      "design_focus": "表现展售、储放与庭院活动的关系",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "commerce_05",
+      "family_id": "commerce",
+      "name_zh": "坡地小旅馆",
+      "design_focus": "在高差上安排接待与住宿动线",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "commerce_06",
+      "family_id": "commerce",
+      "name_zh": "夜市食堂",
+      "design_focus": "塑造聚集氛围同时保留可理解的建筑秩序",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "commerce_07",
+      "family_id": "commerce",
+      "name_zh": "运河边杂货与仓店",
+      "design_focus": "区分临水装卸和街面交易",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "commerce_08",
+      "family_id": "commerce",
+      "name_zh": "多入口社区市集",
+      "design_focus": "构思不同入口到中心活动区的连续关系",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "civic_learning_01",
+      "family_id": "civic_learning",
+      "name_zh": "小镇公共图书馆",
+      "design_focus": "让主要阅览、儿童区与交通有不同尺度",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "civic_learning_02",
+      "family_id": "civic_learning",
+      "name_zh": "山地小学",
+      "design_focus": "在校园体量间组织可使用的公共活动空间",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "civic_learning_03",
+      "family_id": "civic_learning",
+      "name_zh": "社区学习中心",
+      "design_focus": "容纳多种学习活动而非重复教室盒子",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "civic_learning_04",
+      "family_id": "civic_learning",
+      "name_zh": "自然观察教室",
+      "design_focus": "使观察方向和室内教学空间互相呼应",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "civic_learning_05",
+      "family_id": "civic_learning",
+      "name_zh": "档案保管与阅览馆",
+      "design_focus": "区分内部保存与面向公众的区域",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "civic_learning_06",
+      "family_id": "civic_learning",
+      "name_zh": "街区诊疗所",
+      "design_focus": "用清楚的入口、等候与使用分区形成可信功能",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "civic_learning_07",
+      "family_id": "civic_learning",
+      "name_zh": "村镇议事厅",
+      "design_focus": "突出聚集空间与日常公共使用",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "civic_learning_08",
+      "family_id": "civic_learning",
+      "name_zh": "公共浴场与休息馆",
+      "design_focus": "组织湿区、过渡与休息空间的不同层次",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "culture_01",
+      "family_id": "culture",
+      "name_zh": "小型露天剧场",
+      "design_focus": "让座席、表演与地形形成整体",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "culture_02",
+      "family_id": "culture",
+      "name_zh": "木构音乐会馆",
+      "design_focus": "通过主体空间与外围服务区形成建筑层次",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "culture_03",
+      "family_id": "culture",
+      "name_zh": "运河历史展馆",
+      "design_focus": "将行进路线与展览空间联系起来",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "culture_04",
+      "family_id": "culture",
+      "name_zh": "社区舞蹈排练馆",
+      "design_focus": "处理开放运动空间与附属功能比例",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "culture_05",
+      "family_id": "culture",
+      "name_zh": "雕塑庭院画廊",
+      "design_focus": "让室内外展示相互穿插",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "culture_06",
+      "family_id": "culture",
+      "name_zh": "山谷观景博物馆",
+      "design_focus": "组织观景、展示与地形入口",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "culture_07",
+      "family_id": "culture",
+      "name_zh": "废厂改造文化馆",
+      "design_focus": "保留可辨识旧结构并融入新空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "culture_08",
+      "family_id": "culture",
+      "name_zh": "巡回艺术驻留所",
+      "design_focus": "组合创作、展出与临时生活场所",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "agriculture_01",
+      "family_id": "agriculture",
+      "name_zh": "梯田农具与休憩屋",
+      "design_focus": "让田间路径与储具功能共同决定布置",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "agriculture_02",
+      "family_id": "agriculture",
+      "name_zh": "果园压榨工坊",
+      "design_focus": "表现原料到加工到储存的空间顺序",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "agriculture_03",
+      "family_id": "agriculture",
+      "name_zh": "乳品农场院落",
+      "design_focus": "区分动物、加工与人员活动的尺度",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "agriculture_04",
+      "family_id": "agriculture",
+      "name_zh": "温室与种子库",
+      "design_focus": "组织透明种植区和稳固储存区",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "agriculture_05",
+      "family_id": "agriculture",
+      "name_zh": "蜂场管理小屋",
+      "design_focus": "将作业台、储具与周边环境协调安排",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "agriculture_06",
+      "family_id": "agriculture",
+      "name_zh": "灌渠水磨坊",
+      "design_focus": "让水道与建筑工作空间真实关联",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "agriculture_07",
+      "family_id": "agriculture",
+      "name_zh": "谷仓与晒场",
+      "design_focus": "以谷物存放、装卸和开放作业空间形成层次",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "agriculture_08",
+      "family_id": "agriculture",
+      "name_zh": "山地牧场驿舍",
+      "design_focus": "兼顾短住、动物安置与工具存放",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "craft_01",
+      "family_id": "craft",
+      "name_zh": "陶艺烧制工坊",
+      "design_focus": "表现制作、干燥与烧制区域的不同特征",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "craft_02",
+      "family_id": "craft",
+      "name_zh": "玻璃艺术工坊",
+      "design_focus": "在工作尺度与展览尺度之间形成对比",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "craft_03",
+      "family_id": "craft",
+      "name_zh": "织布与染色作坊",
+      "design_focus": "让材料处理与共享作业空间具有秩序",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "craft_04",
+      "family_id": "craft",
+      "name_zh": "造纸工坊",
+      "design_focus": "组织湿作业、晾晒与材料储放",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "craft_05",
+      "family_id": "craft",
+      "name_zh": "木船修造棚",
+      "design_focus": "用大跨度作业空间和岸边通路建立主题",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "craft_06",
+      "family_id": "craft",
+      "name_zh": "乐器制作宅坊",
+      "design_focus": "兼顾安静制作、材料储存与试奏场所",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "craft_07",
+      "family_id": "craft",
+      "name_zh": "石匠庭院工坊",
+      "design_focus": "让重型材料与小型精细作业形成对照",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "craft_08",
+      "family_id": "craft",
+      "name_zh": "钟表与机械修理店",
+      "design_focus": "构思小尺度细节丰富但不杂乱的使用空间",
+      "scene_type": "architecture",
+      "quality_contract": "inhabited",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "industry_01",
+      "family_id": "industry",
+      "name_zh": "小型抽水站",
+      "design_focus": "让水路、检修和设备空间有可理解关系",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "industry_02",
+      "family_id": "industry",
+      "name_zh": "山地水电设施",
+      "design_focus": "将水流落差与主要设施体量协调组织",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "industry_03",
+      "family_id": "industry",
+      "name_zh": "旧式砖砌动力房",
+      "design_focus": "体现设备大厅与辅助空间的比例",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "industry_04",
+      "family_id": "industry",
+      "name_zh": "垃圾分类与再生工坊",
+      "design_focus": "区分接收、分拣与再利用空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "industry_05",
+      "family_id": "industry",
+      "name_zh": "小型天文设备装配厂",
+      "design_focus": "把精细装配与大尺度运输入口结合",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "industry_06",
+      "family_id": "industry",
+      "name_zh": "港区冷藏仓库",
+      "design_focus": "组织装卸、保温体量与人员通路",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "industry_07",
+      "family_id": "industry",
+      "name_zh": "社区能源中心",
+      "design_focus": "塑造实用而有辨识度的公共设备建筑",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "industry_08",
+      "family_id": "industry",
+      "name_zh": "雨水收集与净化站",
+      "design_focus": "让水的流向和服务结构可以被理解",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "transport_01",
+      "family_id": "transport",
+      "name_zh": "乡村小站与站台",
+      "design_focus": "组织到达、等候与交通边界",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "transport_02",
+      "family_id": "transport",
+      "name_zh": "山谷步行桥",
+      "design_focus": "让跨度、落脚点与步行体验统一",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "transport_03",
+      "family_id": "transport",
+      "name_zh": "运河装卸驿站",
+      "design_focus": "构思水上装卸和陆上物流的转换",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "transport_04",
+      "family_id": "transport",
+      "name_zh": "山口道路服务站",
+      "design_focus": "兼顾短暂停留、检修与方向识别",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "transport_05",
+      "family_id": "transport",
+      "name_zh": "城市有轨车站",
+      "design_focus": "在狭长场地组织遮蔽、通行和候车",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "transport_06",
+      "family_id": "transport",
+      "name_zh": "空中索道山站",
+      "design_focus": "处理到达平台、设备体量与山体连接",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "transport_07",
+      "family_id": "transport",
+      "name_zh": "桥头集散仓",
+      "design_focus": "使桥梁流线与储货空间逻辑一致",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "transport_08",
+      "family_id": "transport",
+      "name_zh": "河港客运码头",
+      "design_focus": "明确水陆到达、等候和分流关系",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "maritime_01",
+      "family_id": "maritime",
+      "name_zh": "岬角灯塔与值守屋",
+      "design_focus": "让主塔与附属生活体量协调而非简单拼接",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "maritime_02",
+      "family_id": "maritime",
+      "name_zh": "潮池观察站",
+      "design_focus": "构思潮池与可进入的观察设施",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "maritime_03",
+      "family_id": "maritime",
+      "name_zh": "小型海岸救援站",
+      "design_focus": "组织观察、设备和快速出入口",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "maritime_04",
+      "family_id": "maritime",
+      "name_zh": "渔港拍卖屋",
+      "design_focus": "体现开放交易与遮蔽作业空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "maritime_05",
+      "family_id": "maritime",
+      "name_zh": "海崖航海学校",
+      "design_focus": "将面海学习区与安全到达路径联系起来",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "maritime_06",
+      "family_id": "maritime",
+      "name_zh": "岛屿气象站",
+      "design_focus": "塑造精简但可信的设备与人员空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "maritime_07",
+      "family_id": "maritime",
+      "name_zh": "海洋研究码头",
+      "design_focus": "组织岸侧研究建筑和水边工作平台",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "maritime_08",
+      "family_id": "maritime",
+      "name_zh": "船坞展示馆",
+      "design_focus": "保留船坞空间特点并设计参观动线",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "frontier_01",
+      "family_id": "frontier",
+      "name_zh": "攀登者高山避难所",
+      "design_focus": "处理有限落脚面和内部共享空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "frontier_02",
+      "family_id": "frontier",
+      "name_zh": "峡谷悬廊驿站",
+      "design_focus": "让垂直高差与安全通路成为构图核心",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "frontier_03",
+      "family_id": "frontier",
+      "name_zh": "山口观测塔",
+      "design_focus": "组织观察高度、基础与到达方式",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "frontier_04",
+      "family_id": "frontier",
+      "name_zh": "林火巡护站",
+      "design_focus": "将远眺视野和日常生活设施结合",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "frontier_05",
+      "family_id": "frontier",
+      "name_zh": "石壁勘探营地",
+      "design_focus": "构思岩壁、平台与临时建筑的层次",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "frontier_06",
+      "family_id": "frontier",
+      "name_zh": "荒野测绘小站",
+      "design_focus": "让设备、工作与休息空间紧凑而有区分",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "frontier_07",
+      "family_id": "frontier",
+      "name_zh": "瀑布侧维护驿所",
+      "design_focus": "回应水流、地形与检修路线",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "frontier_08",
+      "family_id": "frontier",
+      "name_zh": "高原长途驿馆",
+      "design_focus": "组织集中住宿与开放集散空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "ritual_01",
+      "family_id": "ritual",
+      "name_zh": "林间静思亭",
+      "design_focus": "用路径、停留与光影形成安静体验",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "ritual_02",
+      "family_id": "ritual",
+      "name_zh": "水庭纪念馆",
+      "design_focus": "让纪念核心与进入过程有明确层次",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "ritual_03",
+      "family_id": "ritual",
+      "name_zh": "山顶钟亭",
+      "design_focus": "结合地形与远观轮廓塑造主题",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "ritual_04",
+      "family_id": "ritual",
+      "name_zh": "石环公共纪念庭",
+      "design_focus": "设计聚集、通行与中心关系",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "ritual_05",
+      "family_id": "ritual",
+      "name_zh": "地下追思小馆",
+      "design_focus": "处理地表入口与沉静内部空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "ritual_06",
+      "family_id": "ritual",
+      "name_zh": "溪谷礼仪会所",
+      "design_focus": "让开放自然与仪式场所相互映衬",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "ritual_07",
+      "family_id": "ritual",
+      "name_zh": "月光观景庭",
+      "design_focus": "以平台、围护与天际方向组织空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "ritual_08",
+      "family_id": "ritual",
+      "name_zh": "社区节庆会堂",
+      "design_focus": "兼顾大型聚集与日常使用，不只做空壳",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "fortification_01",
+      "family_id": "fortification",
+      "name_zh": "山口石关",
+      "design_focus": "让道路、门洞与关隘体量连续",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "fortification_02",
+      "family_id": "fortification",
+      "name_zh": "沿河城门",
+      "design_focus": "处理水路与陆路不同的进出关系",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "fortification_03",
+      "family_id": "fortification",
+      "name_zh": "海岸瞭望堡",
+      "design_focus": "组织主视点、围护与内部通路",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "fortification_04",
+      "family_id": "fortification",
+      "name_zh": "小型边地寨堡",
+      "design_focus": "形成清晰的公共空间与外围层次",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "fortification_05",
+      "family_id": "fortification",
+      "name_zh": "桥上门楼",
+      "design_focus": "使桥的结构和门楼到达关系可信",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "fortification_06",
+      "family_id": "fortification",
+      "name_zh": "山坡层叠城墙",
+      "design_focus": "利用高差形成连续而非机械重复的段落",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "fortification_07",
+      "family_id": "fortification",
+      "name_zh": "庭院守望所",
+      "design_focus": "将值守、生活与小型防护体量结合",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "fortification_08",
+      "family_id": "fortification",
+      "name_zh": "旧城角楼与附属街面",
+      "design_focus": "协调纪念性轮廓和日常建筑尺度",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "leisure_01",
+      "family_id": "leisure",
+      "name_zh": "湖畔温泉馆",
+      "design_focus": "组织水、休息和封闭功能的层次",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "leisure_02",
+      "family_id": "leisure",
+      "name_zh": "岩园步道亭廊",
+      "design_focus": "让步行路径真正穿过不同景观空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "leisure_03",
+      "family_id": "leisure",
+      "name_zh": "树荫露营服务屋",
+      "design_focus": "组合短住支持和开放活动场所",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "leisure_04",
+      "family_id": "leisure",
+      "name_zh": "屋顶社区花园馆",
+      "design_focus": "将种植、遮阴与人员通路协调组织",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "leisure_05",
+      "family_id": "leisure",
+      "name_zh": "山林冥想客舍",
+      "design_focus": "形成安静室内与外部停留的对比",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "leisure_06",
+      "family_id": "leisure",
+      "name_zh": "溪边野餐亭群",
+      "design_focus": "构思各亭之间的场所关系而非复制阵列",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "leisure_07",
+      "family_id": "leisure",
+      "name_zh": "小型植物展馆",
+      "design_focus": "让植物尺度与观赏动线影响建筑形体",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "leisure_08",
+      "family_id": "leisure",
+      "name_zh": "观星度假小馆",
+      "design_focus": "结合黑暗环境意象和实际生活设施",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "ruins_01",
+      "family_id": "ruins",
+      "name_zh": "林中残存石殿",
+      "design_focus": "通过残壁与植被形成可读的旧空间",
+      "scene_type": "architecture",
+      "quality_contract": "ruin",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "ruins_02",
+      "family_id": "ruins",
+      "name_zh": "沙掩旧驿站",
+      "design_focus": "表现地表掩埋与仍可辨识的入口关系",
+      "scene_type": "architecture",
+      "quality_contract": "ruin",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "ruins_03",
+      "family_id": "ruins",
+      "name_zh": "断桥与桥头遗址",
+      "design_focus": "保留跨度和道路的叙事线索",
+      "scene_type": "architecture",
+      "quality_contract": "ruin",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "ruins_04",
+      "family_id": "ruins",
+      "name_zh": "被水淹没的庭院遗址",
+      "design_focus": "让水位与残存建筑共同构图",
+      "scene_type": "architecture",
+      "quality_contract": "ruin",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "ruins_05",
+      "family_id": "ruins",
+      "name_zh": "废弃温室",
+      "design_focus": "表现结构骨架与重新生长的植物",
+      "scene_type": "architecture",
+      "quality_contract": "ruin",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "ruins_06",
+      "family_id": "ruins",
+      "name_zh": "失修海崖堡楼",
+      "design_focus": "设计有意的残损而非随机删除方块",
+      "scene_type": "architecture",
+      "quality_contract": "ruin",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "ruins_07",
+      "family_id": "ruins",
+      "name_zh": "旧矿区生活遗址",
+      "design_focus": "保留生活空间与地形开采痕迹的关系",
+      "scene_type": "architecture",
+      "quality_contract": "ruin",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "ruins_08",
+      "family_id": "ruins",
+      "name_zh": "火后木石混合残屋",
+      "design_focus": "让不同构件留下有逻辑的损毁形态",
+      "scene_type": "architecture",
+      "quality_contract": "ruin",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "fantasy_01",
+      "family_id": "fantasy",
+      "name_zh": "巨树图书居所",
+      "design_focus": "让树体与可使用空间互相嵌合",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "fantasy_02",
+      "family_id": "fantasy",
+      "name_zh": "蘑菇学者小馆",
+      "design_focus": "探索自然形体与真实室内功能的关系",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "fantasy_03",
+      "family_id": "fantasy",
+      "name_zh": "浮空灯塔居所",
+      "design_focus": "构思悬浮设定下的体量与到达方式",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "fantasy_04",
+      "family_id": "fantasy",
+      "name_zh": "晶体工匠会馆",
+      "design_focus": "保持清晰空间逻辑而非堆砌晶体装饰",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "fantasy_05",
+      "family_id": "fantasy",
+      "name_zh": "云层邮驿",
+      "design_focus": "结合轻盈轮廓与可信的收发和停留空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "fantasy_06",
+      "family_id": "fantasy",
+      "name_zh": "巨石生长住宅",
+      "design_focus": "让建筑看似从岩体中延展但仍具功能层次",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "fantasy_07",
+      "family_id": "fantasy",
+      "name_zh": "移动城镇客栈意象",
+      "design_focus": "以静态体素呈现可理解的移动结构构图",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "fantasy_08",
+      "family_id": "fantasy",
+      "name_zh": "星象观测法师馆",
+      "design_focus": "将观察、工作与居住组织成独立方案",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "science_fiction_01",
+      "family_id": "science_fiction",
+      "name_zh": "荒原模块科研站",
+      "design_focus": "模块由本栋设计决定，避免统一拼装答案",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "science_fiction_02",
+      "family_id": "science_fiction",
+      "name_zh": "轨道港候机馆意象",
+      "design_focus": "组织不同尺度交通与人员公共空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "science_fiction_03",
+      "family_id": "science_fiction",
+      "name_zh": "水下观察居所",
+      "design_focus": "处理包覆结构、视野与内部生活空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "science_fiction_04",
+      "family_id": "science_fiction",
+      "name_zh": "垂直农场塔",
+      "design_focus": "让种植、服务和人员通行各有真实结构",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "science_fiction_05",
+      "family_id": "science_fiction",
+      "name_zh": "极地无人设备维护站",
+      "design_focus": "用实用功能和轮廓区分空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "science_fiction_06",
+      "family_id": "science_fiction",
+      "name_zh": "生态修复控制中心",
+      "design_focus": "连接观察、研究和自然界面",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "science_fiction_07",
+      "family_id": "science_fiction",
+      "name_zh": "陨坑边缘科考城馆",
+      "design_focus": "回应巨大地形边缘而非简单方台基座",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "science_fiction_08",
+      "family_id": "science_fiction",
+      "name_zh": "沙漠太阳能维修基地",
+      "design_focus": "协调开放设施、检修与人员空间",
+      "scene_type": "architecture",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "settlement_01",
+      "family_id": "settlement",
+      "name_zh": "山谷集市村落",
+      "design_focus": "组织多栋独立体量与主要公共路径",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "settlement_02",
+      "family_id": "settlement",
+      "name_zh": "水巷工匠街坊",
+      "design_focus": "让水岸、桥与商住体量形成不同节点",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "settlement_03",
+      "family_id": "settlement",
+      "name_zh": "阶梯山城街区",
+      "design_focus": "形成可达高差与连续街面而非等距复制",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "settlement_04",
+      "family_id": "settlement",
+      "name_zh": "林缘共同生活聚落",
+      "design_focus": "安排共享场地和多种生活体量",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "settlement_05",
+      "family_id": "settlement",
+      "name_zh": "海岛渔村片区",
+      "design_focus": "回应岸线与小型公共活动中心",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "settlement_06",
+      "family_id": "settlement",
+      "name_zh": "铁路工人社区",
+      "design_focus": "区分公共设施、住宅与交通边界",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "settlement_07",
+      "family_id": "settlement",
+      "name_zh": "沙漠庭院街坊",
+      "design_focus": "设计遮阴路径与多重院落关系",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "settlement_08",
+      "family_id": "settlement",
+      "name_zh": "学院小型校园",
+      "design_focus": "让不同教学/公共体量与户外空间互补",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "landscape_hybrid_01",
+      "family_id": "landscape_hybrid",
+      "name_zh": "瀑布嵌入式旅馆",
+      "design_focus": "将水流、岩体和居住界面共同设计",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "landscape_hybrid_02",
+      "family_id": "landscape_hybrid",
+      "name_zh": "峡谷研究聚点",
+      "design_focus": "组织多高度平台与地形观察关系",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "landscape_hybrid_03",
+      "family_id": "landscape_hybrid",
+      "name_zh": "洞口聚居片段",
+      "design_focus": "区分洞内、洞口与地表公共活动",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "landscape_hybrid_04",
+      "family_id": "landscape_hybrid",
+      "name_zh": "沼泽观测步道与营地",
+      "design_focus": "设计陆水边界上的连续观察体验",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "landscape_hybrid_05",
+      "family_id": "landscape_hybrid",
+      "name_zh": "梯田与山村片区",
+      "design_focus": "让耕作坡地与生活体量彼此适应",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "landscape_hybrid_06",
+      "family_id": "landscape_hybrid",
+      "name_zh": "巨树根系中的集会场",
+      "design_focus": "让自然支点影响公共活动布局",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "landscape_hybrid_07",
+      "family_id": "landscape_hybrid",
+      "name_zh": "海蚀崖上的港口片段",
+      "design_focus": "将岸崖、通路与设施形成整体",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "landscape_hybrid_08",
+      "family_id": "landscape_hybrid",
+      "name_zh": "废墟花园生态片区",
+      "design_focus": "让旧建筑空间被新的植被与路径重新使用",
+      "scene_type": "hybrid",
+      "quality_contract": "mixed",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "geology_01",
+      "family_id": "geology",
+      "name_zh": "层叠砂岩峡谷",
+      "design_focus": "设计层次、转折与主要观景方向",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "geology_02",
+      "family_id": "geology",
+      "name_zh": "孤峰与鞍部地形",
+      "design_focus": "让主峰、低鞍与周边体量形成可读关系",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "geology_03",
+      "family_id": "geology",
+      "name_zh": "天然石拱",
+      "design_focus": "处理拱洞、基部与地面尺度的协调",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "geology_04",
+      "family_id": "geology",
+      "name_zh": "玄武岩柱群意象",
+      "design_focus": "形成有变化的柱群密度与地势",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "geology_05",
+      "family_id": "geology",
+      "name_zh": "岩塔与崩积坡",
+      "design_focus": "通过主次岩体和坡面表现方向感",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "geology_06",
+      "family_id": "geology",
+      "name_zh": "褶皱山脊片段",
+      "design_focus": "组织连贯而不机械重复的脊谷关系",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "geology_07",
+      "family_id": "geology",
+      "name_zh": "石盆高台地貌",
+      "design_focus": "让凹地与外围壁体形成空间体验",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "geology_08",
+      "family_id": "geology",
+      "name_zh": "断崖与台阶岩棚",
+      "design_focus": "构思高差、轮廓和局部留空",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "caves_01",
+      "family_id": "caves",
+      "name_zh": "多入口石灰岩洞意象",
+      "design_focus": "让入口与内部主腔存在真实联系",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "caves_02",
+      "family_id": "caves",
+      "name_zh": "地下河洞穴",
+      "design_focus": "设计水路、岩岸与不同腔室关系",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "caves_03",
+      "family_id": "caves",
+      "name_zh": "晶簇洞厅",
+      "design_focus": "在主要腔体与晶体密度之间形成层次",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "caves_04",
+      "family_id": "caves",
+      "name_zh": "天坑与洞底绿地",
+      "design_focus": "处理地表开口、深度与底部空间",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "caves_05",
+      "family_id": "caves",
+      "name_zh": "熔岩管洞穴意象",
+      "design_focus": "形成连续通道与局部扩张",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "caves_06",
+      "family_id": "caves",
+      "name_zh": "洞内石桥",
+      "design_focus": "让岩桥跨越真实空隙而非浮贴装饰",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "caves_07",
+      "family_id": "caves",
+      "name_zh": "多层地下岩腔",
+      "design_focus": "组织高度变化与自然的空实关系",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "caves_08",
+      "family_id": "caves",
+      "name_zh": "洞口瀑流与隐蔽侧腔",
+      "design_focus": "把水流和非直线内部空间共同设计",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "freshwater_01",
+      "family_id": "freshwater",
+      "name_zh": "曲流河湾",
+      "design_focus": "让两岸形态与水路弯曲协调",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "freshwater_02",
+      "family_id": "freshwater",
+      "name_zh": "阶梯瀑布潭",
+      "design_focus": "组织连续落差与不同大小水潭",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "freshwater_03",
+      "family_id": "freshwater",
+      "name_zh": "高山冰蚀湖意象",
+      "design_focus": "让湖盆、岸坡与山体形成主次",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "freshwater_04",
+      "family_id": "freshwater",
+      "name_zh": "三角洲分汊片段",
+      "design_focus": "设计水道、洲滩与植被块面的变化",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "freshwater_05",
+      "family_id": "freshwater",
+      "name_zh": "湿地浅塘群",
+      "design_focus": "组织不同水深意象与陆地边缘",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "freshwater_06",
+      "family_id": "freshwater",
+      "name_zh": "森林溪流落差",
+      "design_focus": "让岩体、树根与溪道互相回应",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "freshwater_07",
+      "family_id": "freshwater",
+      "name_zh": "季节性干湿河床",
+      "design_focus": "表现主水道与较宽河床的层次",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "freshwater_08",
+      "family_id": "freshwater",
+      "name_zh": "芦苇湖湾",
+      "design_focus": "用植被密度和岸线留出可读空间",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "coast_01",
+      "family_id": "coast",
+      "name_zh": "海蚀拱与岩柱海岸",
+      "design_focus": "形成岸崖、拱洞和离岸体量的关系",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "coast_02",
+      "family_id": "coast",
+      "name_zh": "环礁浅海片段",
+      "design_focus": "组织环状陆地意象与不同水域",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "coast_03",
+      "family_id": "coast",
+      "name_zh": "潮池岩岸",
+      "design_focus": "用微地形和水面建立丰富层次",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "coast_04",
+      "family_id": "coast",
+      "name_zh": "孤岛火山岩海湾",
+      "design_focus": "协调岛体轮廓与内湾空间",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "coast_05",
+      "family_id": "coast",
+      "name_zh": "沙嘴与泻湖",
+      "design_focus": "让狭长陆地和封闭水域有清晰关系",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "coast_06",
+      "family_id": "coast",
+      "name_zh": "红树林浅岸",
+      "design_focus": "组织水根、通道与树冠密度",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "coast_07",
+      "family_id": "coast",
+      "name_zh": "珊瑚礁水下地景",
+      "design_focus": "让礁体尺度和开阔水道形成对比",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "coast_08",
+      "family_id": "coast",
+      "name_zh": "暴露层理的海崖",
+      "design_focus": "利用材质和体量共同表现层次",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "arid_01",
+      "family_id": "arid",
+      "name_zh": "连绵沙丘与风口",
+      "design_focus": "创造主次沙脊而非规则正弦复制",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "arid_02",
+      "family_id": "arid",
+      "name_zh": "盐沼与浅水镜面",
+      "design_focus": "让平缓面与局部结晶起伏形成对比",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "arid_03",
+      "family_id": "arid",
+      "name_zh": "风蚀岩蘑",
+      "design_focus": "处理上部体量与细基部的视觉关系",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "arid_04",
+      "family_id": "arid",
+      "name_zh": "干谷与孤立绿洲",
+      "design_focus": "组织水源核心和周边空旷尺度",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "arid_05",
+      "family_id": "arid",
+      "name_zh": "红色荒地沟壑",
+      "design_focus": "让支沟和主谷形成有方向的层次",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "arid_06",
+      "family_id": "arid",
+      "name_zh": "沙海出露遗岩",
+      "design_focus": "表现岩体与覆盖沙面的交接",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "arid_07",
+      "family_id": "arid",
+      "name_zh": "龟裂泥地与孤树",
+      "design_focus": "控制空地、裂隙意象与视觉焦点",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "arid_08",
+      "family_id": "arid",
+      "name_zh": "砾石扇与山口",
+      "design_focus": "让地表铺展与上部山口关联",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "forest_01",
+      "family_id": "forest",
+      "name_zh": "古树根系林地",
+      "design_focus": "让大树、根部留空与小型植被有主次",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "forest_02",
+      "family_id": "forest",
+      "name_zh": "倒木与新生林隙",
+      "design_focus": "表现开阔光隙与周围树冠密度",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "forest_03",
+      "family_id": "forest",
+      "name_zh": "苔藓溪谷林",
+      "design_focus": "协调水道、石头、根系和植被层次",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "forest_04",
+      "family_id": "forest",
+      "name_zh": "竹林与小径意象",
+      "design_focus": "创造疏密节奏而非等间距复制柱子",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "forest_05",
+      "family_id": "forest",
+      "name_zh": "干旱疏林",
+      "design_focus": "用少量树体与地面起伏构成完整场景",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "forest_06",
+      "family_id": "forest",
+      "name_zh": "蕨类与湿润石坡",
+      "design_focus": "让植物形态随地形而变化",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "forest_07",
+      "family_id": "forest",
+      "name_zh": "花原与林缘过渡",
+      "design_focus": "组织开阔色块与树林边界",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "forest_08",
+      "family_id": "forest",
+      "name_zh": "巨型树冠层片段",
+      "design_focus": "构思上下层的空隙与不同体量",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "snow_ice_01",
+      "family_id": "snow_ice",
+      "name_zh": "冰川舌与碎石谷",
+      "design_focus": "处理冰体和裸岩边界的层次",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "snow_ice_02",
+      "family_id": "snow_ice",
+      "name_zh": "蓝冰洞口",
+      "design_focus": "让入口、透光意象与洞内深度关联",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "snow_ice_03",
+      "family_id": "snow_ice",
+      "name_zh": "雪峰鞍部",
+      "design_focus": "以风口、积雪和山脊形成主次",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "snow_ice_04",
+      "family_id": "snow_ice",
+      "name_zh": "冻湖裂隙片段",
+      "design_focus": "组织平面冰层与局部裂开的水域",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "snow_ice_05",
+      "family_id": "snow_ice",
+      "name_zh": "冰瀑与岩壁",
+      "design_focus": "协调垂直冰体、基础与岩壁轮廓",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "snow_ice_06",
+      "family_id": "snow_ice",
+      "name_zh": "漂冰海湾",
+      "design_focus": "让碎冰尺度与开水通道具有变化",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "snow_ice_07",
+      "family_id": "snow_ice",
+      "name_zh": "雪林低地",
+      "design_focus": "区分树冠、雪堆与可辨地形",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "snow_ice_08",
+      "family_id": "snow_ice",
+      "name_zh": "永久冻土丘陵意象",
+      "design_focus": "创造缓起伏、浅洼与稀疏地表特征",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "XL"
+    },
+    {
+      "id": "volcanic_fantasy_01",
+      "family_id": "volcanic_fantasy",
+      "name_zh": "熔岩河与冷却岩岸",
+      "design_focus": "让流路、岩壳与不同高度岸体协调",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "S"
+    },
+    {
+      "id": "volcanic_fantasy_02",
+      "family_id": "volcanic_fantasy",
+      "name_zh": "火山口内湖",
+      "design_focus": "组织盆壁、水面与局部岩岛",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "volcanic_fantasy_03",
+      "family_id": "volcanic_fantasy",
+      "name_zh": "蒸汽地热池群",
+      "design_focus": "用池体、沉积意象和地表高差构图",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "volcanic_fantasy_04",
+      "family_id": "volcanic_fantasy",
+      "name_zh": "黑曜石裂谷意象",
+      "design_focus": "形成尖锐岩体与深谷的主次",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "volcanic_fantasy_05",
+      "family_id": "volcanic_fantasy",
+      "name_zh": "发光蘑菇洞林",
+      "design_focus": "保持清晰生态层次而非随机发光点",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "volcanic_fantasy_06",
+      "family_id": "volcanic_fantasy",
+      "name_zh": "漂浮群岛生态片段",
+      "design_focus": "独立设计岛体、植被与空中间隔",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "L"
+    },
+    {
+      "id": "volcanic_fantasy_07",
+      "family_id": "volcanic_fantasy",
+      "name_zh": "晶体林与浅潭",
+      "design_focus": "让晶簇生长方向和水陆界面一致",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "M"
+    },
+    {
+      "id": "volcanic_fantasy_08",
+      "family_id": "volcanic_fantasy",
+      "name_zh": "巨型化石与再生绿地",
+      "design_focus": "构思遗存形体和新生态之间的关系",
+      "scene_type": "natural",
+      "quality_contract": "landscape",
+      "suggested_scale": "XL"
+    }
+  ]
+}

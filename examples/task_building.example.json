@@ -1,0 +1,33 @@
+{
+  "schema_version": "voxlush.task.v1",
+  "record_kind": "example",
+  "task_id": "example-timber-task-001",
+  "campaign_id": "example-campaign",
+  "theme_seed_id": "timber_06",
+  "scene_type": "architecture",
+  "quality_contract": "inhabited",
+  "seed": 26061001,
+  "brief": {
+    "language": "zh-CN",
+    "instruction": "独立设计一座长檐连廊木宅。使用真实可用的室内空间与入口，连廊应影响建筑体量和空间联系。平面、层数、屋顶和细节由你自行构思，不套用跨样本房屋模板。全部几何在256整数域内。",
+    "design_focus": "连廊、进深与生活空间形成有辨识度的层次；不要求固定房间数。"
+  },
+  "bounds": {
+    "grid": [
+      256,
+      256,
+      256
+    ],
+    "scale_class": "M"
+  },
+  "interior_requirement": "usable_declared_spaces",
+  "requested_tags": {
+    "material_intent": "warm_timber",
+    "spatial_intent": "interior_exterior_transition"
+  },
+  "sampling_tags": {
+    "family_id": "timber",
+    "site": "forest_edge"
+  },
+  "lineage_group_id": null
+}

@@ -1,0 +1,32 @@
+{
+  "schema_version": "voxlush.task.v1",
+  "record_kind": "example",
+  "task_id": "example-hybrid-task-001",
+  "campaign_id": "example-campaign",
+  "theme_seed_id": "settlement_02",
+  "scene_type": "hybrid",
+  "quality_contract": "mixed",
+  "seed": 26061003,
+  "brief": {
+    "language": "zh-CN",
+    "instruction": "独立设计一段水巷工匠街坊，包含可进入的小型工坊、公共步道与水岸。不同建筑由本样本自行构思，不复制同一房屋。作者给出对象范围与对应室内/外部/地景合同：可进入工坊要有真实室内与入口，水岸和桥梁不需要房间。",
+    "design_focus": "让水岸、桥与商住体量形成不同节点和连续可用的公共路径。"
+  },
+  "bounds": {
+    "grid": [
+      256,
+      256,
+      256
+    ],
+    "scale_class": "M"
+  },
+  "interior_requirement": "scoped_by_object",
+  "requested_tags": {
+    "spatial_intent": "water_land_relation"
+  },
+  "sampling_tags": {
+    "family_id": "settlement",
+    "site": "waterside"
+  },
+  "lineage_group_id": null
+}

@@ -1,0 +1,95 @@
+{
+  "schema_version": "voxlush.asset.v1",
+  "record_kind": "example",
+  "sample_id": "example-asset-001",
+  "task_id": "example-timber-task-001",
+  "campaign_id": "example-campaign",
+  "revision": 1,
+  "theme_seed_id": "timber_06",
+  "scene_type": "architecture",
+  "quality_contract": "inhabited",
+  "lifecycle": "candidate",
+  "accepted_at": null,
+  "grid": [
+    256,
+    256,
+    256
+  ],
+  "coordinate_system": {
+    "up": "Y",
+    "north": "-Z",
+    "south": "+Z",
+    "east": "+X",
+    "west": "-X"
+  },
+  "hashes": {
+    "source_sha256": null,
+    "canonical_voxel_sha256": null,
+    "annotation_sha256": null
+  },
+  "versions": {
+    "runtime": null,
+    "material_catalog": null,
+    "geometry": null,
+    "renderer": null,
+    "rubric": null
+  },
+  "files": [],
+  "tags": {
+    "sampling_tags": {
+      "family_id": "timber",
+      "site": "forest_edge"
+    },
+    "requested_tags": {
+      "material_intent": "warm_timber",
+      "spatial_intent": "interior_exterior_transition"
+    },
+    "generator_declared": {},
+    "observed_tags": []
+  },
+  "quality": {
+    "geometry": {
+      "status": "not_run",
+      "report_ref": null
+    },
+    "visual": {
+      "status": "not_run",
+      "report_ref": null,
+      "input_voxel_sha256": null,
+      "image_sha256": []
+    }
+  },
+  "archive": {
+    "state": "uncommitted",
+    "commit_id": null
+  },
+  "provenance": {
+    "seed": 26061001,
+    "generation_mode": "unselected",
+    "endpoint_alias": null,
+    "requested_model": null,
+    "reported_model": null,
+    "request_refs": []
+  },
+  "usage": {
+    "model_requests": 0,
+    "input_tokens": null,
+    "output_tokens": null,
+    "reasoning_tokens": null,
+    "cost_known": null,
+    "cost_unknown_reserved": null,
+    "currency": null
+  },
+  "lineage": {
+    "group_id": "example-lineage-001",
+    "parent_sample_id": null,
+    "duplicate_cluster_id": null,
+    "is_unique": null
+  },
+  "split": null,
+  "license": {
+    "status": "unknown",
+    "identifier": null
+  },
+  "note": "FORMAT EXAMPLE ONLY. No source, voxel, preview, review or accepted asset is being claimed."
+}

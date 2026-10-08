@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:voxlush:task:v1",
+  "title": "Voxlush task v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_kind",
+    "task_id",
+    "campaign_id",
+    "theme_seed_id",
+    "scene_type",
+    "quality_contract",
+    "seed",
+    "brief",
+    "bounds",
+    "interior_requirement",
+    "requested_tags",
+    "sampling_tags"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "voxlush.task.v1"
+    },
+    "record_kind": {
+      "enum": [
+        "production",
+        "calibration",
+        "fixture",
+        "example"
+      ]
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "theme_seed_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scene_type": {
+      "enum": [
+        "architecture",
+        "natural",
+        "hybrid"
+      ]
+    },
+    "quality_contract": {
+      "enum": [
+        "inhabited",
+        "exterior",
+        "ruin",
+        "landscape",
+        "mixed",
+        "legacy_large_wooden_v1"
+      ]
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "brief": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "language",
+        "instruction",
+        "design_focus"
+      ],
+      "properties": {
+        "language": {
+          "enum": [
+            "zh-CN",
+            "en"
+          ]
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "design_focus": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "grid",
+        "scale_class"
+      ],
+      "properties": {
+        "grid": {
+          "const": [
+            256,
+            256,
+            256
+          ]
+        },
+        "scale_class": {
+          "enum": [
+            "S",
+            "M",
+            "L",
+            "XL"
+          ]
+        }
+      }
+    },
+    "interior_requirement": {
+      "enum": [
+        "usable_declared_spaces",
+        "not_required",
+        "scoped_by_object"
+      ]
+    },
+    "requested_tags": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "sampling_tags": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "lineage_group_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "quality_contract": {
+            "const": "landscape"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "interior_requirement": {
+            "const": "not_required"
+          },
+          "scene_type": {
+            "const": "natural"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "quality_contract": {
+            "enum": [
+              "inhabited",
+              "legacy_large_wooden_v1"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "interior_requirement": {
+            "const": "usable_declared_spaces"
+          }
+        }
+      }
+    }
+  ]
+}
