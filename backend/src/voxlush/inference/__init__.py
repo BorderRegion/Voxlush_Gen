@@ -1,4 +1,4 @@
-STREAM_POLICY_VERSION = "voxlush.stream.v4"
+STREAM_POLICY_VERSION = "voxlush.stream.v5"
 
 
 def execution_state(result):

@@ -11,7 +11,9 @@ from dataclasses import asdict, dataclass, field
 import httpx
 from voxlush.core.config import Endpoint
 
-MAX_RESPONSE_BYTES = 16 * 1024 * 1024
+# Long reasoning streams can exceed 16 MiB with per-token SSE framing.
+# Keep this finite and aligned with the opt-in pool receipt and gateway bounds.
+MAX_RESPONSE_BYTES = 32 * 1024 * 1024
 
 
 def request_body(endpoint, messages):

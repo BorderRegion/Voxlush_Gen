@@ -8,7 +8,7 @@ from voxlush.voxel.adapter import primitive_contract, MAX_SOURCE_BYTES
 from voxlush.core.files import digest
 from voxlush.themes.composition import instruction as composition_instruction, requested_mode, validate_observation
 
-PROMPT_VERSION = "voxlush.prompt.v7"
+PROMPT_VERSION = "voxlush.prompt.v8"
 RUBRIC_VERSION = "voxlush.visual.v5"
 RUBRIC_TEXT = """Inspect the actual complementary voxel views. Assess completeness, silhouette and
 proportions, structural/detail logic, material harmony, visual hierarchy, style consistency,
@@ -88,7 +88,7 @@ def compact_evidence(evidence):
 def author_messages(task: dict,source: str | None = None,feedback: dict | None = None,refine=False):
     system = "Independently design and code this voxel asset. Use free Python functions and loops with the provided low-level runtime. Never reuse a fixed building template.\n"+primitive_contract()
     instruction = {"task":task,"phase": "refinement" if refine else task.get("phase","final"),
-        "output":"Return exactly one complete Python code block; include literal design metadata. No prose outside the block."}
+        "output":"Plan concisely, then write the complete executable program; avoid repeated planning/checklists. Return exactly one Python code block with literal design metadata. No prose outside the block."}
     if task.get("phase") == "skeleton":
         instruction["stage_requirements"] = "Free-form massing, access, major structure, voids and circulation; preserve freedom for detail refinement."
     context = composition_instruction(task)

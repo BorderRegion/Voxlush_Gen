@@ -50,6 +50,12 @@ different client `capacity_pool`.
 
 The scheduler queries at most 16 unknown attempts per batch, rotating every 30 seconds in a background lane. It only reconciles opted-in attempts with the matching original route, request hash, exactly one upstream execution and a verified semantic finish. It saves a separate recovered response before advancing the original sample. It never repeats the POST or resets counters. Missing prices/usage remain unknown financial reservations even after execution ends.
 
+Client response, worker receipt and gateway retrieval limits are aligned at 32 MiB.
+Real 65k-token reasoning streams exceeded the previous 16 MiB wire limit because
+of repeated SSE framing. The bound remains finite; exceeding it still preserves
+unknown execution unless semantic termination was actually received. This changes
+stream policy to v5, without increasing model token budgets or disabling thinking.
+
 ## Deployment and recovery boundaries
 
 Use a pinned release, a private persistent `API_POOL_RECEIPT_DIR` owned by the worker, drain markers, zero local in-flight work, consistent state/config/unit backups and one canary before rolling all workers and gateway. Verify cumulative counters do not decrease. Pin **the worker count and order**: placement is `int(request_id,16) % len(NODES)`. Keep receipt locks and bodies across restarts and storage maintenance. Lost/changed placement is not a reason to resend.

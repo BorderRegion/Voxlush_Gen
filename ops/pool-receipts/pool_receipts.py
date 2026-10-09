@@ -8,7 +8,7 @@ from pathlib import Path
 
 TERMINAL = {'stop', 'length', 'tool_calls', 'function_call', 'content_filter'}
 HEADER_NAMES = {'x-request-id', 'nvcf-reqid', 'nvcf-status', 'x-correlation-id'}
-MAX_BYTES = 16 * 1024 * 1024
+MAX_BYTES = 32 * 1024 * 1024
 
 
 def root():

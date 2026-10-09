@@ -116,6 +116,7 @@ Example: C('rock_a', '岩体', 'rock mass', 'rock', floor='ground'). MODEL_SPEC.
 O declares an object only; natural/multiple objects use C(...,parent_id=object_id).
 building_01 is the existing implicit root: never declare it with O or C.
 B bounds are inclusive. W wall_id is the EXISTING owner of the real wall.
+Give each wall face its own component owner before using W; never share wall_id across opposite/perpendicular faces.
 W axis must be 'north', 'south', 'east' or 'west' (not 'x'/'z'). For north/south,
 plane is Z and a0/a1 are X; for east/west, plane is X and a0/a1 are Z.
 plane is the lowest wall coordinate and depth covers its thickness along increasing Z/X.

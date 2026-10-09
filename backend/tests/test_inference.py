@@ -216,3 +216,18 @@ async def test_heartbeats_do_not_extend_first_or_idle_deadline(fake_http, after_
     assert result["content"] == ""
     assert result["elapsed_ms"] < 600
     assert len(requests) == 1
+
+
+async def test_large_framed_reasoning_response_keeps_terminal_usage(fake_http):
+    # Real 65k-token streams can exceed 16 MiB because every small delta carries
+    # repeated JSON framing. Keep the complete paid response within a finite bound.
+    delta = {"choices":[{"delta":{"reasoning_content":"x"*4096}}]}
+    body = sse(*([delta]*4200), completion(usage={"prompt_tokens":2,"completion_tokens":3}), b"[DONE]")
+    assert len(body) > 16 * 1024 * 1024
+    url, posts = await fake_http(body)
+    result = await call(url, total_timeout=30, first_content_timeout=10, idle_timeout=10)
+    assert result["response_complete"], result["error_category"]
+    assert result["execution_state"] == "terminated"
+    assert result["usage"]["completion_tokens"] == 3
+    assert result["reasoning_content_characters"] == 4096 * 4200
+    assert len(posts) == 1

@@ -41,7 +41,7 @@
 +            chunks=[];size=0
 +            async for chunk in upstream.content.iter_chunked(65536):
 +                size+=len(chunk)
-+                if size>16*1024*1024:return error('receipt byte limit',502)
++                if size>32*1024*1024:return error('receipt byte limit',502)
 +                chunks.append(chunk)
 +            body=b''.join(chunks)
 +            return web.Response(status=upstream.status,body=body,headers={'Content-Type':upstream.headers.get('Content-Type','application/json'),'Cache-Control':'no-store'})

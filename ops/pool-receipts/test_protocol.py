@@ -453,6 +453,8 @@ def test_named_model_pool_routes_post_and_receipt_without_legacy_remap():
 
         async def handle(request):
             calls.append((request.app['number'], request.method, request.path))
+            if request.path.endswith('/body') and ('f'*32) in request.path:
+                return web.Response(body=b'x'*(17*1024*1024))
             return web.json_response({'worker':request.app['number'], 'path':request.path})
 
         for i in range(2):
@@ -502,6 +504,8 @@ def test_named_model_pool_routes_post_and_receipt_without_legacy_remap():
                         async with client.get(url+prefix+'/pool/requests/'+rid+suffix) as response:
                             result = await response.json()
                             assert result == {'worker':expected,'path':'/v1/pool/requests/'+rid+suffix}
+                async with client.get(url+'/v1/pools/independent/pool/requests/'+('f'*32)+'/body') as response:
+                    assert response.status == 200 and len(await response.read()) == 17*1024*1024
                 before = len(calls)
                 async with client.post(url+'/v1/pools/independent/chat/completions',json={'model':'legacy'},
                                        headers={'X-Pool-Request-Id':rid}) as response:
@@ -523,3 +527,18 @@ def test_named_model_pool_routes_post_and_receipt_without_legacy_remap():
             for runner in runners:
                 await runner.cleanup()
     asyncio.run(run())
+
+
+def test_long_reasoning_receipt_survives_old_16_mib_boundary():
+    chunk = b'data: '+json.dumps({'choices':[{'delta':{'reasoning_content':'x'*4096}}]}).encode()+b'\n\n'
+    body = chunk * 4200 + TERMINAL
+    assert len(body) > 16 * 1024 * 1024
+    with upstream(body) as (url, calls), worker(url) as entry:
+        rid='f'*32
+        response=post(entry, rid)
+        assert response.status_code == 200
+        meta=requests.get(entry+'/v1/pool/requests/'+rid,headers={'Authorization':'Bearer fixture'}).json()
+        saved=requests.get(entry+'/v1/pool/requests/'+rid+'/body',headers={'Authorization':'Bearer fixture'})
+        assert meta['response_complete'] and meta['execution_state']=='terminated'
+        assert saved.content == body and meta['body_sha256']==hashlib.sha256(body).hexdigest()
+        assert len(calls)==1
