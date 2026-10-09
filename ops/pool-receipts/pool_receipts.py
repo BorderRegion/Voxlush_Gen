@@ -11,6 +11,17 @@ HEADER_NAMES = {'x-request-id', 'nvcf-reqid', 'nvcf-status', 'x-correlation-id'}
 MAX_BYTES = 32 * 1024 * 1024
 
 
+def validation_rejection(status, obj):
+    """Kept identical to the client's narrow response-evidence classifier."""
+    error = obj.get('error') if isinstance(obj, dict) else None
+    if status not in (400, 422) or not isinstance(error, dict):
+        return False
+    return (error.get('type') == 'invalid_request_error'
+            or error.get('code') in ('invalid_parameter', 'request_validation_error')
+            or (error.get('type') == 'api_error' and isinstance(error.get('message'), str)
+                and error['message'].startswith('reasoning_effort must be one of low, high, or max.')))
+
+
 def root():
     value = os.environ.get('API_POOL_RECEIPT_DIR')
     if not value:
@@ -56,6 +67,7 @@ class Receipt:
         self.done = False
         self.error = False
         self.content = False
+        self.validation_rejected = False
         self.save()
 
     def save(self):
@@ -89,6 +101,7 @@ class Receipt:
         if not isinstance(obj,dict):
             return
         self.error |= bool(obj.get('error'))
+        self.validation_rejected |= validation_rejection(self.data.get('http_status'), obj)
         if isinstance(obj.get('id'),str):
             self.data['model_response_id'] = obj['id']
         if isinstance(obj.get('usage'),dict):
@@ -138,7 +151,9 @@ class Receipt:
             self.file.close()
             self.file = None
             self.data['body_sha256'] = hashlib.sha256(raw_path(self.id).read_bytes()).hexdigest()
-        terminated = self.finish_reason in TERMINAL
+        terminated = self.finish_reason in TERMINAL or (self.validation_rejected and not failure)
+        if self.validation_rejected and not failure:
+            self.data['termination_kind'] = 'validation_rejection'
         self.data.update(state='settled', ended_at=time.time(), finish_reason=self.finish_reason,
                          execution_state='terminated' if terminated else self.data['execution_state'],
                          response_complete=bool(terminated and self.finish_reason == 'stop' and self.content

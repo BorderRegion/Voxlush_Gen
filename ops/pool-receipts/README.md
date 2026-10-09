@@ -56,6 +56,15 @@ of repeated SSE framing. The bound remains finite; exceeding it still preserves
 unknown execution unless semantic termination was actually received. This changes
 stream policy to v5, without increasing model token budgets or disabling thinking.
 
+Stream policy v6 additionally keeps bare `[DONE]` without a recognized finish
+reason unknown, even when usage was supplied. A saved, hash-verified HTTP 400/422
+parameter validation rejection can settle execution (never its missing bill):
+the supported evidence is `invalid_request_error`, an explicit validation code,
+or the observed Tierflow `reasoning_effort must be one of low, high, or max.`
+response. Generic errors, interrupted bodies, timeouts and receipt-query 404s
+remain unknown. Recovery saves separate evidence and blocks the invalid endpoint;
+it does not retry the rejected request or charge author repair allowance.
+
 ## Deployment and recovery boundaries
 
 Use a pinned release, a private persistent `API_POOL_RECEIPT_DIR` owned by the worker, drain markers, zero local in-flight work, consistent state/config/unit backups and one canary before rolling all workers and gateway. Verify cumulative counters do not decrease. Pin **the worker count and order**: placement is `int(request_id,16) % len(NODES)`. Keep receipt locks and bodies across restarts and storage maintenance. Lost/changed placement is not a reason to resend.

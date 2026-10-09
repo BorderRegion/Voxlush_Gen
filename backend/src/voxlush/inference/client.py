@@ -30,6 +30,17 @@ def provider_error(error):
     return "provider_error"
 
 
+def validation_rejection(status, obj):
+    """An explicit upstream parameter rejection, never a timeout or lookup 404."""
+    error = obj.get('error') if isinstance(obj, dict) else None
+    if status not in (400, 422) or not isinstance(error, dict):
+        return False
+    return (error.get('type') == 'invalid_request_error'
+            or error.get('code') in ('invalid_parameter', 'request_validation_error')
+            or (error.get('type') == 'api_error' and isinstance(error.get('message'), str)
+                and error['message'].startswith('reasoning_effort must be one of low, high, or max.')))
+
+
 def retry_delay(value):
     try:
         delay = float(value)
@@ -155,6 +166,8 @@ class PoolClient:
                         r.raw = (await read_bounded(response,65536,truncate=True)).decode(errors="replace")
                         try:
                             error_body = json.loads(r.raw)
+                            if validation_rejection(response.status_code, error_body):
+                                r.execution_state = 'terminated'
                             if isinstance(error_body,dict) and provider_error(error_body.get("error")) == "endpoint_quota":
                                 r.error_category = "endpoint_quota"
                         except ValueError:
@@ -226,14 +239,24 @@ class PoolClient:
                 if (not isinstance(meta, dict) or meta.get('schema') != 'pool.receipt.v1'
                         or meta.get('request_id') != attempt_id or meta.get('request_sha256') != expected_hash
                         or meta.get('upstream_posts') != 1 or meta.get('state') != 'settled'
-                        or meta.get('execution_state') != 'terminated' or meta.get('http_status') != 200):
+                        or meta.get('http_status') not in (200, 400, 422)):
                     return None
                 body = await get(url + '/body', MAX_RESPONSE_BYTES)
                 if body is None or hashlib.sha256(body).hexdigest() != meta.get('body_sha256'):
                     return None
                 r = ModelResult(attempt_id=attempt_id, role=role, endpoint_alias=endpoint.alias,
                                 requested_model=endpoint.model, execution_state='execution_unknown')
-                if endpoint.stream:
+                if meta['http_status'] in (400, 422):
+                    # Earlier receipts retained unknown for every HTTP error. Reuse
+                    # only a complete, hash-verified, explicit validation rejection.
+                    if meta.get('failure') or not validation_rejection(meta['http_status'], json.loads(body)):
+                        return None
+                    r.raw = body.decode()
+                    r.execution_state = 'terminated'
+                    r.error_category = 'endpoint_configuration'
+                elif meta.get('execution_state') != 'terminated':
+                    return None
+                elif endpoint.stream:
                     await self._stream(httpx.Response(200, content=body), endpoint, r, time.monotonic())
                 else:
                     r.raw = body.decode()
@@ -250,7 +273,8 @@ class PoolClient:
                 return {**asdict(r), 'receipt_evidence':{
                     'schema':'pool.receipt.v1', 'request_id':attempt_id,
                     'request_sha256':expected_hash, 'body_sha256':meta['body_sha256'],
-                    'upstream_posts':1}}
+                    'upstream_posts':1, 'http_status':meta['http_status'],
+                    'termination_kind':'validation_rejection' if meta['http_status'] != 200 else 'finish_reason'}}
         except (httpx.HTTPError, TimeoutError, ValueError, KeyError, TypeError, AttributeError, IndexError):
             return None
 
@@ -340,7 +364,6 @@ class PoolClient:
                     event = []
                     if data == "[DONE]":
                         done = True
-                        r.execution_state = "terminated"
                         break
                     before = len(r.content) + r.reasoning_content_characters
                     self._consume(json.loads(data),r)
@@ -354,6 +377,6 @@ class PoolClient:
             (done or endpoint.completion == "finish") and not r.error_category and not event)
         if not r.response_complete and not r.error_category:
             # A proxy may close HTTP cleanly while upstream generation is still
-            # running. EOF alone cannot release execution occupancy or authorize
+            # running. EOF/DONE alone cannot release execution occupancy or authorize
             # another POST; require semantic termination even for a failed answer.
-            r.error_category = "incomplete_response" if done or r.finish_reason else "outcome_unknown"
+            r.error_category = "incomplete_response" if r.execution_state == "terminated" else "outcome_unknown"

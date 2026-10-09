@@ -245,6 +245,23 @@ def test_worker_crash_or_local_deadline_does_not_certify_upstream_stop():
     assert pool_receipts.read("e" * 32)["execution_state"] == "execution_unknown"
 
 
+@pytest.mark.parametrize("status,message,failure,expected", [
+    (400, 'reasoning_effort must be one of low, high, or max. (request id: fixture)', None, 'terminated'),
+    (400, 'reasoning_effort must be one of low, high, or max.', 'ReadError', 'execution_unknown'),
+    (400, 'upstream interrupted', None, 'execution_unknown'),
+    (404, 'reasoning_effort must be one of low, high, or max.', None, 'execution_unknown'),
+])
+def test_only_explicit_validation_rejection_settles_execution(status, message, failure, expected):
+    receipt = pool_receipts.Receipt('f' * 32, b'{}')
+    receipt.dispatch()
+    receipt.headers(SimpleNamespace(status_code=status, headers={}))
+    receipt.chunk(json.dumps({'error':{'type':'api_error','message':message}}).encode(), stream=False)
+    receipt.end(failure, stream=False)
+    meta = pool_receipts.read('f' * 32)
+    assert meta['execution_state'] == expected
+    assert not meta['response_complete'] and meta['cost'] is None
+
+
 def test_gateway_pins_ids_and_queries_do_not_compete_with_generation_slots():
     import asyncio
     import aiohttp

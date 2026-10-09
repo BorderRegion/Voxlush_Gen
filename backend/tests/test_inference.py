@@ -155,6 +155,22 @@ async def test_clean_eof_without_semantic_end_retains_unknown_outcome(fake_http,
     assert len(requests) == 1
 
 
+@pytest.mark.parametrize("finish", [None, "unrecognized"])
+async def test_done_without_terminal_finish_keeps_execution_unknown_and_usage(fake_http, finish):
+    # A real upstream sent usage + DONE after reasoning, without a finish reason.
+    # The proxy delimiter ends transport; it cannot settle remote execution.
+    usage = {"prompt_tokens": 12, "completion_tokens": 24}
+    url, posts = await fake_http(sse(reasoning(), completion(content="", finish=finish),
+                                    {"choices": [], "usage": usage}, b"[DONE]"))
+    result = await call(url, input_per_million=1, output_per_million=2)
+    assert not result["response_complete"]
+    assert result["execution_state"] == "execution_unknown"
+    assert result["error_category"] == "outcome_unknown"
+    assert result["usage"] == usage and result["cost"] == .00006
+    assert result["reasoning_content_characters"] > 0
+    assert "[DONE]" in result["raw"] and len(posts) == 1
+
+
 @pytest.mark.parametrize("parameters", [{}, {"reasoning_effort": "max"}, {"thinking": {"type": "enabled"}}])
 async def test_reasoning_keeps_stream_alive_until_complete_answer(fake_http, parameters):
     chunks = [sse(reasoning("规划")) for _ in range(5)]

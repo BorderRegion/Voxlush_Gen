@@ -97,6 +97,38 @@ async def test_server_ignoring_receipt_mode_cannot_assert_single_execution():
         await client.close()
 
 
+@pytest.mark.parametrize("status,kind,message,failure,expected", [
+    (400, "api_error", "reasoning_effort must be one of low, high, or max. (request id: fixture)", None, True),
+    (422, "invalid_request_error", "invalid parameter", None, True),
+    (400, "api_error", "upstream interrupted", None, False),
+    (504, "invalid_request_error", "timeout", None, False),
+    (404, "invalid_request_error", "not found", None, False),
+    (400, "invalid_request_error", "invalid parameter", "ReadError", False),
+])
+async def test_saved_validation_rejection_settles_only_execution(status, kind, message, failure, expected):
+    body = json.dumps({"error":{"type":kind,"message":message}}).encode()
+    meta = receipt(body, http_status=status, execution_state="execution_unknown", finish_reason=None,
+                   failure=failure)
+    calls = []
+    def handle(request):
+        calls.append(request.method)
+        return httpx.Response(200, content=body if request.url.path.endswith('/body') else json.dumps(meta).encode())
+    client = PoolClient(transport=httpx.MockTransport(handle))
+    try:
+        result = await client.recover_receipt(
+            Endpoint(base_url='http://fixture/v1',model='fixture',pool_receipts=True), ID, 'author', 'expected')
+        assert bool(result) == expected
+        if expected:
+            assert result['execution_state'] == 'terminated' and not result['response_complete']
+            assert result['error_category'] == 'endpoint_configuration'
+            assert result['cost'] is None and result['billing_status'] == 'unknown'
+            assert result['receipt_evidence']['termination_kind'] == 'validation_rejection'
+            assert result['raw'] == body.decode()
+        assert set(calls) == {'GET'}
+    finally:
+        await client.close()
+
+
 @pytest.mark.parametrize(
     "status,ack,state,expected",
     [
@@ -126,7 +158,8 @@ async def test_only_acknowledged_admission_rejection_can_release_capacity(status
 
 
 @pytest.mark.parametrize("priced", [False, True])
-async def test_unknown_recovers_saved_original_after_restart_without_rebilling(tmp_path, priced):
+@pytest.mark.parametrize("rejected", [False, True])
+async def test_unknown_recovers_saved_original_after_restart_without_rebilling(tmp_path, priced, rejected):
     calls = []
     saved = {}
     available = False
@@ -144,9 +177,12 @@ async def test_unknown_recovers_saved_original_after_restart_without_rebilling(t
             )
         if not available:
             return httpx.Response(404)
-        meta = receipt(request_id=saved["id"], request_sha256=saved["digest"])
+        body = json.dumps({'error':{'type':'invalid_request_error'}}).encode() if rejected else BODY
+        meta = receipt(body, request_id=saved["id"], request_sha256=saved["digest"])
+        if rejected:
+            meta.update(http_status=400, execution_state='execution_unknown', finish_reason=None)
         return httpx.Response(
-            200, content=BODY if request.url.path.endswith("/body") else json.dumps(meta).encode()
+            200, content=body if request.url.path.endswith("/body") else json.dumps(meta).encode()
         )
 
     endpoint = Endpoint(
@@ -183,13 +219,16 @@ async def test_unknown_recovers_saved_original_after_restart_without_rebilling(t
         assert after["attempt_id"] == before["attempt_id"] and after["revision"] == 1
         assert (store.root / before["response_path"]).read_bytes() == original
         assert after["response_path"] != before["response_path"]
-        assert store.sample(sample["sample_id"])["stage"] == "build"
+        assert store.sample(sample["sample_id"])["stage"] == ('author' if rejected else 'build')
+        if rejected:
+            assert store.sample(sample['sample_id'])['reason_code'] == 'endpoint_configuration'
+            assert endpoint.alias in scheduler.blocked_endpoints
         assert store.sample(sample["sample_id"])["geometry_repairs"] == 0
         campaign = store.campaign("review")
         assert campaign["requests_used"] == 1 and campaign["request_limit"] == 8
-        assert campaign["cost_unknown"] == (0 if priced else 1)
-        assert campaign["reserved_cost"] == (0 if priced else 2)
-        assert campaign["cost_known"] == pytest.approx(0.00005 if priced else 0)
+        assert campaign["cost_unknown"] == (0 if priced and not rejected else 1)
+        assert campaign["reserved_cost"] == (0 if priced and not rejected else 2)
+        assert campaign["cost_known"] == pytest.approx(0.00005 if priced and not rejected else 0)
         assert calls == ["POST", "GET", "GET"]
         result = json.loads((store.root / after["response_path"]).read_text())
         assert result["elapsed_ms"] == 2000
