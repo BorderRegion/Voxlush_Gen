@@ -81,6 +81,8 @@ def upstream(body=TERMINAL, status=200, slow=False):
             self.send_response(status)
             self.send_header("Content-Type", "text/event-stream")
             self.send_header("NVCF-REQID", "upstream-fixture")
+            self.send_header("X-Tierflow-Request-Id", "provider-log-fixture")
+            self.send_header("Set-Cookie", "private-session=fixture")
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             if slow:
@@ -176,6 +178,21 @@ def test_tls_eof_before_headers_never_retries_tracked_post():
                 "POST", "http://fixture", None, time.monotonic() + 3, "test", single_attempt=strict
             )
         assert len(calls) == expected
+
+
+def test_provider_log_id_survives_incomplete_stream_without_settling_execution():
+    rid = "9" * 32
+    with upstream(body=PARTIAL) as (url, calls), worker(url) as entry:
+        assert post(entry, rid).status_code == 200
+        meta = requests.get(
+            entry + "/v1/pool/requests/" + rid,
+            headers={"Authorization": "Bearer fixture"},
+        ).json()
+        assert meta["upstream_headers"]["x-tierflow-request-id"] == "provider-log-fixture"
+        assert "set-cookie" not in meta["upstream_headers"]
+        assert meta["execution_state"] == "execution_unknown"
+        assert not meta["response_complete"]
+        assert len(calls) == meta["upstream_posts"] == 1
 
 
 def test_complete_receipt_authenticated_retrievable_duplicate_post_rejected():

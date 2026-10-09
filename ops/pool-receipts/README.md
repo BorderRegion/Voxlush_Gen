@@ -31,6 +31,12 @@ New worker receipts also persist `source_sha256` before the upstream POST. This
 identifies the selected account without publishing its ID or credential. It is
 dispatch attribution, not evidence that remote execution has ended.
 
+The header allowlist also retains `X-Tierflow-Request-Id` for correlation with
+the provider's account logs. It does not retain cookies. A trace ID, billing log
+or relay status such as 502 is not an upstream termination/cancellation receipt;
+incomplete streams remain unknown. Older receipts cannot recover headers that
+were never saved, and model response IDs may differ from provider log IDs.
+
 ### Explicit model routes
 
 When only some workers serve a model, an operator can configure `model_pools` in
