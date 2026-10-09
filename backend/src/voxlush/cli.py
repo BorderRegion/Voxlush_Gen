@@ -138,6 +138,16 @@ def command_backup(args, config: Config) -> int:
         store.close()
 
 
+def command_gallery(args, config: Config) -> int:
+    from voxlush.dataset.gallery import blind_gallery
+    store = _store(config)
+    try:
+        _print(blind_gallery(store, config.data_root, args.campaign, Path(args.output), count=args.count, seed=args.seed))
+        return 0
+    finally:
+        store.close()
+
+
 def command_restore(args) -> int:
     from voxlush.dataset.backup import restore_backup
     _print(restore_backup(Path(args.source), Path(args.destination)))
@@ -184,6 +194,11 @@ def parser() -> argparse.ArgumentParser:
     exp.add_argument("--campaign", required=True)
     exp.add_argument("--output", required=True)
     exp.add_argument("--include-provisional", action="store_true")
+    gallery = sub.add_parser('blind-gallery')
+    gallery.add_argument('--campaign', required=True)
+    gallery.add_argument('--output', required=True)
+    gallery.add_argument('--count', type=int, default=100)
+    gallery.add_argument('--seed', type=int, default=0)
     backup_parser = sub.add_parser("backup")
     backup_parser.add_argument("--output", required=True)
     restore = sub.add_parser("restore")
@@ -199,6 +214,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "doctor":
             return command_doctor(_config(args.config))
+        if args.command == 'blind-gallery':
+            return command_gallery(args, _config(args.config))
         if args.command == "serve":
             return command_serve(_config(args.config))
         if args.command == "campaign":

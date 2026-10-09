@@ -55,15 +55,20 @@ def inspect(s,legacy=False):
             if dims[1]<2:fail('door_label_not_a_doorway',component_id=cid,bbox=expected,repair='A lone keystone is not a door. Restore a real accessible framed opening and assign its actual frame/panel voxels to the door ID.')
         if c['category']=='window' and c.get('orientation') in ('north','south','east','west'):
             axis=2 if c['orientation'] in ('north','south') else 0
-            glass=[tuple(b[a] for a in ('x','y','z')) for b in bs if b['type']=='glass'];blocked=[]
+            glass=[tuple(b[a] for a in ('x','y','z')) for b in bs if b['type']=='glass'];blocked=[];obstructions=[]
             for p in glass:
                 for sign in (-1,1):
                     q=list(p)
                     for step in range(1,5):
                         q[axis]=p[axis]+sign*step;other=points.get(tuple(q))
                         if other is None:break
-                        if other['type']!='glass':blocked.append(p);break
-            if blocked:fail('window_backed_by_solid_wall',component_id=cid,coordinates=[list(p) for p in sorted(set(blocked))[:6]],repair='Cut through the actual wall thickness before glazing. Keep the frame and glass; remove opaque backing only inside the aperture.')
+                        if other['type']!='glass':
+                            blocked.append(p)
+                            if len(obstructions)<6:
+                                obstructions.append({'glazing_coordinate':list(p),'coordinate':list(q),
+                                                     'component_id':other['component_id'],'material':other.get('block_state',other['type'])})
+                            break
+            if blocked:fail('window_backed_by_solid_wall',component_id=cid,coordinates=[list(p) for p in sorted(set(blocked))[:6]],obstructions=obstructions,repair='Cut through the actual wall thickness before glazing. Keep the frame and glass; remove opaque backing only inside the aperture.')
     spec=s['task_spec'];spaces=spec.get('spaces',[]);features=spec.get('features',[])
     if not legacy and not any(c['category']=='slab' for c in cs.values()):fail('missing_floor_semantics',repair='Label the actual occupied floor separately from its foundation.')
     for f in features:
@@ -170,7 +175,9 @@ def inspect(s,legacy=False):
             blocked=[p for p in inner if p in points and not(op.get('glazing_material') and points[p]['type']==op['glazing_material'] and points[p]['component_id']==op['component_id'])]
             record={'id':op['component_id'],'type':op['type'],'orientation':axis,'interior_voxels':len(inner),'blocked_voxels':len(blocked)}
             opening_evidence.append(record)
-            if not inner or blocked:fail('opening_filled_by_later_geometry',**record,example_coordinates=[list(p) for p in blocked[:8]])
+            if not inner or blocked:fail('opening_filled_by_later_geometry',**record,example_coordinates=[list(p) for p in blocked[:8]],
+                obstructions=[{'coordinate':list(p),'component_id':points[p]['component_id'],'material':points[p].get('block_state',points[p]['type'])} for p in blocked[:8]],
+                repair='Correct the obstructing component strokes at these saved coordinates. Preserve the intended opening, frame and glazing; do not remove required components or spaces.')
     base=sum(len(owned[cid]) for cid,c in cs.items() if c['category']=='foundation')
     if base/len(points)>.55:fail('foundation_dominates',fraction=round(base/len(points),3))
     flat=[]

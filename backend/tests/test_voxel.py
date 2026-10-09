@@ -183,7 +183,10 @@ def test_opening_overdraw_and_frozen_legacy_gate(tmp_path, isolation):
     overdraw = HOUSE + "B(17,17,11,13,24,24,'oak_planks','south')\n"
     report = build(overdraw, task(), tmp_path / "overdraw")
     assert not report["passed"]
-    assert any(v["rule"] == "opening_filled_by_later_geometry" for v in report["violations"])
+    opening = next(v for v in report['violations'] if v['rule'] == 'opening_filled_by_later_geometry')
+    assert opening['obstructions']
+    assert {item['component_id'] for item in opening['obstructions']} == {'south'}
+    assert all('oak_planks' in item['material'] for item in opening['obstructions'])
     legacy_task = task("legacy_large_wooden_v1")
     legacy_task["quality_requirements"] = {key: 0 for key in FROZEN_WOODEN}
     legacy = build(HOUSE, legacy_task, tmp_path / "legacy")
