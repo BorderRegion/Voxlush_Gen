@@ -48,11 +48,39 @@ The automated backup/restore integration test restores to a new path and verifie
 
 Run legacy import in dry-run mode first. Review counts, path/coordinate warnings and duplicates; a repeated import must be idempotent. Legacy completed records remain `legacy_complete_unverified`. Export creates an immutable release with a dataset card and deterministic ordering; run `verify-release` before distributing it. Fixture/provisional records are excluded from formal accepted counts.
 
-## Schema 1/2 to 3 migration
+## Composition control
 
-The first new Store open upgrades schema 1/2 through additive migrations to schema 3. Schema 2 added response application, capacity reconciliation, config history, exact upright dedup and seed summaries; schema 3 adds creative phase, local retry count and an occupied-campaign index. Back up with the old release before opening production data. Verify legacy aliases against their historical routes. Unknown historical snapshots remain unknown. Migration preserves assets, briefs, billing and unknown occupancy; it does not rewrite immutable manifests or certify historical records.
+Create a new building campaign with explicit weights (relative weights need not sum to 100):
 
-Nonempty schema-1/2 migration fixtures preserve reservations and pass integrity checking; the existing real model asset's backup also migrated to schema 3 and survived export/backup/restore. These are local test roots, not production migration. Rollback to a schema-1/2 binary requires its verified pre-migration backup restored to a new root.
+```bash
+voxlush --config <config> campaign create buildings "Building calibration" 100 \
+  --request-limit 800 --api-cap 4 --scene-weights '{"architecture":1}' \
+  --composition-weights '{"pure_target":40,"light_context":30,"contextual":20,"environment_rich":10}'
+```
+
+The same fields are available in the existing campaign form and `POST /api/v1/campaigns`. New architecture campaigns default to 40/30/20/10. Natural tasks keep their landscape contract and have null mode. Hybrid settlement/landscape themes retain their compound requirements and normalize only the contextual/environment-rich weights (default 2:1); a hybrid campaign with both weights zero is rejected. Three explicitly multi-building architecture briefs cannot be paired with pure_target; planning selects another free-design brief within the same family. No building template is introduced.
+
+Tasks, direct/skeleton/refinement/repair prompts, actual occupied-voxel checks, image review and manifests retain the requested mode. Pure starts with at most 10% non-subject voxels and at least 80% subject occupied XZ columns; light uses 25% and 60%. These are initial explainable limits, not empirically calibrated aesthetic thresholds. Necessary foundations/details within the structural envelope remain subject. Category ownership is model-declared, so the existing actual-preview review separately checks framing, recognizable subject, distracting scenery and misleading categories. Missing or uncertain image evidence cannot pass. Architecture/interior and aesthetic contracts still apply.
+
+Coverage reports all tasks, unique archives, formal accepted vs provisional, archive rate, last valid visual verdict rate, request average and failure reasons per mode. Qualified production deficits count only accepted; unqualified calibration also counts verified provisional candidates and stops with `calibration_target_reached`, without promotion. Failed/duplicate plans never fill either deficit. Existing finite repair, cooldown and request/cost budgets still bound low-yield modes. Weights are immutable within a campaign; create a new campaign for a different distribution. Pre-schema-4 campaigns remain unspecified rather than silently changing their intent.
+
+```bash
+# Only verified pure/light assets; default remains formal accepted only.
+voxlush --config <config> export --campaign buildings --output <new-release> \
+  --composition-mode pure_target --composition-mode light_context
+# Exact apportioned mixed release; fails if any mode lacks supply, never substitutes.
+voxlush --config <config> export --campaign buildings --output <new-mixed-release> \
+  --composition-weights '{"pure_target":40,"light_context":30,"contextual":20,"environment_rich":10}' \
+  --composition-count 100
+```
+
+Add `--include-provisional` only for candidate inspection/calibration; records retain calibration/excluded splits. Filters select requested mode **and verified compliance**, not a guessed label. Manifests preserve requested mode, measured voxel context and independent model image observations separately. Older unspecified assets remain available in unfiltered exports. Release verification checks the actual mode counts and exact mixed quota; retries with different options fail. Blind galleries stratify by composition as well as scene/scale/route, show requested instructions without model verdicts, and leave observed mode/compliance human scores blank.
+
+## Schema 1/2/3 to 4 migration
+
+The first new Store open upgrades schema 1/2/3 through additive migrations to schema 4. Schema 2 added response application, capacity reconciliation, config history, exact upright dedup and seed summaries; schema 3 added creative phase, local retry count and an occupied-campaign index. Schema 4 adds nullable campaign/sample composition fields, indexed transactional summaries and persisted export selection. Back up with the old release before opening production data. Verify legacy aliases against their historical routes. Unknown historical snapshots remain unknown. Migration preserves assets, briefs, billing and unknown occupancy; it does not rewrite immutable manifests or certify historical records.
+
+Nonempty schema-1/2/3 migration fixtures preserve reservations and pass integrity checking. New real local pure/contextual fixture archives survive backup/restore with the same quota summaries, evidence and nonempty filtered export. These are local test roots, not production migration. Rollback to a schema-1/2/3 binary requires its verified pre-migration backup restored to a new root.
 
 Old active two-stage repairs without evidence of refinement are blocked as `phase_recovery_required`; automatic recovery and generic retry cannot infer the missing phase. Inspect saved source, build reports and attempts before any evidence-backed maintenance, retaining an audit trail. New jobs persist phase directly.
 

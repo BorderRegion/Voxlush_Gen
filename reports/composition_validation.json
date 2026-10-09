@@ -1,0 +1,706 @@
+{
+  "schema_version": "voxlush.composition_validation.v1",
+  "date": "2026-10-09",
+  "timezone": "Asia/Shanghai",
+  "baseline_commit": "eec41dab19fe8616b8a7a26f36aa86e286cff417",
+  "backend_commit": "8a5c6d9",
+  "frontend_commit": "c877d01",
+  "scope": "Dataset composition control; offline integration and historical-source replay, not new mode-conditioned generation or aesthetic qualification.",
+  "versions": {
+    "prompt": "voxlush.prompt.v6",
+    "visual_rubric": "voxlush.visual.v4",
+    "visual_rubric_sha256": "373fa5e349af58f82f7a03bde38e1434cc851e785c0055695b0ab454675f2cb1",
+    "stream_policy": "voxlush.stream.v4",
+    "composition": "voxlush.composition.v1",
+    "store_schema": 4,
+    "validator_version": "voxlush-geometry-v1",
+    "validator_hash": "38db5d4da0abf0986f14517554fc8fec8219e6366255ceaa1c11d4cadd6f7049",
+    "runtime_version": "voxlush-primitives-v1",
+    "runtime_hash": "8d78b971fba388047da10ced93a0beb3b36971a87bd77af7dc839078a0f87fd3",
+    "renderer_version": "legacy-orthographic-webp-v1",
+    "renderer_hash": "6692402cbabcbdbbc3c2fc7a6331c4fb382e1d8262db041a73932d3ca0214781",
+    "materials_version": "legacy-colors-v1",
+    "materials_hash": "38cb4124ff8be0231f4a8b028c3dda1bf2fccd4e631f1d6681c5e913aa588c8a"
+  },
+  "implementation": {
+    "modes": [
+      "pure_target",
+      "light_context",
+      "contextual",
+      "environment_rich"
+    ],
+    "architecture_default_weights": {
+      "pure_target": 40,
+      "light_context": 30,
+      "contextual": 20,
+      "environment_rich": 10
+    },
+    "hybrid_modes": [
+      "contextual",
+      "environment_rich"
+    ],
+    "hybrid_default_relative_weights": [
+      2,
+      1
+    ],
+    "hybrid_reason": "Keep compound multi-building/landscape briefs intact; normalize compatible weights, reject zero compatible mass.",
+    "natural_mode": null,
+    "legacy_backfill": false,
+    "geometric_limits": {
+      "pure_target": {
+        "max_context_fraction": 0.1,
+        "min_subject_footprint_fraction": 0.8
+      },
+      "light_context": {
+        "max_context_fraction": 0.25,
+        "min_subject_footprint_fraction": 0.6
+      }
+    },
+    "semantic_limit": "Measured actual final occupied voxels, but categories are generator-declared. Image review checks subject dominance, scenery and misleading categories independently; no human validation implied.",
+    "effective_quota": "Accepted only for qualified production; accepted + verified provisional for unqualified calibration. Failed and duplicate plans never offset deficits. Formal debt stays visible.",
+    "archive_evidence": [
+      "requested_mode",
+      "observed.geometry",
+      "observed.visual",
+      "meets_requested",
+      "geometry_ref",
+      "visual_ref"
+    ],
+    "export": "Requested mode plus verified compliance filter; exact apportioned mixed count; shortage fails with no substitution; immutable retry checks options.",
+    "model_calls_added_on_normal_path": 0,
+    "building_template_added": false,
+    "existing_geometry_and_aesthetic_contracts_retained": true,
+    "qualification_invalidated_by_new_prompt_rubric_validator": true
+  },
+  "verification": {
+    "checks": [
+      {
+        "log_name": "python-final.txt",
+        "passed": true,
+        "passed_cases": 271,
+        "seconds": 107.23,
+        "log_sha256": "6f38b6173da3fb4d7762b5fb70680081830d48ac665372bed5e3b56f621e47a6"
+      },
+      {
+        "log_name": "browser-final.txt",
+        "passed": true,
+        "passed_cases": 11,
+        "seconds": 19.9,
+        "log_sha256": "0d2cfa2fedddb0e07e78599b9d1e8038237bb8505d0f441e19a065edd0f50de0"
+      },
+      {
+        "log_name": "browser-real-final.txt",
+        "passed": true,
+        "passed_cases": 1,
+        "seconds": 17.1,
+        "log_sha256": "5c897cfec92e7af29dde2f124927baece976209105122120fbfad8cca62f0bdd"
+      },
+      {
+        "log_name": "frontend-build-final.txt",
+        "passed": true,
+        "passed_cases": null,
+        "seconds": 154,
+        "log_sha256": "82c975b19741afa13e226d3d514ee42bd2421ef3be9283fabc09cb8b41913544"
+      },
+      {
+        "log_name": "ruff-final.txt",
+        "passed": true,
+        "passed_cases": null,
+        "seconds": null,
+        "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+      }
+    ],
+    "python_skipped": 1,
+    "skip_reason": "optional private archive fixture unavailable",
+    "python_warning": "Starlette/AnyIO BlockingPortal deprecation",
+    "browser_transport": "11 mocked transport tests; 1 actual local API/Docker/render/control/browser test with fixture review, not a model.",
+    "regressions": [
+      "Four-mode task and direct/skeleton/refinement/repair prompt propagation",
+      "Natural exemption and incompatible compound theme rejection",
+      "Occupied voxel and thin wide ground controls; distant false foundation/decoration classification",
+      "Missing/unclear/mismatching actual-image assessment handling",
+      "Uneven synthetic yield replenishes 8/6/4/2 final candidates, with 16 pure attempts and accepted=0",
+      "Schema-3 migration retains old briefs, unknown occupancy and budget",
+      "Pure/contextual real Docker geometry and saved-voxel previews",
+      "Archive request/measurement/image evidence binding and tamper rejection",
+      "Nonempty filtered/mixed release, shortage rejection, immutable retry",
+      "Backup/restore preserves mode quotas, summaries, archive evidence and nonempty export",
+      "Skeleton geometry/syntax repairs across restart retain pure/light mode and exactly one refinement",
+      "Anonymous gallery leaves observed-mode and compliance human fields blank"
+    ],
+    "fixtures": "Fixed regression geometry and scripted model responses only; never counted as generated quality candidates."
+  },
+  "historical_model_source_replay": {
+    "new_generation_tasks": 0,
+    "historical_independent_assets": 6,
+    "new_model_requests": 0,
+    "results": [
+      {
+        "case": 0,
+        "origin": "historical_model_authored_candidate",
+        "scene_type": "architecture",
+        "generation_mode": "direct",
+        "scale": "S",
+        "source_sha256": "7a9364e44f6ffae14b8340b92cac4c7a4380daf582f8cb4fdaec2e9f9723ccc9",
+        "canonical_voxel_hash": "6aa42424c1b4dedb4c093653453a1f894fc5ecfb117b2924a1ae2fb97bed809b",
+        "unchanged_voxels": true,
+        "contextual_geometry_pass": true,
+        "pure_target_geometry_pass": false,
+        "contextual_violations": [],
+        "pure_target_violations": [
+          "composition_context_voxels",
+          "composition_context_extent"
+        ],
+        "measurement": {
+          "version": "voxlush.composition.v1",
+          "requested_mode": "pure_target",
+          "applicable": true,
+          "measurement_source": "final_occupied_voxels",
+          "semantic_source": "generator_declared_categories",
+          "independent_semantics_verified": false,
+          "requires_visual_confirmation": true,
+          "voxel_counts": {
+            "subject": 20186,
+            "environment": 60525,
+            "unclassified": 481
+          },
+          "category_voxels": {
+            "column": 665,
+            "decoration": 217,
+            "door": 152,
+            "exterior_wall": 2540,
+            "foundation": 6471,
+            "furniture": 268,
+            "interior_wall": 1548,
+            "path": 6183,
+            "roof": 3416,
+            "slab": 3871,
+            "stair": 152,
+            "terrain": 54137,
+            "vegetation": 205,
+            "window": 1367
+          },
+          "context_fraction": 0.7513794462508622,
+          "subject_footprint_fraction": 0.155029296875,
+          "subject_bbox": {
+            "min": [
+              33,
+              3,
+              33
+            ],
+            "max": [
+              126,
+              25,
+              78
+            ]
+          },
+          "limits": {
+            "max_context_fraction": 0.1,
+            "min_subject_footprint_fraction": 0.8
+          },
+          "meets_requested": false
+        },
+        "real_saved_voxel_render": true,
+        "local_build_render_seconds": 5.298,
+        "new_visual_review": false,
+        "new_model_requests": 0,
+        "formal_accepted": 0
+      },
+      {
+        "case": 1,
+        "origin": "historical_model_authored_candidate",
+        "scene_type": "architecture",
+        "generation_mode": "direct",
+        "scale": "S",
+        "source_sha256": "37ba7a7ae4139245acf90599ff7d95e71a90450705023c7ab59b314abff50b4c",
+        "canonical_voxel_hash": "aa150761e59ea64619700dbd79682949376659827c8be32b4a949f71557f639c",
+        "unchanged_voxels": true,
+        "contextual_geometry_pass": true,
+        "pure_target_geometry_pass": false,
+        "contextual_violations": [],
+        "pure_target_violations": [
+          "composition_context_voxels",
+          "composition_context_extent"
+        ],
+        "measurement": {
+          "version": "voxlush.composition.v1",
+          "requested_mode": "pure_target",
+          "applicable": true,
+          "measurement_source": "final_occupied_voxels",
+          "semantic_source": "generator_declared_categories",
+          "independent_semantics_verified": false,
+          "requires_visual_confirmation": true,
+          "voxel_counts": {
+            "subject": 6314,
+            "environment": 52129,
+            "unclassified": 20
+          },
+          "category_voxels": {
+            "column": 16,
+            "decoration": 318,
+            "door": 59,
+            "exterior_wall": 1602,
+            "foundation": 991,
+            "furniture": 255,
+            "interior_wall": 205,
+            "path": 12442,
+            "roof": 1241,
+            "slab": 1354,
+            "terrain": 39675,
+            "vegetation": 12,
+            "window": 293
+          },
+          "context_fraction": 0.8920000684193421,
+          "subject_footprint_fraction": 0.07939508506616257,
+          "subject_bbox": {
+            "min": [
+              61,
+              4,
+              56
+            ],
+            "max": [
+              91,
+              21,
+              89
+            ]
+          },
+          "limits": {
+            "max_context_fraction": 0.1,
+            "min_subject_footprint_fraction": 0.8
+          },
+          "meets_requested": false
+        },
+        "real_saved_voxel_render": true,
+        "local_build_render_seconds": 5.295,
+        "new_visual_review": false,
+        "new_model_requests": 0,
+        "formal_accepted": 0
+      },
+      {
+        "case": 2,
+        "origin": "historical_model_authored_candidate",
+        "scene_type": "architecture",
+        "generation_mode": "direct",
+        "scale": "S",
+        "source_sha256": "c04918212893878c6fbe1ad4c43cbac7c3065c5a4dd9d8faf5ca27aa02ee727c",
+        "canonical_voxel_hash": "0b28b97fcfd4a34c686511a194e75696f009ec36cd52482710a4144a149bd29e",
+        "unchanged_voxels": true,
+        "contextual_geometry_pass": true,
+        "pure_target_geometry_pass": false,
+        "contextual_violations": [],
+        "pure_target_violations": [
+          "composition_context_voxels",
+          "composition_context_extent"
+        ],
+        "measurement": {
+          "version": "voxlush.composition.v1",
+          "requested_mode": "pure_target",
+          "applicable": true,
+          "measurement_source": "final_occupied_voxels",
+          "semantic_source": "generator_declared_categories",
+          "independent_semantics_verified": false,
+          "requires_visual_confirmation": true,
+          "voxel_counts": {
+            "subject": 3834,
+            "environment": 93606,
+            "unclassified": 8
+          },
+          "category_voxels": {
+            "beam": 70,
+            "column": 459,
+            "decoration": 61,
+            "door": 56,
+            "exterior_wall": 1056,
+            "foundation": 525,
+            "furniture": 94,
+            "interior_wall": 172,
+            "object": 24,
+            "path": 177,
+            "rock": 116,
+            "roof": 809,
+            "slab": 266,
+            "terrain": 90206,
+            "vegetation": 1654,
+            "water": 1453,
+            "window": 250
+          },
+          "context_fraction": 0.9606559395780314,
+          "subject_footprint_fraction": 0.02850752159992983,
+          "subject_bbox": {
+            "min": [
+              88,
+              16,
+              82
+            ],
+            "max": [
+              119,
+              34,
+              124
+            ]
+          },
+          "limits": {
+            "max_context_fraction": 0.1,
+            "min_subject_footprint_fraction": 0.8
+          },
+          "meets_requested": false
+        },
+        "real_saved_voxel_render": true,
+        "local_build_render_seconds": 6.691,
+        "new_visual_review": false,
+        "new_model_requests": 0,
+        "formal_accepted": 0
+      },
+      {
+        "case": 3,
+        "origin": "historical_model_authored_candidate",
+        "scene_type": "architecture",
+        "generation_mode": "direct",
+        "scale": "S",
+        "source_sha256": "60b6851558494aa781b6bbbc654c4437a842df22e38568e7dfc6c62aa098767e",
+        "canonical_voxel_hash": "3cbc9ff61ae74a46c8d996ca5f26a14836084ba9838c662782cc8b6bbb00cb69",
+        "unchanged_voxels": true,
+        "contextual_geometry_pass": true,
+        "pure_target_geometry_pass": false,
+        "contextual_violations": [],
+        "pure_target_violations": [
+          "composition_context_voxels",
+          "composition_context_extent"
+        ],
+        "measurement": {
+          "version": "voxlush.composition.v1",
+          "requested_mode": "pure_target",
+          "applicable": true,
+          "measurement_source": "final_occupied_voxels",
+          "semantic_source": "generator_declared_categories",
+          "independent_semantics_verified": false,
+          "requires_visual_confirmation": true,
+          "voxel_counts": {
+            "subject": 3332,
+            "environment": 23039,
+            "unclassified": 109
+          },
+          "category_voxels": {
+            "beam": 120,
+            "column": 128,
+            "decoration": 263,
+            "door": 36,
+            "exterior_wall": 652,
+            "foundation": 114,
+            "furniture": 79,
+            "path": 595,
+            "rock": 35,
+            "roof": 1394,
+            "slab": 601,
+            "terrain": 21881,
+            "vegetation": 528,
+            "window": 54
+          },
+          "context_fraction": 0.8741691842900302,
+          "subject_footprint_fraction": 0.13947696139476962,
+          "subject_bbox": {
+            "min": [
+              96,
+              5,
+              96
+            ],
+            "max": [
+              134,
+              18,
+              116
+            ]
+          },
+          "limits": {
+            "max_context_fraction": 0.1,
+            "min_subject_footprint_fraction": 0.8
+          },
+          "meets_requested": false
+        },
+        "real_saved_voxel_render": true,
+        "local_build_render_seconds": 4.548,
+        "new_visual_review": false,
+        "new_model_requests": 0,
+        "formal_accepted": 0
+      },
+      {
+        "case": 4,
+        "origin": "historical_model_authored_candidate",
+        "scene_type": "architecture",
+        "generation_mode": "two_stage",
+        "scale": "L",
+        "source_sha256": "ed02a2e75cecac7b3d0e35d21b4ab60ec2b19a5e8a385f1739130ef74f820537",
+        "canonical_voxel_hash": "a09d6912598381e125669c3d1ab643fb1662480703edeaa4c9274f9f945f99bd",
+        "unchanged_voxels": true,
+        "contextual_geometry_pass": true,
+        "pure_target_geometry_pass": false,
+        "contextual_violations": [],
+        "pure_target_violations": [
+          "composition_context_voxels",
+          "composition_context_extent"
+        ],
+        "measurement": {
+          "version": "voxlush.composition.v1",
+          "requested_mode": "pure_target",
+          "applicable": true,
+          "measurement_source": "final_occupied_voxels",
+          "semantic_source": "generator_declared_categories",
+          "independent_semantics_verified": false,
+          "requires_visual_confirmation": true,
+          "voxel_counts": {
+            "subject": 26436,
+            "environment": 238753,
+            "unclassified": 2020
+          },
+          "category_voxels": {
+            "beam": 240,
+            "column": 128,
+            "decoration": 690,
+            "door": 96,
+            "exterior_wall": 3438,
+            "foundation": 12951,
+            "interior_wall": 540,
+            "path": 1971,
+            "rock": 962,
+            "roof": 5277,
+            "slab": 3262,
+            "stair": 1480,
+            "terrain": 179626,
+            "vegetation": 1199,
+            "water": 54995,
+            "window": 354
+          },
+          "context_fraction": 0.9010662066023225,
+          "subject_footprint_fraction": 0.11256460523970771,
+          "subject_bbox": {
+            "min": [
+              72,
+              15,
+              102
+            ],
+            "max": [
+              189,
+              50,
+              148
+            ]
+          },
+          "limits": {
+            "max_context_fraction": 0.1,
+            "min_subject_footprint_fraction": 0.8
+          },
+          "meets_requested": false
+        },
+        "real_saved_voxel_render": true,
+        "local_build_render_seconds": 16.683,
+        "new_visual_review": false,
+        "new_model_requests": 0,
+        "formal_accepted": 0
+      },
+      {
+        "case": 5,
+        "origin": "historical_model_authored_candidate",
+        "scene_type": "architecture",
+        "generation_mode": "direct",
+        "scale": "S",
+        "source_sha256": "5c1315c69442399624e2c6ab04cbd674b24873de139d05a442178456a6ed2994",
+        "canonical_voxel_hash": "1a3608fa2848035a306c85b191aaf1c18f639ed4430d46fc610acff7c1aef346",
+        "unchanged_voxels": true,
+        "contextual_geometry_pass": true,
+        "pure_target_geometry_pass": false,
+        "contextual_violations": [],
+        "pure_target_violations": [
+          "composition_context_voxels",
+          "composition_context_extent"
+        ],
+        "measurement": {
+          "version": "voxlush.composition.v1",
+          "requested_mode": "pure_target",
+          "applicable": true,
+          "measurement_source": "final_occupied_voxels",
+          "semantic_source": "generator_declared_categories",
+          "independent_semantics_verified": false,
+          "requires_visual_confirmation": true,
+          "voxel_counts": {
+            "subject": 4481,
+            "environment": 204793,
+            "unclassified": 48
+          },
+          "category_voxels": {
+            "beam": 924,
+            "column": 958,
+            "decoration": 98,
+            "door": 28,
+            "exterior_wall": 405,
+            "furniture": 32,
+            "interior_wall": 71,
+            "object": 48,
+            "path": 56,
+            "rock": 128,
+            "roof": 1096,
+            "slab": 607,
+            "stair": 112,
+            "terrain": 184575,
+            "vegetation": 372,
+            "water": 19662,
+            "window": 150
+          },
+          "context_fraction": 0.9785927900555126,
+          "subject_footprint_fraction": 0.03895362663495838,
+          "subject_bbox": {
+            "min": [
+              105,
+              3,
+              116
+            ],
+            "max": [
+              132,
+              25,
+              148
+            ]
+          },
+          "limits": {
+            "max_context_fraction": 0.1,
+            "min_subject_footprint_fraction": 0.8
+          },
+          "meets_requested": false
+        },
+        "real_saved_voxel_render": true,
+        "local_build_render_seconds": 16.143,
+        "new_visual_review": false,
+        "new_model_requests": 0,
+        "formal_accepted": 0
+      }
+    ],
+    "original_requested_composition_mode": null,
+    "retrospective_check_only": true,
+    "summary_by_route": [
+      {
+        "generation_mode": "direct",
+        "scale": "S",
+        "assets": 5,
+        "same_canonical_hash": 5,
+        "contextual_geometry_pass": 5,
+        "pure_target_geometry_pass": 0
+      },
+      {
+        "generation_mode": "two_stage",
+        "scale": "L",
+        "assets": 1,
+        "same_canonical_hash": 1,
+        "contextual_geometry_pass": 1,
+        "pure_target_geometry_pass": 0
+      }
+    ],
+    "inference": "New checks identify substantial non-subject context without changing source/voxels. This does not establish new prompts reduce surroundings or preserve/improve aesthetic quality."
+  },
+  "new_mode_conditioned_experiment": {
+    "status": "blocked_by_unresolved_remote_execution",
+    "model_requests": 0,
+    "independent_tasks": 0,
+    "new_candidates": 0,
+    "formal_accepted": 0,
+    "tokens_observed": 0,
+    "by_mode": [
+      {
+        "mode": "pure_target",
+        "independent_tasks": 0,
+        "source_executable_rate": null,
+        "geometry_pass_rate": null,
+        "visual_pass_rate": null,
+        "archive_rate": null,
+        "tokens_per_candidate": null,
+        "seconds_per_candidate": null,
+        "actual_cost_per_candidate": null
+      },
+      {
+        "mode": "light_context",
+        "independent_tasks": 0,
+        "source_executable_rate": null,
+        "geometry_pass_rate": null,
+        "visual_pass_rate": null,
+        "archive_rate": null,
+        "tokens_per_candidate": null,
+        "seconds_per_candidate": null,
+        "actual_cost_per_candidate": null
+      },
+      {
+        "mode": "contextual",
+        "independent_tasks": 0,
+        "source_executable_rate": null,
+        "geometry_pass_rate": null,
+        "visual_pass_rate": null,
+        "archive_rate": null,
+        "tokens_per_candidate": null,
+        "seconds_per_candidate": null,
+        "actual_cost_per_candidate": null
+      },
+      {
+        "mode": "environment_rich",
+        "independent_tasks": 0,
+        "source_executable_rate": null,
+        "geometry_pass_rate": null,
+        "visual_pass_rate": null,
+        "archive_rate": null,
+        "tokens_per_candidate": null,
+        "seconds_per_candidate": null,
+        "actual_cost_per_candidate": null
+      }
+    ],
+    "comparative_quality_or_cost_claim": null,
+    "pure_environment_reduction_proven": false,
+    "building_quality_preservation_by_new_model_generation_proven": false,
+    "proposed_matched_first_batch": {
+      "modes": [
+        "pure_target",
+        "contextual"
+      ],
+      "theme_seeds": [
+        "commerce_01",
+        "courtyard_east_01",
+        "timber_04"
+      ],
+      "routes": [
+        "direct",
+        "direct",
+        "two_stage"
+      ],
+      "independent_tasks": 6,
+      "status": "not_dispatched",
+      "policy": "Same endpoint/thinking/runtime versions; normal author + necessary bounded repair/refinement + one image review. Inspect actual defects before expanding; six is an initial design, not a renewed authorization cap."
+    }
+  },
+  "pool_evidence": {
+    "ledger_unknowns": 14,
+    "raw_canary_unknowns": 1,
+    "total_unknowns": 15,
+    "released": 0,
+    "replayed": 0,
+    "ledger_status_occupancy_cost_and_result_hashes_preserved": true,
+    "raw_canary_sha256": "3e206a4212927dd169da6fbcae88d6469b50cf1199f2beb622c8322cb50177f5",
+    "verification": "read-only SQLite; no Store migration; original response hashes checked",
+    "authorization": "Broad API usage already authorized; no additional permission requested.",
+    "fresh_read_only_receipt_queries": 14,
+    "receipt_http_404": 14,
+    "raw_canary_without_receipt": 1,
+    "model_posts": 0,
+    "gateway_and_five_pinned_workers_running": true,
+    "new_terminal_evidence": false,
+    "capacity_or_financial_reset": false,
+    "original_data_roots_migrated": false,
+    "required_external_fact": "Reliable evidence covering all historical upstream executions, or documented independent capacity; health/EOF/elapsed time/receipt absence do not establish termination."
+  },
+  "recommendation": {
+    "architecture_default_weights": {
+      "pure_target": 40,
+      "light_context": 30,
+      "contextual": 20,
+      "environment_rich": 10
+    },
+    "basis": "Engineering starting distribution within user-recommended range, not an empirical optimum. Calibrate context thresholds, mode quality/yield and cost with new matched samples and real human scores.",
+    "unattended_formal_production_ready": false,
+    "start_10000_to_100000": false,
+    "minimum_remaining_steps": [
+      "Resolve/isolate remote execution with valid evidence",
+      "Run matched pure/contextual full-chain real batches, compare quality/yield/unit costs, then expand only after positive evidence",
+      "Complete existing same-profile human blind qualification; never promote provisional without it"
+    ]
+  }
+}

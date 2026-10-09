@@ -6,6 +6,43 @@ Repository baseline: `4f4be137d3924b38cb7301c2c4a0081ff32a7c2a`.
 
 Environment: Python 3.12.3, Node 20.19.0, npm 10.8.2, Docker 29.1.3, APSW SQLite 3.51.3, Linux, `voxlush-sandbox:v1` (`sha256:50712f3b25dc`). The checked-in profile has `allow_live=false`, no author or visual endpoint, and global API cap 0. The acceptance data root was `/tmp/voxlush-acceptance-20261008`; it is outside the repository and is not production data.
 
+## Composition control review: baseline eec41da
+
+Fetched main matched `eec41dab19fe8616b8a7a26f36aa86e286cff417` before editing and before delivery. Backend `8a5c6d9` and dashboard `c877d01` implement the requested dataset dimension. [Machine-readable evidence](composition_validation.json) separates fixtures, historical model replay and the blocked new experiment. No production data/service mutation or new model request occurred in this feature review.
+
+| Delivered behavior | Evidence |
+|---|---|
+| Four explicit modes across the full creative route | Task JSON/schema, prompts v6, visual rubric v4; direct, skeleton, refinement and repair carry the same mode. Actual scheduler regressions cover skeleton geometry/syntax repair and restart with pure/light modes, followed by exactly one refinement. Thinking and normal call count are unchanged. |
+| Lightweight context enforcement | Final occupied voxel ownership and occupied XZ columns detect both deep terrain and thin wide scenery. Pure limits start at 10% context / 80% subject columns; light at 25% / 60%. Distant decoration/foundation labels cannot automatically count as building. Contextual/rich retain a recognizable architectural subject without a ratio cap. Actual saved previews feed the existing single independent image review; absent/malformed/uncertain observations cannot pass. |
+| Free design and theme compatibility | No geometry template or source alteration. Existing structural/spatial/aesthetic requirements remain. Natural tasks are exempt. Hybrid settlement/landscape briefs use contextual/rich weights normalized to 2:1 by default; a zero compatible mass is rejected. Three explicitly multiple-building architecture seeds are excluded from pure pairing, with other briefs retained in every family. |
+| Final-output composition quotas | Persisted indexed summaries and deficit selection count accepted for qualified production, accepted plus verified candidates for calibration; formal debt remains visible. Simulated unequal yield reaches 8/6/4/2 outputs from 16/6/4/2 attempts. Failed/duplicate tasks do not fill quotas. Existing finite failure budgets remain active. |
+| Trustworthy archives and releases | Requested mode, measured context and observed image context remain distinct. Verification binds component ownership, actual voxels, geometry report, previews and review. Manifest-only relabeling fails. Filters require mode plus compliance; exact apportioned mixed export rejects shortages without replacing a low-yield mode. Candidate/fixture training splits remain calibration/excluded. |
+| Existing UI and human inspection | Mode filters, detail evidence, per-mode tasks/archive/visual rates, failures and average requests; campaign weights and single/multiple/mixed export controls. Anonymous gallery stratifies by composition, exposes requested instructions but no model verdict, and keeps human observed mode/compliance scores blank. |
+| Compatibility and recovery | Additive schema 4 leaves old briefs/modes unspecified and preserves unknown occupancy/budgets. Real local pure/contextual archive backup/restore retains weights, summaries and nonempty filtered export. Old unfiltered assets/releases remain readable. |
+
+Final checks: **271 Python tests passed, 1 optional private fixture skipped, 107.23 s**; Ruff passed; TypeScript/Vite build passed (154 s); **11 mocked browser tests passed** (19.9 s), and **1 actual local API/Docker/render/browser test passed** (17.1 s). The latter uses fixture review, not a model. The new real geometry/archive fixtures likewise do not count as quality candidates. A test-fixture setup error (claiming a draft campaign) was corrected before the final suite; the final run has no test failures. The only Python warning is the existing Starlette/AnyIO deprecation.
+
+### What the real-source replay establishes
+
+Six historical model-authored candidates were rebuilt and rendered without source/seed changes. Each retained its canonical voxel hash. These were originally unspecified tasks; the two checks below are retrospective, not successful new mode-conditioned generation.
+
+| Historical route / scale | Assets | Contextual geometry pass | Pure geometry pass | Non-subject occupied voxels |
+|---|---:|---:|---:|---:|
+| Direct buildings / S | 5 | 5 | 0 | 75.1%–97.9% |
+| Two-stage building / L | 1 | 1 | 0 | 90.1% |
+
+All six failed both pure voxel-fraction and footprint-extent checks. Actual preview inspection of the bakery and complex lodge showed broad ground/road or river/terrain surroundings. This is diagnostic support for the requested control. Semantic categories remain generator declarations, the new replay did not call an image model, and no human blind score was supplied. It proves the checker can detect excessive surroundings while leaving authored geometry intact; it does **not** prove prompt v6 reduces surroundings or preserves/improves new generated building aesthetics.
+
+### New pure/contextual batches: blocked, not reported as successful
+
+There were **zero new paid calls, independent tasks, candidates or formal accepted assets**. Consequently new source/geometry/visual/archive rates, tokens/time per candidate and actual currency cost differences are **null**, not zero-performance claims. Broad API authorization is already present; there is no renewed small-call cap or permission question.
+
+Fresh read-only inspection found the deployed gateway/five workers running. Fourteen authenticated historical receipt lookups returned 404; the fifteenth unknown is a raw visual canary. Read-only original-ledger comparison retained status, occupancy, settled-cost uncertainty and raw response hashes for all fourteen, plus the canary hash. None was released/replayed. Absent receipts and healthy workers cannot establish upstream termination or independent capacity, so a new data root was not used to evade shared isolation.
+
+The minimum next experiment after valid execution evidence is available is a matched first batch across `commerce_01` (S), `courtyard_east_01` (S) and `timber_04` (L/two-stage), independently generated in pure and contextual modes with the same model/thinking configuration. Run the complete normal chain and inspect actual defects before expansion. Compare mode-specific yield, building quality, context, tokens, elapsed time and known/unknown cost; preserve failures in denominators. This six-task design is a starting experiment, not an authorization ceiling.
+
+Recommended architecture default remains **40% pure / 30% light / 20% contextual / 10% rich**, an engineering starting point within the requested ranges. It is not an empirical optimum. Qualification is invalidated by the new prompt/rubric/validator version. **Unattended formal production and 10000–100000 scale remain unqualified** pending external execution evidence, new full-chain quality/efficiency and sustained-run evidence, and genuine existing-contract human blind calibration. No provisional asset was promoted.
+
 ## Review 2672ca7: response recovery, deployed pool receipts and quality evidence
 
 Baseline `2672ca76e2c0e1fba73a2f0b8d683ad0b311c41c` matched freshly fetched main before editing. Reliability/protocol commit: `44f8be5`; quality diagnostics/gallery commit: `f52766e`. [Machine-readable evidence](production_validation.json) separates this review from the historical paid cohorts. Broad API use was authorized; prior small-call limits no longer apply. The user separately authorized draining, backing up and rolling out the reviewed API-pool patch.
