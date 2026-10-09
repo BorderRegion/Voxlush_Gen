@@ -44,7 +44,7 @@ class Scheduler:
         self.active_campaigns: dict[asyncio.Task,str] = {}
         self.stopping = False
         self.task = None
-        self.adaptive_cap = min(8,config.global_api_cap)
+        self.adaptive_cap = min(config.initial_api_cap,config.global_api_cap)
         self.window_started = time.monotonic()
         self.window_results = []
         self.blocked_endpoints = set()
@@ -130,7 +130,8 @@ class Scheduler:
         self.store.reconcile_deadlines()
         if not self.storage_failed:
             if (time.monotonic() >= self.next_receipt_poll and 'reconcile' not in self.active.values()
-                    and any(e and e.pool_receipts for e in (self.config.author,self.config.visual))):
+                    and any(e and e.pool_receipts for e in (
+                        self.config.author,self.config.visual,*self.config.receipt_recovery_endpoints))):
                 self.submit(self.recover_pool_receipts(),'reconcile')
             await self.recover_responses(pending_only=True)
         for c in self.store.campaigns():
@@ -380,8 +381,9 @@ class Scheduler:
         if time.monotonic() < self.next_receipt_poll:
             return
         self.next_receipt_poll = time.monotonic() + 30
-        endpoints = {'author':self.config.author,'refine':self.config.author,'review':self.config.visual}
-        groups = {e.capacity_key() for e in endpoints.values() if e and e.pool_receipts}
+        endpoints = [e for e in (self.config.author,self.config.visual,*self.config.receipt_recovery_endpoints)
+                     if e and e.pool_receipts]
+        groups = {e.capacity_key() for e in endpoints}
         if not groups:
             return
         placeholders = ','.join('?' for _ in groups)
@@ -392,9 +394,6 @@ class Scheduler:
             attempts = self.store.rows(query, (*groups,*self.receipt_cursor))
         for attempt in attempts:
             self.receipt_cursor = (attempt['started_at'],attempt['attempt_id'])
-            endpoint = endpoints.get(attempt['role'])
-            if not endpoint or not endpoint.pool_receipts or endpoint.capacity_key() != attempt['capacity_group']:
-                continue
             try:
                 request_path = self.store.root/attempt['response_path'].replace('.json','.request.json')
                 request = json.loads(request_path.read_text())
@@ -402,7 +401,11 @@ class Scheduler:
                     continue  # No retroactive promises for historical, untracked POSTs.
                 snapshot = self.store.one('SELECT config_json FROM config_snapshots WHERE config_hash=?', (attempt['runtime_config_hash'],))
                 original = json.loads(snapshot['config_json'])['visual' if attempt['role']=='review' else 'author']
-                if original['base_url'] != 'sha256:'+hashlib.sha256(endpoint.base_url.encode()).hexdigest():
+                primary = self.config.visual if attempt['role']=='review' else self.config.author
+                endpoint = next((e for e in [primary,*endpoints] if e and e.pool_receipts
+                                 and e.capacity_key() == attempt['capacity_group']
+                                 and original['base_url'] == 'sha256:'+hashlib.sha256(e.base_url.encode()).hexdigest()), None)
+                if endpoint is None:
                     continue
                 original_endpoint = endpoint.model_copy(update={key:original[key] for key in (
                     'model','parameters','stream','completion','input_per_million','output_per_million')})

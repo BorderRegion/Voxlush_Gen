@@ -161,7 +161,8 @@ async def test_only_acknowledged_admission_rejection_can_release_capacity(status
 
 @pytest.mark.parametrize("priced", [False, True])
 @pytest.mark.parametrize("rejected", [False, True])
-async def test_unknown_recovers_saved_original_after_restart_without_rebilling(tmp_path, priced, rejected):
+@pytest.mark.parametrize("switched", [False, True])
+async def test_unknown_recovers_saved_original_after_restart_without_rebilling(tmp_path, priced, rejected, switched):
     calls = []
     saved = {}
     available = False
@@ -179,6 +180,7 @@ async def test_unknown_recovers_saved_original_after_restart_without_rebilling(t
             )
         if not available:
             return httpx.Response(404)
+        assert request.url.host == 'fixture'  # Recover on the original route after a switch.
         body = json.dumps({'error':{'type':'invalid_request_error'}}).encode() if rejected else BODY
         meta = receipt(body, request_id=saved["id"], request_sha256=saved["digest"])
         if rejected:
@@ -213,6 +215,12 @@ async def test_unknown_recovers_saved_original_after_restart_without_rebilling(t
         store.close()
         store.__init__(store.root)
         available = True
+        if switched:
+            config = config.model_copy(update={
+                'author':endpoint.model_copy(update={'base_url':'http://replacement/v1', 'model':'new'}),
+                'receipt_recovery_endpoints':[endpoint],
+            })
+            assert config.snapshot()['receipt_recovery_endpoints'][0]['base_url'].startswith('sha256:')
         scheduler = Scheduler(store, config, client=PoolClient(transport=httpx.MockTransport(handle)))
         await scheduler.recover_pool_receipts()
         await scheduler.recover_responses(pending_only=True)

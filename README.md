@@ -254,6 +254,8 @@ voxlush --config "$VOXLUSH_CONFIG" campaign start buildings
 | `input_per_million` / `output_per_million` | 每个端点 | 按实际价格与统一货币单位配置，用于成本核算 |
 | `rpm` / `tpm` / `reservation_tokens` | 每个端点 | 每分钟请求、预留 token 限额及每次预留量 |
 | `build_workers` / `render_workers` | 顶层配置 | 本地并行构建与渲染数，与模型并发分别配置 |
+| `initial_api_cap` | 顶层配置，默认 8 | 启动时的本地请求并发；实际仍受全局、活动和端点上限约束，并会因限流或积压降低 |
+| `receipt_recovery_endpoints` | 顶层配置，默认空列表 | 换模型线路时保留旧端点，用于查询旧请求回执；不会向这些端点发送新生成请求 |
 | `disk_reserve_bytes` | 顶层配置，默认 1 GiB | 剩余空间低于此值时停止新的付费派发 |
 
 需要金额预算时，先为两个端点填写可信的费用上界和价格，再通过 API 创建活动。例如下方 `cost_limit: 10` 使用与你填写的单价相同的货币单位；它是示范预算，按实际需要修改。
@@ -376,6 +378,8 @@ voxlush --config "$VOXLUSH_CONFIG" campaign drain buildings
 连续运行不是永远发送请求。上游整体不可用时没有结果可生成；长期没有有效产出时，也需要停下来查原因。
 
 长期挂在服务器上可使用 [systemd 模板](docs/OPERATIONS.md#systemd-template)。固定代码版本、环境文件和数据路径，保持一个调度进程。关闭浏览器不会停后端；直接关闭承载前台服务的终端则可能停止进程。
+
+使用 `PrivateTmp=true` 时，要按模板设置宿主机可见的 `TMPDIR`，并预先创建该目录。否则服务里的临时源码对 Docker 守护进程不可见，会出现「bind source path does not exist」。部署检查也要在相同的服务环境中执行。
 
 ## 查看与导出数据
 

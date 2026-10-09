@@ -80,6 +80,8 @@ class Config(StrictModel):
     auth_token_env: str = "VOXLUSH_ADMIN_TOKEN"
     allow_live: bool = False
     global_api_cap: int = Field(default=8, ge=0, le=512)
+    initial_api_cap: int = Field(default=8, ge=1, le=512,
+        description="Explicit starting local concurrency; global, campaign and provider limits still apply.")
     unknown_execution_policy: Literal["isolate_pool", "continue_new_tasks"] = "isolate_pool"
     unknown_backoff_seconds: float = Field(default=30, ge=1, le=3600,
         description="Pause new calls after an unknown result in continue_new_tasks mode; not a remote execution deadline.")
@@ -98,6 +100,8 @@ class Config(StrictModel):
     theme_cooldown_seconds: float = Field(default=300, gt=0)
     author: Endpoint | None = None
     visual: Endpoint | None = None
+    receipt_recovery_endpoints: list[Endpoint] = Field(default_factory=list, max_length=8,
+        description="Previous routes used only for authenticated receipt GETs, never new model calls.")
     qualification: Qualification = Field(default_factory=Qualification)
     frontend_dist: Path | None = None
 
@@ -143,6 +147,8 @@ class Config(StrictModel):
         for role in ("author", "visual"):
             if value[role]:
                 value[role]["base_url"] = "sha256:" + hashlib.sha256(value[role]["base_url"].encode()).hexdigest()
+        for endpoint in value['receipt_recovery_endpoints']:
+            endpoint['base_url'] = 'sha256:' + hashlib.sha256(endpoint['base_url'].encode()).hexdigest()
         value["profile_hash"] = self.profile_hash()
         return value
 

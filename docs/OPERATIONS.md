@@ -12,6 +12,8 @@ The 2026-10-08 live follow-up used DeepSeek v4.1 Flash parameters `{"max_tokens"
 
 ## Controls and shutdown
 
+The default starting local concurrency is 8. For an explicitly authorized higher starting level, set `initial_api_cap` (for example 256) together with suitable `global_api_cap`, campaign cap and endpoint `provider_cap`. Setting only the campaign cap does not raise the scheduler's starting level. Provider/account limits still apply, and rate-limit/local-backpressure adaptation can lower concurrency. This operating setting does not change the model quality profile or promote provisional records; automatic upward adaptation still requires qualification. Restarting applies the configured starting level while retaining ledger-backed cooldowns and budgets.
+
 Use the dashboard or CLI campaign commands. They submit idempotent commands to the API; do not edit `runtime.db` directly. Pause stops further campaign dispatch while allowing already active work to settle; drain stops new paid work and lets returned results finish local stages. Both are durable user choices and remain in effect after restart.
 
 Normal process shutdown preserves a running campaign's intent. Startup applies queued user controls and recovers existing requests/artifacts before dispatch resumes; it does not reset budgets or replay unknown requests. For a planned restart without interrupting paid work, temporarily set the campaign cap to 0, wait for active requests/local work to settle, restart, then restore its cap. Do not issue drain if you expect automatic continuation; an intentional drain requires an explicit resume. Older `draining/shutdown` records resume automatically unless a queued user control supersedes them. `emergency_stop` or a shutdown deadline can leave an external request unknown; inspect its evidence before reconciliation.
@@ -51,7 +53,7 @@ This releases execution occupancy, retains unknown cost, and does not retry the 
 
 Roles on one service share capacity by default. Configure `capacity_pool` only for documented independent pools; roles sharing a pool must agree on cap/RPM/TPM. Config revision history is available from authenticated `GET /api/v1/config/history?campaign_id=<id>`; `before=<revision>` pages older records. Pure cap changes do not invalidate model qualification.
 
-For the explicitly patched pool, enable endpoint `pool_receipts: true` to record a single-send identity and recover a saved upstream response through authenticated GETs. See the [receipt protocol and deployment guide](../ops/pool-receipts/README.md). This does not reconcile historical untracked requests, clear unknown costs or prove termination after upstream EOF. Keep the original ledger and capacity identity.
+For the explicitly patched pool, enable endpoint `pool_receipts: true` to record a single-send identity and recover a saved upstream response through authenticated GETs. See the [receipt protocol and deployment guide](../ops/pool-receipts/README.md). This does not reconcile historical untracked requests, clear unknown costs or prove termination after upstream EOF. Keep the original ledger and capacity identity. When switching generation routes, retain the old endpoint configuration in the bounded top-level `receipt_recovery_endpoints` list (`pool_receipts: true`, original URL, capacity identity and credential environment). These entries only perform receipt GETs; the scheduler never dispatches a POST through them. Recovery checks the original URL hash, capacity identity and request-body digest, then reuses the original model/settings and accounting. A missing receipt still leaves the request unknown. Do not change the gateway's pinned worker order to move requests between routes.
 
 ## Backup and restore
 
@@ -142,6 +144,7 @@ User=voxlush
 Group=voxlush
 WorkingDirectory=/opt/voxlush
 EnvironmentFile=/etc/voxlush/voxlush.env
+Environment=TMPDIR=/var/lib/voxlush/tmp
 ExecStart=/opt/voxlush/.venv/bin/voxlush --config /etc/voxlush/config.json serve
 Restart=on-failure
 RestartSec=5
@@ -153,7 +156,9 @@ PrivateTmp=true
 WantedBy=multi-user.target
 ```
 
-The template has not been installed or exercised on a production host. Use a protected TLS proxy for remote access; keep the backend bound to loopback unless the auth token and proxy requirements are satisfied.
+Create `/var/lib/voxlush/tmp` owned by the service user with mode 0700 before starting. Docker's host daemon must see sandbox bind-mount inputs at the same absolute path as the service. With `PrivateTmp=true`, leaving Python's temporary inputs under the service-private `/tmp` causes `sandbox_unavailable: bind source path does not exist`. Set `TMPDIR` to the shared host path above; retain the sandbox's non-root user, network isolation and read-only input mount. Run the local doctor and real render probe under the **same systemd properties and environment**, not only from an interactive shell.
+
+The 2026-10-09 installation uses this pattern on a dedicated data disk, pinned release, loopback backend and persistent reverse SSH service. The separate HTTPS proxy preserves the original Host and supplies `X-Forwarded-Proto`, disables response buffering for SSE, and adds Secure to the application's HttpOnly session cookie. Its reverse port listens on the public host's loopback only; the dashboard requires authentication. Both services start at boot. Local deployment paths and credentials remain outside Git. See the deployment evidence in `reports/deployment_20261009.json` for the exact validation scope.
 
 
 A clean HTTP EOF is not proof of upstream completion. From stream policy v3, an otherwise error-free stream lacking both finish_reason and DONE stays outcome_unknown; do not replay it merely because the socket closed. A length finish is known truncation, not executable source. Preserve thinking and size output/total time budgets for the model: the NVIDIA DeepSeek v4.1 Flash model card recommends max_tokens of at least 262144. This is provider guidance, not qualification of that configuration for voxel generation.
