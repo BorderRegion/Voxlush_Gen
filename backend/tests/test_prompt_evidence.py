@@ -25,6 +25,23 @@ def test_author_repair_keeps_root_cause_and_bounded_context():
     assert evidence['violations'][0]['detail'] == trace
 
 
+def test_repair_feedback_does_not_hide_circulation_behind_repeated_window_errors():
+    windows = [{'rule': 'window_backed_by_solid_wall', 'component_id': f'window_{i}',
+                'repair': 'Remove the identified opaque backing.'} for i in range(12)]
+    evidence = {'passed': False, 'violations': windows + [
+        {'rule': 'space_not_accessible', 'id': 'upper_gallery',
+         'repair': 'Connect the planned space with real doors and stairs.'},
+        {'rule': 'space_missing_floor_or_wrong_level', 'id': 'landing'},
+    ]}
+    original = json.dumps(evidence)
+    feedback = json.loads(author_messages({'phase': 'skeleton'}, feedback=evidence)[1]['content'])['current_evidence']
+    assert {'space_not_accessible', 'space_missing_floor_or_wrong_level'} <= {
+        item['rule'] for item in feedback['violations']}
+    assert feedback['violation_counts']['window_backed_by_solid_wall'] == 12
+    assert len(json.dumps(feedback).encode()) <= 8000
+    assert json.dumps(evidence) == original
+
+
 @pytest.mark.parametrize('metadata,path,expected', [
     ({'spaces':['reading hall']}, 'MODEL_SPEC.spaces[0]', 'must be an object'),
     ({'features':['gable roof']}, 'MODEL_SPEC.features[0]', 'must be an object'),

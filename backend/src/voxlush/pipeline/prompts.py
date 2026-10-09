@@ -9,7 +9,7 @@ from voxlush.core.files import digest
 from voxlush.themes.composition import instruction as composition_instruction, requested_mode, validate_observation
 
 PROMPT_VERSION = "voxlush.prompt.v9"
-RUBRIC_VERSION = "voxlush.visual.v5"
+RUBRIC_VERSION = "voxlush.visual.v6"
 RUBRIC_TEXT = """Inspect the actual complementary voxel views. Assess completeness, silhouette and
 proportions, structural/detail logic, material harmony, visual hierarchy, style consistency,
 theme recognizability and conspicuous repetitive detailing. Passing geometry alone does not
@@ -35,7 +35,10 @@ permission for more environment does not make a bare building contextual/rich, a
 does not count as contextual. Allow natural variation within these classes, without fixed prop counts
 or minimum voxel filling. If a category boundary cannot be resolved from the views, use null and gray.
 Check both views for visual centrality, framing, distracting large terrain/trees/water, and whether
-the building is merely incidental. Describe visible context and subject proportion, including
+the building is merely incidental. Central position alone does not establish a main subject:
+a tiny building on a broad, mostly empty ground slab is disproportionate padding, not moderate
+integrated context. Flag that visible defect rather than treating empty acreage as landscape quality.
+Describe visible context and subject proportion, including
 mislabelled environmental components. Pure/light must remain visually dominant, with no extraneous
 surroundings; other modes need a recognizable main architectural subject. Context control must not
 reward a crude empty box or penalize architectural detail, foundations or functional attachments.
@@ -75,6 +78,19 @@ def compact_evidence(evidence):
         return value
     keys = ('error_category','message','violations','issues','errors','canonical_voxel_hash','passed')
     result = {key:trim(evidence[key]) for key in keys if key in evidence}
+    if isinstance(evidence.get('violations'), list):
+        # Repeated window defects must not crowd circulation/metadata failures
+        # out of the finite repair budget. Keep one example per rule first.
+        counts, first, repeated = {}, [], []
+        for item in evidence['violations']:
+            rule = item.get('rule') if isinstance(item, dict) else None
+            if isinstance(rule, str):
+                (repeated if rule in counts else first).append(item)
+                counts[rule] = counts.get(rule, 0) + 1
+            else:
+                repeated.append(item)
+        result['violations'] = trim(first + repeated)
+        result['violation_counts'] = trim(counts)
     # Avoid a long nested component report crowding out the source and contract.
     while len(json.dumps(result,ensure_ascii=False).encode()) > 8000:
         arrays = [v for v in result.values() if isinstance(v,list) and len(v)>1]
