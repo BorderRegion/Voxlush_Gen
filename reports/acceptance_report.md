@@ -6,7 +6,28 @@ Repository baseline: `4f4be137d3924b38cb7301c2c4a0081ff32a7c2a`.
 
 Environment: Python 3.12.3, Node 20.19.0, npm 10.8.2, Docker 29.1.3, APSW SQLite 3.51.3, Linux, `voxlush-sandbox:v1` (`sha256:50712f3b25dc`). The checked-in profile has `allow_live=false`, no author or visual endpoint, and global API cap 0. The acceptance data root was `/tmp/voxlush-acceptance-20261008`; it is outside the repository and is not production data.
 
-## Composition control review: baseline eec41da
+## Targeted composition consistency review: baseline c1a5a1a
+
+Latest fetched main was `c1a5a1aed75354a9601f6706a855945f5eca6265`; implementation commit: `fbbb881ddf0a7f3e910837193dacb6148872450c`. [Machine-readable evidence](composition_consistency_validation.json) records this follow-up separately from the earlier feature and model pilots.
+
+The defect is fixed at review, archive admission, Store accounting, scheduler completion/replenishment and export boundaries. Requested environmental permission is separate from observed class. Pure observed content cannot fill contextual or rich quotas; excessive observed rich content cannot fill contextual. Natural variation within classes and the existing pure/light geometry tolerances remain, while unresolved boundaries remain gray. No authored source, architectural quality requirement, thinking setting or normal-path call count was reduced. Prompt v7 and visual rubric v5 reflect the corrected contract.
+
+Schema 5 adds a derived eligibility cache and transactionally rebuilds summary counts. It retains original asset files, statuses, labels, campaign lifetime counters and request/budget records. Legacy v1 archive integrity can still verify under its original evidence; current quota/export eligibility independently rejects false passes. Matching old image evidence remains reusable without a paid request. Accepted/provisional modes remain separate. A surplus in one class cannot stop planning for another; completed/paused campaigns are not automatically restarted. Old-policy export staging requires a new output path, and current release verification reports mismatches without modifying files.
+
+Validation: **296 Python tests passed, 1 optional private fixture skipped in 138.51 s**; Ruff and frontend build passed; **11 mocked browser tests** passed in 19.5 s and **1 real local backend/Docker/render/browser test** passed in 16.2 s. The 25 added cases cover all 16 requested/observed combinations, four legacy false-pass archive cases, matching legacy response reuse, schema-4 accepted/provisional migration and actual scheduler ticks, quota surplus, filtered/unfiltered/mixed export, stale staging and release validation. Geometry, rendering, archive backup/restore and export are real local operations; visual verdicts in these tests are explicitly mocked.
+
+**The requested new real quality comparison is not complete.** Broad API authorization remains valid. Fresh read-only inspection found the patched gateway and five workers running, but no retained upstream completion/cancellation record for the 15 historical unknowns. Fourteen authenticated receipt queries returned 404. Five worker receipt roots had no records; a bounded retained-log scan of 30000 lines found 28 matching identity lines, all receipt-query 404s. The original 14 raw responses have no semantic finish or DONE marker and no stored upstream request headers; their status, occupancy, cost and response hashes, plus the fifteenth raw visual canary hash, are unchanged. Local 2400/600-second timeouts are not remote termination contracts. The alternate provider exposes two custom aliases and no verified independent execution or image-capability contract. No inference POST, release of unknown capacity, original-ledger write or shared-service modification was made.
+
+| Requested mode / route | New independent tasks | Valid candidates | Formal samples | Context / quality / yield / tokens and cost per valid sample |
+|---|---:|---:|---:|---|
+| pure_target / ordinary direct | 0 | 0 | 0 | Not measured |
+| contextual / ordinary direct | 0 | 0 | 0 | Not measured |
+| pure_target / complex two-stage | 0 | 0 | 0 | Not measured |
+| contextual / complex two-stage | 0 | 0 | 0 | Not measured |
+
+**Safe to start formal batch pure-building training production: no.** The minimal next steps are provider-backed reconciliation of the historical sends (including possible upstream retries), or documented independent capacity with the required author/image models; then the matched full-chain comparison and existing same-profile human blind qualification. The prepared first cohort is two independent repeats of each mode for `commerce_01` and `courtyard_east_01` (S/direct) and `timber_04` (L/two-stage), 12 tasks with the same DeepSeek author / GLM image-review configuration and retained thinking. This is an experiment design, not an authorization cap. Expand only after positive actual quality/yield evidence. The existing 40/30/20/10 default remains an engineering starting point, not an experimentally optimized recommendation. Earlier unspecified historical replays do not establish the new mode-conditioned quality or unit cost.
+
+## Composition control review: baseline eec41da (historical; admission semantics corrected above)
 
 Fetched main matched `eec41dab19fe8616b8a7a26f36aa86e286cff417` before editing and before delivery. Backend `8a5c6d9` and dashboard `c877d01` implement the requested dataset dimension. [Machine-readable evidence](composition_validation.json) separates fixtures, historical model replay and the blocked new experiment. No production data/service mutation or new model request occurred in this feature review.
 

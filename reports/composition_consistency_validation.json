@@ -1,0 +1,291 @@
+{
+  "schema_version": "voxlush.composition_consistency_validation.v1",
+  "date": "2026-10-09",
+  "baseline_commit": "c1a5a1aed75354a9601f6706a855945f5eca6265",
+  "scope": "Targeted composition admission, quota and export fix; new paired model experiment blocked by external evidence.",
+  "versions": {
+    "prompt": "voxlush.prompt.v7",
+    "visual_rubric": "voxlush.visual.v5",
+    "visual_rubric_sha256": "c960393cc8972713943a0e5413f74dd05c9e4e21a2b93b18335fc995278c0878",
+    "composition_compliance": "voxlush.composition_compliance.v2",
+    "store_schema": 5,
+    "stream_policy": "voxlush.stream.v4"
+  },
+  "implementation": [
+    "Separate permission ceiling, observed class and actual target compliance",
+    "Strict archive/Store admission, including old evidence reused without another model call",
+    "Preserve historical files, labels, counters and billing; recompute effective quota summaries",
+    "Scheduler completion and replenishment use effective counts and mode debt, including surplus in another mode",
+    "Filtered, mixed, unfiltered and resumed exports cannot admit mismatched classes",
+    "Geometry, architectural quality and thinking requirements unchanged; no model-authored source changed"
+  ],
+  "verification": {
+    "python": {
+      "passed": 296,
+      "skipped": 1,
+      "seconds": 138.51,
+      "warning": "existing Starlette/AnyIO deprecation"
+    },
+    "new_regression_cases": 25,
+    "ruff": "passed",
+    "frontend_build": "passed",
+    "browser_mock": {
+      "passed": 11,
+      "seconds": 19.5
+    },
+    "browser_real_local": {
+      "passed": 1,
+      "seconds": 16.2
+    },
+    "real_local_geometry_render_archive": "Actual Docker fixtures, explicit mock image review; includes backup/restore and nonempty export",
+    "matrix": "All 16 request/observed combinations",
+    "legacy_archive_cases": [
+      "contextual<-pure_target",
+      "contextual<-environment_rich",
+      "environment_rich<-pure_target",
+      "environment_rich<-contextual"
+    ],
+    "migration": "v4 accepted/provisional rows and unknown ledger preserved; effective debt restored; real scheduler tick does not stop on historical totals",
+    "export": "Wrong class excluded with or without filters; exact mixtures report shortage; old staging cannot bypass new policy; release verifier rejects false passes"
+  },
+  "pool_evidence": {
+    "gateway_and_five_patched_workers_running": true,
+    "historic_unknowns": 15,
+    "ledger_unknowns": 14,
+    "raw_visual_unknowns": 1,
+    "authenticated_receipt_gets": 14,
+    "receipt_404": 14,
+    "receipt_404_is_terminal_evidence": false,
+    "worker_trace": {
+      "receipt_roots": 5,
+      "receipt_states": {},
+      "historic_identity_receipts": [],
+      "journal_scan_lines": 30000,
+      "historic_identity_log_lines": 28,
+      "receipt_lookup_log_lines": 28,
+      "other_identity_log_lines": 0,
+      "timeouts": [
+        {
+          "worker": 0,
+          "local_timeouts": {
+            "API_POOL_REQUEST_TIMEOUT_SECONDS": "2400",
+            "API_POOL_READ_TIMEOUT_SECONDS": "600"
+          }
+        },
+        {
+          "worker": 1,
+          "local_timeouts": {
+            "API_POOL_REQUEST_TIMEOUT_SECONDS": "2400",
+            "API_POOL_READ_TIMEOUT_SECONDS": "600"
+          }
+        },
+        {
+          "worker": 2,
+          "local_timeouts": {
+            "API_POOL_REQUEST_TIMEOUT_SECONDS": "2400",
+            "API_POOL_READ_TIMEOUT_SECONDS": "600"
+          }
+        },
+        {
+          "worker": 3,
+          "local_timeouts": {
+            "API_POOL_REQUEST_TIMEOUT_SECONDS": "2400",
+            "API_POOL_READ_TIMEOUT_SECONDS": "600"
+          }
+        },
+        {
+          "worker": 4,
+          "local_timeouts": {
+            "API_POOL_REQUEST_TIMEOUT_SECONDS": "2400",
+            "API_POOL_READ_TIMEOUT_SECONDS": "600"
+          }
+        }
+      ],
+      "local_timeouts_are_not_upstream_termination_evidence": true,
+      "model_posts": 0
+    },
+    "original_response_terminal_signals": 0,
+    "stored_upstream_request_headers": 0,
+    "ledger_status_occupancy_cost_response_hashes_unchanged": true,
+    "raw_visual_canary_hash_unchanged": true,
+    "alternate_route": {
+      "enabled_sources": 8,
+      "model_catalog_http": 200,
+      "advertised_models": [
+        "tierflow",
+        "tierflow_pro"
+      ],
+      "independent_capacity_documented": false,
+      "stable_model_and_image_capability_documented": false,
+      "capability_schema_found": false
+    },
+    "released_unknowns": 0,
+    "replayed_unknowns": 0,
+    "remote_service_changes": 0,
+    "historic_unknown_cost": null
+  },
+  "new_matched_experiment": {
+    "status": "blocked_external_execution_evidence",
+    "authorization": "Already sufficient; no new small-call cap",
+    "tasks": 0,
+    "requests": 0,
+    "candidates": 0,
+    "accepted_unique": 0,
+    "groups": [
+      {
+        "scale": "S",
+        "route": "direct",
+        "composition_mode": "pure_target",
+        "independent_tasks": 0,
+        "requests": 0,
+        "candidates": 0,
+        "accepted_unique": 0,
+        "geometry_pass_rate": null,
+        "visual_pass_rate": null,
+        "archive_rate": null,
+        "context_fraction": null,
+        "building_quality": null,
+        "requests_per_valid_asset": null,
+        "tokens_per_valid_asset": null,
+        "seconds_per_valid_asset": null,
+        "cost_per_valid_asset": null
+      },
+      {
+        "scale": "S",
+        "route": "direct",
+        "composition_mode": "contextual",
+        "independent_tasks": 0,
+        "requests": 0,
+        "candidates": 0,
+        "accepted_unique": 0,
+        "geometry_pass_rate": null,
+        "visual_pass_rate": null,
+        "archive_rate": null,
+        "context_fraction": null,
+        "building_quality": null,
+        "requests_per_valid_asset": null,
+        "tokens_per_valid_asset": null,
+        "seconds_per_valid_asset": null,
+        "cost_per_valid_asset": null
+      },
+      {
+        "scale": "L",
+        "route": "two_stage",
+        "composition_mode": "pure_target",
+        "independent_tasks": 0,
+        "requests": 0,
+        "candidates": 0,
+        "accepted_unique": 0,
+        "geometry_pass_rate": null,
+        "visual_pass_rate": null,
+        "archive_rate": null,
+        "context_fraction": null,
+        "building_quality": null,
+        "requests_per_valid_asset": null,
+        "tokens_per_valid_asset": null,
+        "seconds_per_valid_asset": null,
+        "cost_per_valid_asset": null
+      },
+      {
+        "scale": "L",
+        "route": "two_stage",
+        "composition_mode": "contextual",
+        "independent_tasks": 0,
+        "requests": 0,
+        "candidates": 0,
+        "accepted_unique": 0,
+        "geometry_pass_rate": null,
+        "visual_pass_rate": null,
+        "archive_rate": null,
+        "context_fraction": null,
+        "building_quality": null,
+        "requests_per_valid_asset": null,
+        "tokens_per_valid_asset": null,
+        "seconds_per_valid_asset": null,
+        "cost_per_valid_asset": null
+      }
+    ],
+    "human_scores": null,
+    "planned_model_configuration": {
+      "author": {
+        "model": "deepseek-ai/deepseek-v4.1-flash",
+        "max_tokens": 262144,
+        "temperature": 1,
+        "top_p": 0.95
+      },
+      "review": {
+        "model": "z-ai/glm-5.3-flash",
+        "max_tokens": 8192,
+        "reasoning_effort": "max"
+      },
+      "first_progress_idle_total_seconds": [
+        600,
+        240,
+        2300
+      ]
+    },
+    "planned_initial_cohort": [
+      {
+        "theme_seed_id": "commerce_01",
+        "scale": "S",
+        "route": "direct",
+        "modes": [
+          "pure_target",
+          "contextual"
+        ],
+        "independent_repeats_per_mode": 2
+      },
+      {
+        "theme_seed_id": "courtyard_east_01",
+        "scale": "S",
+        "route": "direct",
+        "modes": [
+          "pure_target",
+          "contextual"
+        ],
+        "independent_repeats_per_mode": 2
+      },
+      {
+        "theme_seed_id": "timber_04",
+        "scale": "L",
+        "route": "two_stage",
+        "modes": [
+          "pure_target",
+          "contextual"
+        ],
+        "independent_repeats_per_mode": 2
+      }
+    ],
+    "planned_tasks": 12,
+    "cohort_size_is_not_authorization_limit": true
+  },
+  "production_verdict": {
+    "safe_to_start_formal_batch_pure_buildings": false,
+    "classification_fix_offline_verified": true,
+    "new_model_quality_cost_comparison_complete": false,
+    "blockers": [
+      "Reliable upstream terminal evidence covering historical sends/retries, or documented independent capacity supporting author and image review",
+      "Matched ordinary/two-stage full-chain real calibration with actual imagery and per-valid-asset requests/tokens/cost",
+      "Existing same-profile human blind qualification before formal accepted exports"
+    ],
+    "default_mix": {
+      "pure_target": 40,
+      "light_context": 30,
+      "contextual": 20,
+      "environment_rich": 10
+    },
+    "default_mix_is_empirically_optimized": false
+  },
+  "evidence_log_sha256": {
+    "pytest-final.log": "c870847fdb4d76ba313dea1a64af5a7ae6862154b277a33e95bc453e070ee69d",
+    "frontend-build.log": "c1aaea5b3345e1e7bd0825d80725045a534c257c3d424306d71cfa20cb9e9436",
+    "browser-mock.log": "9392475e3f5cf96beb7c79eeedec1b0843fd70957c1bb6bfd579e9ce85d98ee4",
+    "browser-real.log": "02c83d9762f2bba6c24d66667e3a172151152e34ab77e09275d8babadfc2ff21",
+    "unknown-query.public.json": "209399ab9c9002c89cc2cc3bb47b164464c245acc19739455e086e303955a132",
+    "unknown-integrity.public.json": "c9489f019f47575adc4bf0c5617cf32cafe675334ecfd5b5bcba6aeb91e7778c",
+    "historical-trace.public.json": "89fbb78270b31bbfd5a5e0d8dda9897f83c5f7bf648329bee2a287d217bc290f",
+    "alternate.public.json": "ed7c74d9be04d589a6c3020c4435f81319e2d453b99adea7aae02cf626068cb7",
+    "alternate-capabilities.public.json": "dc8193ade881eab068a135f5a511b2f978ab7179ee345749e6286e81043b5e02"
+  },
+  "implementation_commit": "fbbb881ddf0a7f3e910837193dacb6148872450c"
+}
