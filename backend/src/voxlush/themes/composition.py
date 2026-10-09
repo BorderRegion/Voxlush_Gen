@@ -6,6 +6,7 @@ CompositionMode = Literal['pure_target', 'light_context', 'contextual', 'environ
 MODES = ('pure_target', 'light_context', 'contextual', 'environment_rich')
 DEFAULT_WEIGHTS = dict(zip(MODES, (40, 30, 20, 10), strict=True))
 VERSION = 'voxlush.composition.v1'
+COMPLIANCE_VERSION = 'voxlush.composition_compliance.v2'
 LIMITS = {
     'pure_target': {'max_context_fraction': .10, 'min_subject_footprint_fraction': .80},
     'light_context': {'max_context_fraction': .25, 'min_subject_footprint_fraction': .60},
@@ -15,12 +16,14 @@ INSTRUCTIONS = {
         'no large decorative environment unless functionally necessary. The single building must dominate '
         'voxels and both views. Preserve architectural detail, material richness, necessary foundations and '
         'functional attachments. No broad yards, forests, roads, water or mountains.',
-    'light_context': 'The building must strongly dominate voxels and both views. Allow only small supporting '
+    'light_context': 'The building must strongly dominate voxels and both views. Include small supporting '
         'ground/contact treatment, a short path, a few plants or a small fence; avoid distracting scenery.',
     'contextual': 'Compose a coherent building-and-surroundings scene. Moderate terrain, courtyard, paths, '
-        'water and planting are allowed; keep the building one of the main visual subjects.',
+        'water or planting must form a visible moderate context, not merely a bare building or rich landscape; '
+        'keep the building one of the main visual subjects.',
     'environment_rich': 'Rich environmental storytelling, estate grounds, settlement slices and building-nature '
-        'compositions are allowed. Keep the architectural subject recognizable and object boundaries/use clear.',
+        'compositions need a visibly substantial, coherent environment, not merely a bare building or a few props. '
+        'Keep the architectural subject recognizable and object boundaries/use clear.',
 }
 
 
@@ -64,21 +67,23 @@ def instruction(task: dict) -> str | None:
     return text + ' Design the building freely; context limits never justify reducing architectural quality.'
 
 
-def visual_compliance(mode: str, observation: dict) -> bool | None:
-    """Upper bounds on environment, not a requirement to fill every allowed voxel."""
+def within_allowance(mode: str, observation: dict) -> bool | None:
+    """Permission ceiling is distinct from the actual class required for a quota."""
     focus = observation['building_focus']
     observed = observation['observed_mode']
     if focus == 'unclear' or observed is None:
         return None
-    if focus in ('absent', 'incidental'):
+    if focus in ('absent', 'incidental') or observation['extraneous_environment']:
         return False
-    if mode in LIMITS:
-        allowed = ('pure_target',) if mode == 'pure_target' else ('pure_target', 'light_context')
-        return focus == 'dominant' and observed in allowed and not observation['extraneous_environment']
-    return True
+    return MODES.index(observed) <= MODES.index(mode) and (mode not in LIMITS or focus == 'dominant')
 
 
-def validate_observation(mode: str, observation: dict) -> dict:
+def visual_compliance(mode: str, observation: dict) -> bool | None:
+    allowed = within_allowance(mode, observation)
+    return allowed if allowed is None else allowed and observation['observed_mode'] == mode
+
+
+def validate_observation(mode: str, observation: dict, *, historical=False) -> dict:
     if (not isinstance(observation,dict) or 'observed_mode' not in observation
             or observation['observed_mode'] not in (*MODES, None)
             or observation.get('building_focus') not in ('dominant','co_primary','incidental','absent','unclear')
@@ -86,8 +91,34 @@ def validate_observation(mode: str, observation: dict) -> dict:
             or not isinstance(observation.get('evidence'),str) or not observation['evidence'].strip()
             or type(observation.get('confidence')) not in (float,int) or not 0 <= observation['confidence'] <= 1):
         raise ValueError('composition review requires actual image context evidence')
-    return {**observation,'requested_mode':mode,'meets_requested':visual_compliance(mode,observation),
+    meets = visual_compliance(mode,observation)
+    extra = {'contract_version':COMPLIANCE_VERSION,'within_requested_allowance':within_allowance(mode,observation),
+             'matches_requested_class':None if meets is None else observation['observed_mode'] == mode}
+    if historical and 'contract_version' not in observation:
+        # Verify original immutable v1 evidence as written; never use this branch
+        # for current quota/export eligibility or new archive admission.
+        focus, observed = observation['building_focus'], observation['observed_mode']
+        meets = (None if focus == 'unclear' or observed is None else False
+                 if focus in ('absent','incidental') else within_allowance(mode,observation)
+                 if mode in LIMITS else True)
+        extra = {}
+    elif observation.get('contract_version',COMPLIANCE_VERSION) != COMPLIANCE_VERSION:
+        raise ValueError('unsupported composition compliance contract')
+    return {**observation,**extra,'requested_mode':mode,'meets_requested':meets,
             'source':'visual_review','evidence_ref':'review.json'}
+
+
+def eligible_composition(context: dict) -> bool:
+    """Recompute current eligibility; never trust an old pass or requested label."""
+    try:
+        mode = context['requested_mode']
+        geometry, visual = context['observed']['geometry'], context['observed']['visual']
+        return (mode in MODES and context['meets_requested'] is True
+                and geometry['requested_mode'] == mode and geometry['meets_requested'] is True
+                and visual['requested_mode'] == mode
+                and validate_observation(mode,visual)['meets_requested'] is True)
+    except (KeyError,TypeError,ValueError):
+        return False
 
 
 def export_selection(modes=None, weights=None, count=None) -> dict:

@@ -25,7 +25,7 @@ COORDINATES = {"up": "Y", "north": "-Z", "south": "+Z", "east": "+X", "west": "-
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 
 
-def _composition(task, sample, geometry, review):
+def _composition(task, sample, geometry, review, *, historical=False):
     from voxlush.themes.composition import requested_mode, validate_observation
     from voxlush.voxel.composition import measure
     mode = requested_mode(task)
@@ -35,9 +35,11 @@ def _composition(task, sample, geometry, review):
     actual, violations = measure(sample,task)
     if actual != geometry.get('evidence',{}).get('composition') or violations:
         raise ValueError('composition geometry missing, failed or inconsistent with saved voxels')
-    visual = validate_observation(mode,review.get('context_assessment'))
+    visual = validate_observation(mode,review.get('context_assessment'),historical=True)
     if visual != review.get('context_assessment') or visual['meets_requested'] is not True:
         raise ValueError('composition image evidence missing, failed or inconsistent')
+    if not historical and validate_observation(mode,visual)['meets_requested'] is not True:
+        raise ValueError('composition image evidence does not match requested class')
     return {'requested_mode':mode, 'observed':{'geometry':actual,'visual':visual},
             'meets_requested':True,'geometry_ref':'geometry.json','visual_ref':'review.json'}
 
@@ -152,7 +154,7 @@ def verify_asset(directory: Path) -> dict:
             if annotation_hash(coordinates,owners,palette,sample['components'],
                                {'generator_declared':sample.get('generator_claimed_tags',[])}) != canonical['annotation_hash']:
                 raise ValueError('composition sample ownership differs from canonical annotations')
-        if manifest.get('composition') != _composition(brief,sample,geometry,review):
+        if manifest.get('composition') != _composition(brief,sample,geometry,review,historical=True):
             raise ValueError('composition manifest evidence mismatch')
     if manifest["lifecycle"] == "accepted":
         evidence_versions = _evidence_versions(geometry, rendering or {}, review)

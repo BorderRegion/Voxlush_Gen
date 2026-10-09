@@ -8,8 +8,8 @@ from voxlush.voxel.adapter import primitive_contract, MAX_SOURCE_BYTES
 from voxlush.core.files import digest
 from voxlush.themes.composition import instruction as composition_instruction, requested_mode, validate_observation
 
-PROMPT_VERSION = "voxlush.prompt.v6"
-RUBRIC_VERSION = "voxlush.visual.v4"
+PROMPT_VERSION = "voxlush.prompt.v7"
+RUBRIC_VERSION = "voxlush.visual.v5"
 RUBRIC_TEXT = """Inspect the actual complementary voxel views. Assess completeness, silhouette and
 proportions, structural/detail logic, material harmony, visual hierarchy, style consistency,
 theme recognizability and conspicuous repetitive detailing. Passing geometry alone does not
@@ -29,8 +29,11 @@ building_focus:'dominant'|'co_primary'|'incidental'|'absent'|'unclear',
 extraneous_environment:boolean, evidence:nonempty string, confidence:number 0..1}.
 Classify the actual images, not requested labels or declared component categories. Pure means
 one main building with necessary contact treatment and functional attachments, not a settlement;
-light allows small supporting scenery;
-contextual has a moderate surrounding scene; environment_rich has strong landscape storytelling.
+light has small visible supporting scenery; contextual has a moderate integrated surrounding scene;
+environment_rich has substantial coherent landscape storytelling. Classify actual content independently:
+permission for more environment does not make a bare building contextual/rich, and excessive scenery
+does not count as contextual. Allow natural variation within these classes, without fixed prop counts
+or minimum voxel filling. If a category boundary cannot be resolved from the views, use null and gray.
 Check both views for visual centrality, framing, distracting large terrain/trees/water, and whether
 the building is merely incidental. Describe visible context and subject proportion, including
 mislabelled environmental components. Pure/light must remain visually dominant, with no extraneous

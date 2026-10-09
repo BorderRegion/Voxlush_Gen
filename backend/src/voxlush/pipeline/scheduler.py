@@ -155,21 +155,23 @@ class Scheduler:
         for c0 in self.store.campaigns():
             c = self.store.campaign(c0["campaign_id"])
             if c['state'] == 'degraded' and c['reason_code'] == 'coverage_debt':
-                if any(i['debt']>i['active'] and self.family_available(i) for i in self.store.coverage(c['campaign_id'])['items']):
+                if self.coverage_available(c):
                     self.store.set_campaign_state(c['campaign_id'],'running')
                     c = self.store.campaign(c['campaign_id'])
             if c["state"] == "running":
                 reason = None
+                effective = self.store.coverage(c['campaign_id'])['totals']
+                composition = self.store.composition_coverage(c['campaign_id'])['items']
                 if self.storage_failed:
                     reason = "storage_unavailable"
                 elif not disk_ok:
                     reason = "disk_low_watermark"
-                elif c["accepted_unique"]>=c["target"]:
+                elif effective['accepted']>=c['target'] and all(i['debt']==0 for i in composition):
                     self.store.set_campaign_state(c["campaign_id"],"completed","target_reached")
                     continue
                 elif (c.get('composition_weights') and not self.config.is_qualified()
-                      and c['accepted_unique']+c['provisional_pass']>=c['target']
-                      and all(i['candidate_debt'] == 0 for i in self.store.composition_coverage(c['campaign_id'])['items'])):
+                      and effective['accepted']+effective['provisional']>=c['target']
+                      and all(i['candidate_debt'] == 0 for i in composition)):
                     self.store.set_campaign_state(c['campaign_id'],'completed','calibration_target_reached')
                     continue
                 elif c["requests_used"]>=c["request_limit"]:
@@ -259,15 +261,20 @@ class Scheduler:
         buffer = min(1024,max(64,4*self.cap(c)))
         if active>=buffer or c["sequence"]>=c["request_limit"]:
             return
-        outstanding = c["target"]-c["accepted_unique"]-(c['provisional_pass'] if calibration else 0)-active
+        outstanding = c['target']-coverage['totals']['accepted']-(coverage['totals']['provisional'] if calibration else 0)-active
+        composition = self.store.composition_coverage(c['campaign_id'])['items'] if c.get('composition_weights') else []
+        outstanding = max(outstanding,sum(max(0,r['candidate_debt' if calibration else 'debt']-r['active']) for r in composition))
         if outstanding<=0:
             return
-        candidates = [i for i in coverage["items"] if i["debt"]>i["active"] and self.family_available(i)]
+        candidates = [i for i in coverage['items'] if self.family_available(i)]
         modes = {}
         if c.get('composition_weights'):
             modes = {scene:self.store.next_composition(c['campaign_id'],scene,qualified=not calibration)
                      for scene in ('architecture','hybrid')}
-            candidates = [i for i in candidates if i['scene_type'] == 'natural' or modes.get(i['scene_type'])]
+            candidates = [i for i in candidates if (i['scene_type']=='natural' and i['debt']>i['active'])
+                          or (i['scene_type']!='natural' and i['target']>0 and modes.get(i['scene_type']))]
+        else:
+            candidates = [i for i in candidates if i['debt']>i['active']]
         if not candidates:
             return
         family = max(candidates,key=lambda i:((i["debt"]-i["active"])/max(1,i["target"]),-i["active"],i["family_id"]))
@@ -281,15 +288,24 @@ class Scheduler:
         return family['consecutive_failures'] < self.config.theme_zero_yield_limit or (
             family['active'] == 0 and family['last_failure_at']+self.config.theme_cooldown_seconds<=time.time())
 
+    def coverage_available(self,c,coverage=None):
+        coverage = coverage or self.store.coverage(c['campaign_id'])
+        calibration = bool(c.get('composition_weights')) and not self.config.is_qualified()
+        mode_debt = {scene:self.store.next_composition(c['campaign_id'],scene,qualified=not calibration)
+                     for scene in ('architecture','hybrid')} if c.get('composition_weights') else {}
+        return any(self.family_available(i) and
+                   (i['debt']-(i['provisional'] if calibration else 0)>i['active']
+                    or i['target']>0 and mode_debt.get(i['scene_type'])) for i in coverage['items'])
+
     def loss_control(self):
         for c in self.store.campaigns():
             if c["state"] != "running":
                 continue
             coverage = self.store.coverage(c["campaign_id"])
             totals = coverage["totals"]
-            if not totals["active"] and totals["rejected"]+totals["duplicate"]>=self.config.zero_yield_limit and not c["accepted_unique"] and not c["provisional_pass"]:
+            if not totals["active"] and totals["rejected"]+totals["duplicate"]>=self.config.zero_yield_limit and not totals['accepted'] and not totals['provisional']:
                 self.store.set_campaign_state(c["campaign_id"],"blocked","zero_yield_stop")
-            elif not totals["active"] and all(i["debt"]<=0 or not self.family_available(i) for i in coverage["items"]):
+            elif not totals['active'] and not self.coverage_available(c,coverage):
                 self.store.set_campaign_state(c["campaign_id"],"degraded","coverage_debt")
 
     def adapt(self):

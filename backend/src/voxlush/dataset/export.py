@@ -11,7 +11,7 @@ from typing import Any
 
 from .archive import verify_asset
 from .files import fsync_directory, identifier, json_bytes, relative_path, safe_path, sha256, write_atomic
-from voxlush.themes.composition import export_selection
+from voxlush.themes.composition import COMPLIANCE_VERSION, eligible_composition, export_selection
 from voxlush.themes.planner import apportion
 
 EXPORT_SCHEMA = "voxlush.release.v1"
@@ -112,11 +112,11 @@ def export(
     spool = sqlite3.connect(stage / "export_spool.sqlite")
     spool.execute("PRAGMA cache_size=-4096")
     spool.executescript("CREATE TABLE IF NOT EXISTS assets(sample_id TEXT,revision INTEGER,path TEXT,manifest TEXT,status TEXT,group_token TEXT, PRIMARY KEY(sample_id,revision)); CREATE TABLE IF NOT EXISTS groups(token TEXT PRIMARY KEY,parent TEXT NOT NULL); CREATE TABLE IF NOT EXISTS options(key TEXT PRIMARY KEY,value TEXT NOT NULL);")
-    options = {"campaign_id": campaign_id, "include_provisional": include_provisional, "shard_asset_limit": shard_asset_limit, "shard_byte_limit": shard_byte_limit, **selection}
+    options = {"campaign_id": campaign_id, "include_provisional": include_provisional, "shard_asset_limit": shard_asset_limit, "shard_byte_limit": shard_byte_limit, 'composition_policy':COMPLIANCE_VERSION, **selection}
     previous = spool.execute("SELECT value FROM options WHERE key='config'").fetchone()
     if previous and {**export_selection(),**json.loads(previous[0])} != options:
         spool.close()
-        raise ValueError("export resume configuration conflict")
+        raise ValueError("export resume configuration conflict (including composition policy); use a new output path")
     spool.execute("INSERT OR IGNORE INTO options VALUES ('config',?)", (json_bytes(options).decode(),))
     try:
         if not spool.execute("SELECT value FROM options WHERE key='snapshot_complete'").fetchone():
@@ -131,6 +131,8 @@ def export(
                 if not accepted and not include_provisional:
                     continue
                 context = manifest.get('composition',{})
+                if context.get('requested_mode') is not None and not eligible_composition(context):
+                    continue
                 selected_modes = composition_modes or ([m for m,w in selection['composition_weights'].items() if w>0] if composition_weights is not None else None)
                 if selected_modes and (context.get('requested_mode') not in selected_modes or context.get('meets_requested') is not True):
                     continue
@@ -178,6 +180,9 @@ def _write_release(spool: sqlite3.Connection, stage: Path, output: Path, root: P
         with source_file.open("wb") as source_out, index_file.open("wb") as index_out, repairs_file.open("wb") as repair_out:
             for sid, revision, rel, encoded, status, token in rows:
                 manifest = json.loads(encoded)
+                context = manifest.get('composition',{})
+                if context.get('requested_mode') is not None and not eligible_composition(context):
+                    raise ValueError('export snapshot actual composition mismatch')
                 asset = safe_path(root, rel)
                 group = _find(spool, token)
                 kind = manifest["record_kind"]
@@ -303,6 +308,8 @@ def verify_release(directory: Path | str) -> dict:
                 counts["accepted" if record["accepted_unique"] else "provisional"] += 1
                 context = record.get('composition') or {}
                 mode = context.get('requested_mode')
+                if mode is not None and not eligible_composition(context):
+                    raise ValueError('release actual composition mismatch')
                 key = mode or 'unspecified_or_natural'
                 composition_counts[key] = composition_counts.get(key,0)+1
                 if selection['composition_modes'] and (mode not in selection['composition_modes'] or context.get('meets_requested') is not True):

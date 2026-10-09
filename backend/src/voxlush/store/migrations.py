@@ -4,9 +4,81 @@ import json
 
 
 def migrate(db):
+    migrate_v4(db)
+    if db.execute("SELECT value FROM meta WHERE key='schema'").fetchone()[0] == '5':
+        return
+    from voxlush.themes.composition import eligible_composition
+    db.execute('BEGIN IMMEDIATE')
+    try:
+        # Derived admission cache only; original status, manifest, fees and counters remain intact.
+        db.execute('ALTER TABLE samples ADD COLUMN composition_eligible INTEGER NOT NULL DEFAULT 0')
+        db.execute('ALTER TABLE composition_stats ADD COLUMN ineligible_archives INTEGER NOT NULL DEFAULT 0')
+        cursor = ''
+        while True:
+            rows = db.execute('''SELECT s.sample_id,s.composition_mode,a.manifest_json FROM samples s
+                JOIN assets a ON a.sample_id=s.sample_id AND a.revision=s.revision AND a.is_current=1
+                WHERE s.composition_mode IS NOT NULL AND s.sample_id>? ORDER BY s.sample_id LIMIT 512''',(cursor,)).fetchall()
+            if not rows:
+                break
+            for row in rows:
+                context = json.loads(row['manifest_json']).get('composition',{})
+                valid = context.get('requested_mode') == row['composition_mode'] and eligible_composition(context)
+                db.execute('UPDATE samples SET composition_eligible=? WHERE sample_id=?',(int(valid),row['sample_id']))
+            cursor = rows[-1]['sample_id']
+        eligible = '({r}.composition_mode IS NULL OR {r}.composition_eligible=1)'
+        outcome = {
+            'accepted': "{r}.status='accepted' AND " + eligible,
+            'provisional': "{r}.status='provisional_pass' AND " + eligible,
+            'active': "{r}.status IN ('ready','running','deferred','awaiting_review')",
+            'rejected': "{r}.status='rejected' AND COALESCE({r}.reason_code,'')!='duplicate'",
+            'duplicate': "COALESCE({r}.reason_code,'')='duplicate'",
+        }
+        visual_pass = """COALESCE(json_extract({r}.review_json,'$.status')='pass' AND
+            ({r}.composition_mode IS NULL OR
+             (json_extract({r}.review_json,'$.context_assessment.observed_mode')={r}.composition_mode
+              AND json_extract({r}.review_json,'$.context_assessment.meets_requested')=1
+              AND json_extract({r}.review_json,'$.context_assessment.extraneous_environment')=0
+              AND (json_extract({r}.review_json,'$.context_assessment.building_focus')='dominant'
+                   OR ({r}.composition_mode IN ('contextual','environment_rich') AND
+                       json_extract({r}.review_json,'$.context_assessment.building_focus')='co_primary')))),0)"""
+        for table, prefix, keys, fields in (
+            ('seed_stats','samples_stats',{'campaign_id':'{r}.campaign_id','family_id':'{r}.family_id','theme_seed_id':'{r}.theme_seed_id'},
+             {**outcome,'planned':'1'}),
+            ('composition_stats','composition',{'campaign_id':'{r}.campaign_id','scene_type':'{r}.scene_type','composition_mode':"COALESCE({r}.composition_mode,'')"},
+             {**outcome,'tasks':'1','requests':'{r}.request_count',
+              'visual_reviewed':"COALESCE(json_extract({r}.review_json,'$.status') IN ('pass','fail','gray'),0)",
+              'visual_pass':visual_pass,
+              'ineligible_archives':"{r}.status IN ('accepted','provisional_pass') AND NOT " + eligible}),
+        ):
+            for event in ('insert','update','delete'):
+                db.execute(f'DROP TRIGGER {prefix}_{event}')
+            db.execute(f'DELETE FROM {table}')
+            columns = ','.join([*keys,*fields])
+            key_values = ','.join(v.format(r='s') for v in keys.values())
+            sums = ','.join(f'SUM({v.format(r="s")})' for v in fields.values())
+            db.execute(f'INSERT INTO {table}({columns}) SELECT {key_values},{sums} FROM samples s GROUP BY {key_values}')
+
+            def delta(row, sign):
+                changes = ','.join(f'{k}={k}{sign}({v.format(r=row)})' for k,v in fields.items())
+                where = ' AND '.join(f'{k}={v.format(r=row)}' for k,v in keys.items())
+                return f'UPDATE {table} SET {changes} WHERE {where};'
+
+            initialize = f"INSERT OR IGNORE INTO {table}({','.join(keys)}) VALUES({','.join(v.format(r='NEW') for v in keys.values())});"
+            db.execute(f'CREATE TRIGGER {prefix}_insert AFTER INSERT ON samples BEGIN {initialize} {delta("NEW","+")} END')
+            db.execute(f'''CREATE TRIGGER {prefix}_update AFTER UPDATE OF status,reason_code,request_count,review_json,campaign_id,family_id,theme_seed_id,scene_type,composition_mode,composition_eligible ON samples
+                BEGIN {delta('OLD','-')} {initialize} {delta('NEW','+')} END''')
+            db.execute(f'CREATE TRIGGER {prefix}_delete AFTER DELETE ON samples BEGIN {delta("OLD","-")} END')
+        db.execute("UPDATE meta SET value='5' WHERE key='schema'")
+        db.execute('COMMIT')
+    except BaseException:
+        db.execute('ROLLBACK')
+        raise
+
+
+def migrate_v4(db):
     migrate_v3(db)
     version = db.execute("SELECT value FROM meta WHERE key='schema'").fetchone()[0]
-    if version == '4':
+    if version in ('4','5'):
         return
     db.execute('BEGIN IMMEDIATE')
     try:
@@ -57,7 +129,7 @@ def migrate(db):
 def migrate_v3(db):
     migrate_v2(db)
     version = db.execute("SELECT value FROM meta WHERE key='schema'").fetchone()[0]
-    if version in ("3", "4"):
+    if version in ("3", "4", "5"):
         return
     db.execute("BEGIN IMMEDIATE")
     try:
@@ -90,7 +162,7 @@ def migrate_v3(db):
 
 def migrate_v2(db):
     version = db.execute("SELECT value FROM meta WHERE key='schema'").fetchone()[0]
-    if version in ("2", "3", "4"):
+    if version in ("2", "3", "4", "5"):
         return
     if version != "1":
         raise RuntimeError("unsupported schema: migration required")

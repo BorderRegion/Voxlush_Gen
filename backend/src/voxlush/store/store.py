@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from voxlush.store import sqlite as sqlite3
 from voxlush.themes.planner import FAMILIES, SEEDS, apportion, family_targets
-from voxlush.themes.composition import DEFAULT_WEIGHTS, MODES, export_selection, requested_mode, scene_weights as composition_scene_weights, validate_weights
+from voxlush.themes.composition import DEFAULT_WEIGHTS, MODES, eligible_composition, export_selection, requested_mode, scene_weights as composition_scene_weights, validate_weights
 from voxlush.store.migrations import migrate
 from voxlush.inference import execution_state
 
@@ -651,6 +651,8 @@ class Store:
                 manifest = json.loads(manifest)
             if manifest.get('composition',{}).get('requested_mode') != s['composition_mode']:
                 raise ValueError('archive composition differs from planned sample')
+            if s['composition_mode'] and not eligible_composition(manifest.get('composition',{})):
+                raise ValueError('archive actual composition does not match requested class')
             features = record.get('dedup_features')
             duplicate = self.asset_exists(record['canonical_voxel_hash']) or self.one('SELECT sample_id FROM assets WHERE lineage_group=? AND is_current=1 LIMIT 1',(manifest['lineage']['group_id'],))
             if not duplicate and features:
@@ -669,7 +671,7 @@ class Store:
                 (aid,claim["sample_id"],claim["revision"],claim["campaign_id"],str(record["path"]),dump(manifest),record["canonical_voxel_hash"],record.get("annotation_hash"),int(accepted),1,status,manifest['lineage']['group_id'],time.time()))
             if features:
                 self._dedup(db,aid,features)
-            db.execute("UPDATE samples SET status=?,reason_code=?,lineage_group=?,lease_token=NULL,lease_owner=NULL,lease_until=NULL,updated_at=? WHERE sample_id=?",
+            db.execute("UPDATE samples SET status=?,reason_code=?,lineage_group=?,composition_eligible=1,lease_token=NULL,lease_owner=NULL,lease_until=NULL,updated_at=? WHERE sample_id=?",
                 (status,reason,manifest['lineage']['group_id'],time.time(),claim["sample_id"]))
             self._family_outcome(db,s,status != 'rejected')
             counter = "accepted_unique" if accepted else "provisional_pass" if status == "provisional_pass" else None
@@ -733,7 +735,7 @@ class Store:
         for scene, mode in sorted(set(targets) | set(stats)):
             s = stats.get((scene,mode),{})
             row = {'scene_type':scene,'composition_mode':mode or None,'target':targets.get((scene,mode),0),
-                   **{k:s.get(k,0) for k in ('tasks','active','accepted','provisional','rejected','duplicate','requests','visual_reviewed','visual_pass')}}
+                   **{k:s.get(k,0) for k in ('tasks','active','accepted','provisional','rejected','duplicate','requests','visual_reviewed','visual_pass','ineligible_archives')}}
             row.update(debt=max(0,row['target']-row['accepted']),
                        candidate_debt=max(0,row['target']-row['accepted']-row['provisional']),
                        candidate_archives=row['accepted']+row['provisional'],
@@ -744,9 +746,11 @@ class Store:
                 row['failures'] = self.rows('''SELECT reason_code,COUNT(*) count FROM samples WHERE campaign_id=?
                     AND scene_type=? AND composition_mode IS ? AND reason_code IS NOT NULL
                     AND status IN ('rejected','blocked','awaiting_review') GROUP BY reason_code''',(campaign_id,scene,mode or None))
+                if row['ineligible_archives']:
+                    row['failures'].append({'reason_code':'composition_class_unverified','count':row['ineligible_archives']})
             items.append(row)
         return {'items':items,'weights':c['composition_weights'],
-                'rate_basis':'archive_rate = unique candidate or accepted / all tasks; visual = last valid image verdict per reviewed task'}
+                'rate_basis':'archive_rate = composition-eligible unique candidate or accepted / all tasks; visual = last valid image verdict matching requested class per reviewed task'}
 
     def next_composition(self, campaign_id, scene_type, *, qualified):
         rows = [r for r in self.composition_coverage(campaign_id)['items']
