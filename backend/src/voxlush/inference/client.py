@@ -140,7 +140,7 @@ class PoolClient:
                     timeout=httpx.Timeout(connect=endpoint.connect_timeout,read=endpoint.idle_timeout,write=endpoint.connect_timeout,pool=endpoint.connect_timeout)) as response:
                     r.request_id = response.headers.get("x-request-id")
                     r.response_headers = {k:response.headers[k] for k in (
-                        'x-request-id','nvcf-reqid','nvcf-status','x-correlation-id',
+                        'x-request-id','nvcf-reqid','nvcf-status','x-correlation-id','x-tierflow-request-id',
                         'x-api-pool-node','x-pool-request-id','x-pool-receipt-version','x-pool-execution-state'
                     ) if k in response.headers}
                     if response.status_code >= 300:
@@ -268,7 +268,7 @@ class PoolClient:
                 r.elapsed_ms = ((ended-started)*1000 if type(started) in (int,float) and type(ended) in (int,float)
                                 and math.isfinite(ended-started) and ended >= started else None)
                 r.response_headers = {k:v for k,v in meta.get('upstream_headers', {}).items()
-                                      if k in ('x-request-id','nvcf-reqid','nvcf-status','x-correlation-id')}
+                                      if k in ('x-request-id','nvcf-reqid','nvcf-status','x-correlation-id','x-tierflow-request-id')}
                 self.price(endpoint, r)
                 return {**asdict(r), 'receipt_evidence':{
                     'schema':'pool.receipt.v1', 'request_id':attempt_id,

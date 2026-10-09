@@ -108,7 +108,8 @@ async def test_server_ignoring_receipt_mode_cannot_assert_single_execution():
 async def test_saved_validation_rejection_settles_only_execution(status, kind, message, failure, expected):
     body = json.dumps({"error":{"type":kind,"message":message}}).encode()
     meta = receipt(body, http_status=status, execution_state="execution_unknown", finish_reason=None,
-                   failure=failure)
+                   failure=failure, upstream_headers={'x-tierflow-request-id':'provider-log-id',
+                                                      'set-cookie':'private'})
     calls = []
     def handle(request):
         calls.append(request.method)
@@ -124,6 +125,7 @@ async def test_saved_validation_rejection_settles_only_execution(status, kind, m
             assert result['cost'] is None and result['billing_status'] == 'unknown'
             assert result['receipt_evidence']['termination_kind'] == 'validation_rejection'
             assert result['raw'] == body.decode()
+            assert result['response_headers'] == {'x-tierflow-request-id':'provider-log-id'}
         assert set(calls) == {'GET'}
     finally:
         await client.close()

@@ -52,11 +52,13 @@ async def test_http_trace_ids_survive_body_id_and_never_imply_termination(fake_h
     url, posts = await fake_http(sse({'id':'completion-id', 'choices':[
         {'delta':{'reasoning_content':'unfinished'}}]}), headers={
         'X-Request-Id':'http-id', 'NVCF-REQID':'provider-trace',
+        'X-Tierflow-Request-Id':'provider-log-id',
         'X-API-Pool-Node':'worker-fixture', 'Set-Cookie':'private-not-for-provenance'})
     result = await call(url)
     assert result['request_id'] == 'completion-id'
     assert result['response_headers'] == {
         'x-request-id':'http-id', 'nvcf-reqid':'provider-trace',
+        'x-tierflow-request-id':'provider-log-id',
         'x-api-pool-node':'worker-fixture'}
     assert result['execution_state'] == 'execution_unknown'
     assert result['cost'] is None and len(posts) == 1
