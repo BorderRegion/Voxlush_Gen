@@ -362,13 +362,16 @@ class Store:
         rows = self.rows("SELECT sample_id,campaign_id,stage,status,reason_code,theme_seed_id,scene_type,composition_mode,revision,updated_at,preview_artifact_id FROM samples WHERE "+" AND ".join(where)+" ORDER BY sample_id LIMIT ?",args)
         return {"items":rows[:limit],"next_cursor":rows[limit-1]["sample_id"] if len(rows)>limit else None}
 
-    def ready(self, stages, limit=32, allow_network=True):
+    def ready(self, stages, limit=32, allow_network=True, preferred_stage=None):
         marks = ",".join("?" for _ in stages)
         counted = "a.occupancy=1" + (" AND a.status!='outcome_unknown'" if self.continue_unknown else "")
         network = f"s.stage IN ('author','refine','review') AND c.state='running' AND c.requests_used<c.request_limit AND c.api_cap>0 AND (SELECT COUNT(*) FROM attempts a WHERE a.campaign_id=c.campaign_id AND {counted})<c.api_cap" if allow_network else "0"
         local = "s.stage IN ('build','render','archive') AND c.state IN ('running','draining','completed','blocked','degraded')"
-        return self.rows(f"SELECT s.* FROM samples s JOIN campaigns c USING(campaign_id) WHERE s.status IN ('ready','deferred') AND s.next_ready_at<=? AND s.stage IN ({marks}) AND (({network}) OR ({local})) ORDER BY s.updated_at LIMIT ?",
-                         [time.time(),*stages,max(0,min(limit,1024))])
+        # Apply lane preference before LIMIT so an old author backlog cannot
+        # hide all ready refinement/review work from the scheduler.
+        order = "CASE WHEN s.stage=? THEN 0 ELSE 1 END, " if preferred_stage else ""
+        return self.rows(f"SELECT s.* FROM samples s JOIN campaigns c USING(campaign_id) WHERE s.status IN ('ready','deferred') AND s.next_ready_at<=? AND s.stage IN ({marks}) AND (({network}) OR ({local})) ORDER BY {order}s.updated_at LIMIT ?",
+                         [time.time(),*stages,*([preferred_stage] if preferred_stage else []),max(0,min(limit,1024))])
 
     def claim(self, sample_id, revision, lease_seconds=600):
         token = uuid.uuid4().hex

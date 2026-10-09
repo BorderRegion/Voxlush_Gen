@@ -254,7 +254,7 @@ voxlush --config "$VOXLUSH_CONFIG" campaign start buildings
 | `input_per_million` / `output_per_million` | 每个端点 | 按实际价格与统一货币单位配置，用于成本核算 |
 | `rpm` / `tpm` / `reservation_tokens` | 每个端点 | 每分钟请求、预留 token 限额及每次预留量 |
 | `build_workers` / `render_workers` | 顶层配置 | 本地并行构建与渲染数，与模型并发分别配置 |
-| `initial_api_cap` | 顶层配置，默认 8 | 启动时的本地请求并发；实际仍受全局、活动和端点上限约束，并会因限流或积压降低 |
+| `initial_api_cap` | 顶层配置，默认 8 | 启动时的本地请求并发；实际仍受全局、活动和端点上限约束；遇到限流或积压会降低，响应恢复稳定后逐步回升到这个上限 |
 | `receipt_recovery_endpoints` | 顶层配置，默认空列表 | 换模型线路时保留旧端点，用于查询旧请求回执；不会向这些端点发送新生成请求 |
 | `disk_reserve_bytes` | 顶层配置，默认 1 GiB | 剩余空间低于此值时停止新的付费派发 |
 

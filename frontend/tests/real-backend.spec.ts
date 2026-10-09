@@ -9,7 +9,7 @@ test("real isolated build/render, persistent control, authenticated artifacts an
   await page.goto("/");
   await expect(page.getByText("登录后访问").first()).toBeVisible();
   await page.getByRole("button", { name: "会话认证", exact: true }).click();
-  await page.getByLabel("访问令牌").fill("offline-browser-test-token");
+  await page.getByLabel("访问令牌").fill("  offline-browser-test-token  ");
   await page.getByRole("button", { name: "建立会话", exact: true }).click();
   await expect(page.getByText("实时连接", { exact: true })).toBeVisible();
   await expect(page.locator(".stat").first().locator("strong")).toHaveText(

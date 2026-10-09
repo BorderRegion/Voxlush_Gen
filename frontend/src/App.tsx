@@ -1235,7 +1235,7 @@ export default function App() {
     setSessionBusy(true);
     setSessionError(null);
     try {
-      await post("/session", { token });
+      await post("/session", { token: token.trim() });
       setToken("");
       setSessionOpen(false);
       refresh();

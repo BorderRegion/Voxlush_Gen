@@ -224,9 +224,8 @@ class Scheduler:
                 occupied = pool['n'] - (pool['unknown'] if self.store.continue_unknown else 0)
                 if (self.store.continue_unknown or not pool['unknown']) and occupied < endpoint.provider_cap:
                     eligible.append(stage)
-            rows = self.store.ready(eligible,limit=max(64,self.cap()*4)) if eligible else []
-            if self.round%8:
-                rows.sort(key=lambda s:(s["stage"]!=preference,s["updated_at"]))
+            rows = self.store.ready(eligible,limit=max(64,self.cap()*4),
+                                    preferred_stage=preference if self.round%8 else None) if eligible else []
             for row in rows:
                 if used>=self.cap():
                     break
@@ -316,8 +315,13 @@ class Scheduler:
         failures = sum(r.get("error_category") in ("rate_limited","service_busy") for r in self.window_results)/len(self.window_results)
         if failures>.05 or self.backpressure:
             self.adaptive_cap = min(self.config.global_api_cap,max(1,int(self.adaptive_cap*.7)))
-        elif self.config.is_qualified() and sum(r.get("response_complete",False) for r in self.window_results)/len(self.window_results)>.95:
-            self.adaptive_cap = min(self.config.global_api_cap,self.adaptive_cap*2 if self.adaptive_cap<32 else self.adaptive_cap+8)
+        elif sum(r.get("response_complete",False) for r in self.window_results)/len(self.window_results)>.95:
+            # Transport recovery within the operator's chosen starting cap
+            # does not assert that this model meets dataset quality criteria.
+            ceiling = self.config.global_api_cap if self.config.is_qualified() else min(
+                self.config.initial_api_cap,self.config.global_api_cap)
+            if self.adaptive_cap < ceiling:
+                self.adaptive_cap = min(ceiling,self.adaptive_cap+max(8,self.adaptive_cap//4))
         self.window_results.clear()
         self.window_started = time.monotonic()
 
