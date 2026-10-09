@@ -8,7 +8,7 @@ from voxlush.voxel.adapter import primitive_contract, MAX_SOURCE_BYTES
 from voxlush.core.files import digest
 from voxlush.themes.composition import instruction as composition_instruction, requested_mode, validate_observation
 
-PROMPT_VERSION = "voxlush.prompt.v9"
+PROMPT_VERSION = "voxlush.prompt.v10"
 RUBRIC_VERSION = "voxlush.visual.v6"
 RUBRIC_TEXT = """Inspect the actual complementary voxel views. Assess completeness, silhouette and
 proportions, structural/detail logic, material harmony, visual hierarchy, style consistency,

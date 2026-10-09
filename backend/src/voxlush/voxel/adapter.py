@@ -111,6 +111,8 @@ preserved in authoritative arrays. Only known base blocks are accepted; unknown 
 Every occupied P/B must specify component_id; P/B with material None clears voxels.
 C registers each component ID once; reuse that ID in P/B instead of calling C again.
 W/G/K register their opening/roof owners: use a fresh cid per instance.
+W needs an explicit floor for the opening. G/K set floor='roof' internally;
+they accept neither floor nor wall_id. After G's cid,zh,en come the numeric bounds.
 C defines semantic ownership, never draws geometry; floor is mandatory, parent is an existing
 object/component or building_01. Each separate door/window/column needs its own component ID.
 Every C call, including natural terrain/rock, needs a non-None floor such as 'ground'.
