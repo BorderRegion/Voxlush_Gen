@@ -1,0 +1,374 @@
+{
+  "schema": "voxlush.deployment.v1",
+  "observed_at_utc": "2026-10-09T14:51:46Z",
+  "runtime_commit": "9a975fbe4bc694ffba181a6905eb25289654d20c",
+  "operation": "user_authorized_candidate_production",
+  "host": {
+    "cpu_logical": 18,
+    "memory_gib": 15,
+    "data_disk_gib": 49,
+    "disk_reserve_gib": 5
+  },
+  "services": {
+    "voxlush-production": {
+      "active": "active",
+      "enabled": "enabled"
+    },
+    "voxlush-public-tunnel": {
+      "active": "active",
+      "enabled": "enabled"
+    }
+  },
+  "campaign": {
+    "campaign_id": "production-20261009",
+    "name": "山野与城居 · 生产一期",
+    "state": "running",
+    "reason_code": null,
+    "target": 1000,
+    "request_limit": 8000,
+    "requests_used": 302,
+    "api_cap": 256,
+    "accepted_unique": 0,
+    "provisional_pass": 2
+  },
+  "scene_weights": {
+    "architecture": 0.7,
+    "natural": 0.2,
+    "hybrid": 0.1
+  },
+  "architecture_composition_weights": {
+    "pure_target": 40,
+    "light_context": 30,
+    "contextual": 20,
+    "environment_rich": 10
+  },
+  "concurrency": {
+    "configured_global_cap": 256,
+    "initial_cap": 256,
+    "campaign_cap": 256,
+    "observed_local_peak": 256,
+    "current_active": 223,
+    "current_effective_cap": 179,
+    "ramp_caps": [
+      32,
+      64,
+      128,
+      256
+    ],
+    "ramp_observation_seconds": 470,
+    "peak_backend_rss_mib": 586,
+    "minimum_host_available_mib": 7146,
+    "pool_gateway_cap": 512,
+    "pool_worker_caps": [
+      64,
+      112,
+      112,
+      112,
+      112
+    ],
+    "remote_total_occupancy": "unverifiable; not equated to local active calls",
+    "local_build_workers": 2,
+    "local_render_workers": 1
+  },
+  "profile": {
+    "author_model": "deepseek-ai/deepseek-v4.1-flash",
+    "author_parameters": {
+      "max_tokens": 262144,
+      "temperature": 1.0,
+      "top_p": 0.95
+    },
+    "visual_model": "z-ai/glm-5.3-flash",
+    "visual_parameters": {
+      "max_tokens": 8192,
+      "reasoning_effort": "max"
+    },
+    "human_qualified": false,
+    "earlier_campaign_attempts_used_tierflow": 17,
+    "current_endpoint_profile_is_not_a_unified_model_comparison": true
+  },
+  "unknown_execution_policy": "continue_new_tasks",
+  "unknown_backoff_seconds": 30,
+  "current_campaign_unknown_occupancy": 50,
+  "historical_unknowns_resolved": 0,
+  "historical_unknowns_retained_in_original_roots": 21,
+  "historical_receipt_files_unchanged_during_pool_enable": 102,
+  "historical_experiment_roots_backed_up": 12,
+  "independent_tasks_sent": 285,
+  "attempt_statuses": {
+    "complete": 29,
+    "outcome_unknown": 50,
+    "running": 223
+  },
+  "stage_usage": {
+    "author": {
+      "requests": 297,
+      "reported_total_tokens": 1165580,
+      "usage_missing_or_pending": 271,
+      "known_cost": 0,
+      "cost_missing_or_pending": 297
+    },
+    "review": {
+      "requests": 5,
+      "reported_total_tokens": 18842,
+      "usage_missing_or_pending": 3,
+      "known_cost": 0,
+      "cost_missing_or_pending": 5
+    }
+  },
+  "sample_states": [
+    {
+      "stage": "archive",
+      "status": "provisional_pass",
+      "reason_code": "unqualified_model_profile",
+      "n": 2
+    },
+    {
+      "stage": "author",
+      "status": "blocked",
+      "reason_code": "outcome_unknown",
+      "n": 50
+    },
+    {
+      "stage": "author",
+      "status": "deferred",
+      "reason_code": "not_sent",
+      "n": 1
+    },
+    {
+      "stage": "author",
+      "status": "ready",
+      "reason_code": null,
+      "n": 738
+    },
+    {
+      "stage": "author",
+      "status": "ready",
+      "reason_code": "geometry_repair",
+      "n": 6
+    },
+    {
+      "stage": "author",
+      "status": "running",
+      "reason_code": null,
+      "n": 213
+    },
+    {
+      "stage": "author",
+      "status": "running",
+      "reason_code": "geometry_repair",
+      "n": 7
+    },
+    {
+      "stage": "build",
+      "status": "running",
+      "reason_code": null,
+      "n": 1
+    },
+    {
+      "stage": "review",
+      "status": "ready",
+      "reason_code": null,
+      "n": 2
+    },
+    {
+      "stage": "review",
+      "status": "running",
+      "reason_code": null,
+      "n": 3
+    }
+  ],
+  "observation_seconds": 2722,
+  "currency_cost": "unknown; upstream prices not verified",
+  "public_browser": {
+    "login": true,
+    "tls_verified": true,
+    "secure_httponly_cookie": true,
+    "visited": [
+      "样本作品",
+      "覆盖与质量",
+      "活动与设置",
+      "运行总览"
+    ],
+    "real_candidate_preview": true,
+    "page_errors": [],
+    "production_state": "running",
+    "active_requests": 255,
+    "requests_used": 302,
+    "effective_cap": 179
+  },
+  "restart_controls": [
+    {
+      "action": "start",
+      "after_restart": "running",
+      "requests": 0,
+      "budget_preserved": true
+    },
+    {
+      "action": "pause",
+      "after_restart": "paused",
+      "requests": 0,
+      "budget_preserved": true
+    },
+    {
+      "action": "drain",
+      "after_restart": "draining",
+      "requests": 0,
+      "budget_preserved": true
+    },
+    {
+      "action": "resume",
+      "after_restart": "running",
+      "requests": 0,
+      "budget_preserved": true
+    }
+  ],
+  "upgrade": {
+    "runtime_commit": "9a975fbe4bc694ffba181a6905eb25289654d20c",
+    "old_release": "f9890c6b8fde70e1967ab729bb8765f33397e8d7",
+    "rollback_tested_at_cap_zero": true,
+    "same_ledger_and_budget_preserved": true,
+    "requests_before_upgrade": 17,
+    "active_interrupted": 1,
+    "old_receipt_route_retained": true,
+    "configured_global_and_initial_cap": 256,
+    "starting_campaign_cap": 32,
+    "new_author": "deepseek-ai/deepseek-v4.1-flash",
+    "new_visual": "z-ai/glm-5.3-flash"
+  },
+  "backup_restore": {
+    "pre_live_tasks": 64,
+    "pre_live_requests": 0,
+    "integrity_and_counts_verified": true,
+    "pre_upgrade_requests": 17,
+    "pre_upgrade_backup_includes_real_artifacts_and_unknown_attempts": true
+  },
+  "same_service_namespace_local_probe": {
+    "isolation_ready": true,
+    "checks": {
+      "uid": 10001,
+      "network_unreachable": true,
+      "root_readonly": true,
+      "input_readonly": true
+    },
+    "real_renderer_passed": true
+  },
+  "local_runtime_recovery": {
+    "fixed": "PrivateTmp Docker bind input visibility",
+    "shared_tmpdir": true,
+    "restart_with_active_paid_requests": 2,
+    "new_model_requests_during_restart": 0,
+    "requests_before_and_after_restart": 9,
+    "original_attempt_ids_retained": true,
+    "saved_sources_match_original_responses": 4,
+    "post_restart_unknowns": 2,
+    "remote_termination_claimed": false,
+    "receipt_recovery_enabled": true,
+    "automatic_local_resource_recovery_observed": true,
+    "source_hash_map_note": "Prior map used revision-only keys and was incomplete; removed. Original response/source comparison count was retained separately."
+  },
+  "offline_checks": {
+    "python_passed": 333,
+    "optional_private_fixture_skipped": 1,
+    "python_seconds": 116.2,
+    "ruff": "passed",
+    "frontend_api_types_and_build": "passed",
+    "loopback_concurrency_256": "passed; no model calls"
+  },
+  "limitations": [
+    "Live observation is a deployment canary, not a completed long-duration soak or model qualification.",
+    "Formal accepted counts remain distinct from provisional candidates.",
+    "Historical unknowns stay in original ledgers; new campaign metrics do not claim they ended.",
+    "No confirmed upstream cancellation or hard execution duration contract.",
+    "Pending calls and tasks are not counted as passes or failures; final yield is not yet measured."
+  ],
+  "live_archive_export": {
+    "sample_id": "a80b50ad81b2a9a01b2a4bd9",
+    "status": "provisional_pass",
+    "composition": {
+      "geometry_ref": "geometry.json",
+      "meets_requested": true,
+      "observed": {
+        "geometry": {
+          "applicable": true,
+          "category_voxels": {
+            "beam": 7,
+            "door": 62,
+            "environment": 18,
+            "exterior_wall": 2101,
+            "foundation": 2240,
+            "path": 40,
+            "ruin": 40,
+            "vegetation": 198,
+            "window": 27
+          },
+          "context_fraction": 0.054088316078597085,
+          "independent_semantics_verified": false,
+          "limits": {
+            "max_context_fraction": 0.25,
+            "min_subject_footprint_fraction": 0.6
+          },
+          "measurement_source": "final_occupied_voxels",
+          "meets_requested": true,
+          "requested_mode": "light_context",
+          "requires_visual_confirmation": true,
+          "semantic_source": "generator_declared_categories",
+          "subject_bbox": {
+            "max": [
+              44,
+              22,
+              32
+            ],
+            "min": [
+              3,
+              10,
+              3
+            ]
+          },
+          "subject_footprint_fraction": 0.946058091286307,
+          "version": "voxlush.composition.v1",
+          "voxel_counts": {
+            "environment": 256,
+            "subject": 4477,
+            "unclassified": 0
+          }
+        },
+        "visual": {
+          "building_focus": "dominant",
+          "confidence": 0.85,
+          "contract_version": "voxlush.composition_compliance.v2",
+          "evidence": "In both complementary views the walled ruin fills nearly the entire scene footprint and is visually central; supporting scenery is limited to two small trees on dirt bases, moss accents and small entry steps, with no large terrain, water or distracting masses.",
+          "evidence_ref": "review.json",
+          "extraneous_environment": false,
+          "matches_requested_class": true,
+          "meets_requested": true,
+          "observed_mode": "light_context",
+          "requested_mode": "light_context",
+          "source": "visual_review",
+          "within_requested_allowance": true
+        }
+      },
+      "requested_mode": "light_context",
+      "visual_ref": "review.json"
+    },
+    "release_counts": {
+      "accepted": 0,
+      "assets": 1,
+      "calibration": 1,
+      "excluded": 0,
+      "provisional": 1,
+      "repair_pairs": 0,
+      "source_sft": 1,
+      "test": 0,
+      "train": 0,
+      "val": 0
+    },
+    "leakage_check": "pass",
+    "verify_release_passed": true,
+    "candidate_only_no_formal_promotion": true
+  },
+  "public_network": {
+    "unauthenticated_api_status": 401,
+    "tls_verified": true,
+    "authenticated_sse_status": 200
+  }
+}

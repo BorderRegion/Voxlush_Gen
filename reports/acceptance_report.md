@@ -6,7 +6,19 @@ Original acceptance baseline: `4f4be137d3924b38cb7301c2c4a0081ff32a7c2a`; curren
 
 Environment: Python 3.12.3, Node 20.19.0, npm 10.8.2, Docker 29.1.3, APSW SQLite 3.51.3, Linux, `voxlush-sandbox:v1` (`sha256:50712f3b25dc`). The checked-in profile has `allow_live=false`, no author or visual endpoint, and global API cap 0. The acceptance data root was `/tmp/voxlush-acceptance-20261008`; it is outside the repository and is not production data.
 
-## Latest follow-up: continuity despite unresolved execution (2026-10-09)
+## Local production deployment and 256-concurrency startup (2026-10-09)
+
+Pinned runtime `9a975fbe4bc694ffba181a6905eb25289654d20c` is now deployed as one systemd owner on a separate data disk, with a persistent authenticated HTTPS reverse tunnel. [Timestamped deployment evidence](deployment_20261009.json) records the actual campaign, counters and validation scope. This supersedes older statements below that no generator service was deployed; historical experiments remain historical.
+
+The user authorized 256 concurrent calls on the 512-capacity pool. Actual production ramped 32 → 64 → 128 → 256 and reached 256 active requests, retaining server/account limits, finite budgets, local build/render bounds and unknown ledgers. Subsequent busy/interrupted responses reduced the adaptive limit to 179 at the recorded snapshot; existing in-flight calls were not cancelled to fake an immediate drop. DeepSeek v4.1 Flash authors with thinking retained; GLM 5.3 Flash reviews real previews at reasoning_effort=max. The first 17 requests used Tierflow, so campaign totals are **not** a unified-model quality comparison. Previous endpoint receipts are queried without new POSTs after the route switch. Missing receipts and local disconnects do not release unknown occupancy or turn missing bills into zero.
+
+Two real candidates and zero formal accepted were present at the initial handover snapshot. The first archived candidate passed real voxel/geometry checks and actual-image review; a nonempty release containing it passed integrity and leakage verification and remained in calibration. The remaining tasks are pending or failed, never counted as successful. Current mixed-model startup counts do not establish final pass rate, complex-building yield or cost per qualified asset.
+
+Validation: **333 Python passed / 1 optional private-fixture skip**, Ruff, generated API types and frontend build. New tests include actual loopback 256 dispatch, cap boundaries, downward backoff, and paid-response recovery from an explicitly retained previous route without duplicate POST or accounting reset. Actual local Docker execution/rendering passed inside the service's systemd namespace. A discovered PrivateTmp bind-source issue was corrected with a host-visible private TMPDIR; original source resumed without author repair for infrastructure failure. Public browser login/all pages, candidate preview access, TLS, secure HttpOnly cookies, unauthenticated 401 and SSE were checked. Pause/drain/running restart controls, pre-live backup/restore, a consistent backup with 17 sent requests and real artifacts, and code rollback/re-upgrade at cap zero passed. Historical roots, receipt files and budgets were preserved.
+
+The service is left running, targeting 1,000 candidates within 8,000 total requests. This is an authorized production startup with real output, **not** a completed long-duration soak or formal model/human qualification. The monitor exposes actual yield and failures; no provisional promotion or artificial human score is used.
+
+## Prior follow-up: continuity despite unresolved execution (2026-10-09)
 
 The user now explicitly accepts losing interrupted samples and asks that they not permanently halt new production. Commit `49e3dfb` implements the opt-in `continue_new_tasks` policy. This section supersedes the earlier requirement to isolate the entire pool before any new work; it does **not** supersede the historical quality results or claim that unknown upstream work ended. [Machine-readable evidence](unknown_continuation_validation.json) records this change separately.
 
