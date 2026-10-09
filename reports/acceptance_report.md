@@ -2,11 +2,62 @@
 
 Date: 2026-10-09 (Asia/Shanghai); historical pilots are recorded separately below.
 
-Repository baseline: `4f4be137d3924b38cb7301c2c4a0081ff32a7c2a`.
+Original acceptance baseline: `4f4be137d3924b38cb7301c2c4a0081ff32a7c2a`; current follow-up and live results are first below.
 
 Environment: Python 3.12.3, Node 20.19.0, npm 10.8.2, Docker 29.1.3, APSW SQLite 3.51.3, Linux, `voxlush-sandbox:v1` (`sha256:50712f3b25dc`). The checked-in profile has `allow_live=false`, no author or visual endpoint, and global API cap 0. The acceptance data root was `/tmp/voxlush-acceptance-20261008`; it is outside the repository and is not production data.
 
-## Targeted composition consistency review: baseline c1a5a1a
+## Latest authorized live composition validation (2026-10-09)
+
+This section supersedes the older zero-new-call findings below. Engineering through `c19c628`; generation baseline for final cohort D: `57de341`. [Machine-readable evidence](live_composition_validation.json) retains separate batches, attempts, stages, observed models, usage, failure rules, deployment and verification. Broad experiment and pool-modification authorization was used; no prior small-call cap was applied.
+
+**Real outcome: 16 dispatched independent tasks, 31 pipeline requests, 2 archived candidates and 0 formal accepted assets.** Two additional two-image capability probes completed; one additional rubric-v6 review of unchanged saved contextual previews ended unknown without a verdict. It is not a new generated asset and does not establish v6 quality. Known pipeline usage is 1256851 tokens; 5 pipeline attempts lack usable usage and every pipeline currency charge remains unknown. Failed tasks stay in the denominator; unsent tasks remain separately counted.
+
+| Cohort | Theme / scale / route | Mode | Dispatched tasks | Ever executable / final geometry / visual pass / candidate | Requests | Reported tokens | Tokens per candidate | Candidate elapsed minutes* |
+|---|---|---|---:|---|---:|---:|---:|---:|
+| A | commerce_01 / S / direct | pure_target | 1 | 1 / 0 / 0 / 0 | 1 | 51991 | — | — |
+| A | commerce_01 / S / direct | contextual | 1 | 0 / 0 / 0 / 0 | 1 | 67600 | — | — |
+| A | timber_04 / L / two_stage | pure_target | 1 | 0 / 0 / 0 / 0 | 1 | unknown | — | — |
+| A | timber_04 / L / two_stage | contextual | 1 | 0 / 0 / 0 / 0 | 1 | 67626 | — | — |
+| B | commerce_01 / S / direct | pure_target | 1 | 0 / 0 / 0 / 0 | 1 | 49692 | — | — |
+| B | commerce_01 / S / direct | contextual | 1 | 0 / 0 / 0 / 0 | 1 | 67576 | — | — |
+| B | timber_04 / L / two_stage | pure_target | 1 | 0 / 0 / 0 / 0 | 1 | unknown | — | — |
+| B | timber_04 / L / two_stage | contextual | 1 | 0 / 0 / 0 / 0 | 1 | 62334 | — | — |
+| C | commerce_01 / S / direct | pure_target | 1 | 1 / 1 / 1 / 1 | 4 | 164461 | 164461 | 39.4 |
+| C | commerce_01 / S / direct | contextual | 1 | 1 / 1 / 1 / 1 | 4 | 133397 | 133397 | 33.1 |
+| C | timber_04 / L / two_stage | pure_target | 1 | 1 / 0 / 0 / 0 | 4 | ≥ 158282 | — | — |
+| C | timber_04 / L / two_stage | contextual | 1 | 1 / 0 / 0 / 0 | 3 | 158928 | — | — |
+| D | commerce_01 / S / direct | pure_target | 1 | 0 / 0 / 0 / 0 | 2 | ≥ 67728 | — | — |
+| D | commerce_01 / S / direct | contextual | 1 | 1 / 0 / 0 / 0 | 3 | ≥ 84242 | — | — |
+| D | timber_04 / L / two_stage | pure_target | 1 | 0 / 0 / 0 / 0 | 2 | 79057 | — | — |
+| D | timber_04 / L / two_stage | contextual | 1 | 0 / 0 / 0 / 0 | 1 | 43937 | — | — |
+
+*Elapsed includes queueing and recovery. Token/unit figures include the group's failed work where applicable. `unknown` means no usage was returned; `≥` marks a partial sum with missing usage. No candidate means an undefined unit figure, not zero. Per-stage initial/repair/refinement/review requests and tokens, first-attempt executable rates and actual model seconds are in the JSON. A/B/C/D used different configurations and must not be pooled into a controlled quality comparison. C used prompt v8/rubric v5 and a drained medium-to-high configuration recovery; D kept prompt v9/rubric v6/stream v6 and high thinking unchanged. Even D's exposed fixed configuration uses a supplier auto-route alias: the underlying GLM variants are not pinned.
+
+### Actual quality and preserved evidence
+
+C's ordinary pure candidate measures 0% environmental voxels and retains roof, chimney, awning and architectural detail. Its ordinary contextual candidate measures 90.3% environmental voxels and about 4.3% building footprint; visual inspection reveals disproportionate empty ground even though the v5 model passed it. This is a concrete calibration weakness, not a qualified high-quality result. Components supply declared semantics; measured voxel ownership and saved images provide separate evidence. Human blind scores remain missing. Complex two-stage results are reported separately above; simple buildings do not hide their failures.
+
+Prompt v10 additionally clarifies that W requires an explicit floor, while G/K set the roof floor internally and accept no floor/wall_id argument. This targeted follow-up has offline regression evidence only; no new model call or quality improvement is claimed for v10. The v9 prompt clarifies C's one-time registration and W/G/K ownership, window backing and concise complete-code output without turning designs into templates. Bounded repair feedback exposed six distinct rules from a saved complex failure where the old prefix exposed only three; the original report remains unchanged. Rubric v6 flags disproportionate scene padding, but improvements require completed image verdicts and human calibration, not the existence of new text. Source/runtime, geometry/space metadata, length exhaustion, assessor/transport and environment faults remain distinct in the report.
+
+Actual previews, original model source/response/reasoning and logs stay in the private experiment root; the user gallery is `outputs/composition-20261009/index.html`. The candidate blind package strips known burned-in captions only, records hashes and supplies blank scoring records. It invents no human scores and promotes no provisional samples. C's new pure candidate reproduced canonical hash `6d3d41e2866d46067c48504a88b325b19f30ef880ac1cfa02dc625b0df90342f` when rebuilt/rendered unchanged in Docker. Restored filtered exports retain candidate/calibration partitions and repair pairs; formal export remains empty. Exact per-cohort export evidence is in the report.
+
+### Execution evidence and deployment
+
+Read-only account/quota inspection established independent Tierflow subscription capacity, separate from historical NVIDIA requests. Legal concurrent generation was two; uncertain source accounts were excluded before using remaining verified accounts. Tracked workers persist source hashes before exactly one POST; gateway model routes pin receipt placement. Real failures exposed a too-small 16 MiB receipt cap and a bare-DONE terminal false positive: limits are now bounded at 32 MiB across client/worker/recovery, and bare-DONE stays unknown. B's wrongly settled original send was corrected with retained raw bytes, backup, separate reassessment and no repost/budget reset. One complete authenticated unsupported-medium HTTP400 rejection was reconciled by GET/hash proof; one audited experimental requeue after setting supported high thinking preserved budgets and repair allowance. It does not imply generic automatic error recovery.
+
+D's final two worker receipts each record exactly one POST, a settled partial HTTP200 stream and ChunkedEncodingError, without semantic finish or usage. Authenticated GET recovery found no valid termination evidence. Their source was disabled after drain/backup, with receipt bytes and counts unchanged; all five workers are healthy. This leaves no verified unoccupied test account enabled. All 15 historical unknowns remain byte/accounting-identical. Including new experiments and the image audit, **21 unknown executions remain**. Neither receipt 404, socket EOF, elapsed time, health recovery nor a provider-log 502 released them. Provider account logs expose subscription quota and request IDs, but no verified upstream cancel/end/max-execution contract. The old audit receipt lacks the provider's trace header, and its model response ID does not match the account log ID. `5402dd2` retains `X-Tierflow-Request-Id` for future correlation; that field itself never changes occupancy or billing uncertainty.
+
+The gateway and five workers were backed up and updated with receipt hashes and cumulative counters preserved. Trace-header rollout on workers 2/3 initially exceeded a 20-second control timeout; both restored the prior single-send release and then updated serially using the actual 90-second stop grace. Worker 0's active model requests were not interrupted. Deployment records distinguish each successful revision and preserve all old identities.
+
+After the final source isolation, six authenticated GETs retrieved both D unknown receipts/bodies and one previously completed receipt/body through the original public route. All three body hashes matched the retained evidence, each still recorded exactly one upstream POST, and their execution states remained unchanged. This check made no model request and modified no ledger. A final historical-preservation check also passed for all 14 ledger records plus the original raw image canary.
+
+### Verification and decision
+
+**308 Python tests passed, 1 optional private fixture skipped (116.94 s); 17 actual copied-handler loopback tests passed (6.30 s); Ruff, frontend build, 11 mocked browser cases and 1 real local backend/Docker/render/browser case passed.** The trace-header regression failed before the fix and now retains the ID, drops cookies and leaves an incomplete stream unknown. Prior composition regressions cover requested/observed category matrices, immutable legacy archives, effective accepted/provisional quotas and filtered/mixed export bypasses. Offline fixture reviews are mocked; only the separately recorded live reviews read model-submitted actual images.
+
+**Safe to start formal mass pure-building training production: no.** Positive evidence establishes one ordinary pure candidate, correct local archive/export operations and substantial software reliability fixes. It does not establish stable complex-building yield, economical throughput, a qualified stable model pair or human aesthetic acceptance. Minimum remaining work is to secure verifiable upstream execution reconciliation or durable independent capacity with stable author/image models; finish a positive matched full-chain quality cohort; perform the existing blind qualification and then scale/soak only after positive yield. More unbounded requests, weakened contracts and quota relabeling are not substitutes. Prompt v10 has no paid validation yet because the remaining independent test source is now uncertain. No new framework or dashboard expansion was introduced in this follow-up.
+
+## Historical composition consistency review: baseline c1a5a1a (before live validation)
 
 Latest fetched main was `c1a5a1aed75354a9601f6706a855945f5eca6265`; implementation commit: `fbbb881ddf0a7f3e910837193dacb6148872450c`. [Machine-readable evidence](composition_consistency_validation.json) records this follow-up separately from the earlier feature and model pilots.
 
