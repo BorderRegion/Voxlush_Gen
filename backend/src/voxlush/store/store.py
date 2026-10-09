@@ -434,6 +434,32 @@ class Store:
             if not db.execute("SELECT changes()").fetchone()[0]:
                 raise ValueError("stale build lease")
 
+    def recover_receipt(self, attempt_id, result, response_path):
+        """Settle a verified single execution without resetting identity or budgets."""
+        evidence = result.get('receipt_evidence', {})
+        if (execution_state(result) != 'terminated' or evidence.get('request_id') != attempt_id
+                or evidence.get('schema') != 'pool.receipt.v1' or evidence.get('upstream_posts') != 1):
+            raise ValueError('verified_receipt_required')
+        relative = Path(response_path).relative_to(self.root).as_posix()
+        with self.transaction() as db:
+            a = db.execute('SELECT * FROM attempts WHERE attempt_id=?', (attempt_id,)).fetchone()
+            if not a or a['status'] != 'outcome_unknown':
+                return False
+            cost = result.get('cost')
+            if a['settled_cost'] is not None and cost is None:
+                return False  # Do not replace an observed partial bill with missing usage.
+            old_unknown, new_unknown = a['settled_cost'] is None, cost is None
+            release = (a['reserved_cost'] or 0) if old_unknown and not new_unknown else 0
+            summary = {k:v for k,v in result.items() if k not in {'raw','content'}}
+            db.execute("UPDATE attempts SET status='complete',occupancy=0,settled_cost=?,billing_status=?,result_json=?,response_path=?,response_applied=0,execution_evidence=? WHERE attempt_id=?",
+                       (cost,'unknown_reserved' if new_unknown else 'actual',dump(summary),relative,dump(evidence),attempt_id))
+            db.execute('UPDATE campaigns SET cost_known=cost_known+?,cost_unknown=cost_unknown+?,reserved_cost=MAX(0,reserved_cost-?) WHERE campaign_id=?',
+                       ((cost or 0)-(a['settled_cost'] or 0),int(new_unknown)-int(old_unknown),release,a['campaign_id']))
+            db.execute("UPDATE samples SET status='blocked',reason_code='response_pending',next_ready_at=0 WHERE attempt_id=? AND revision=? AND stage=? AND status='blocked' AND reason_code='outcome_unknown'",
+                       (attempt_id,a['revision'],a['role']))
+            self._event(db,a['campaign_id'],'receipt_recovered',evidence,a['sample_id'])
+            return True
+
     def finish(self, claim, *, stage=None, status="ready", reason=None, changes=None, delay=0, response_applied=True):
         allowed = {"source_path","source_hash","build_path","review_json","geometry_repairs","visual_repairs","review_format_retries","transport_retries","error_fingerprint","identical_errors","revision","preview_artifact_id","creative_phase","local_retries"}
         changes = changes or {}
@@ -484,7 +510,7 @@ class Store:
         # Only unresolved indexed records; never reconstruct finalized arrays.
         # Restart batches beyond the first 1024 are processed by later ticks.
         # Never reclaim an HTTP request owned by the current scheduler.
-        eligibility = "(s.status='blocked' AND s.reason_code IN ('finish_callback_failed','response_pending','response_recovery_failed') AND s.next_ready_at<=?) OR (s.status='running' AND COALESCE(s.lease_owner,'')!=?)" if pending_only else "s.status IN ('running','blocked')"
+        eligibility = "(s.status='blocked' AND s.reason_code IN ('finish_callback_failed','response_pending','response_recovery_failed','local_artifact_invalid') AND s.next_ready_at<=?) OR (s.status='running' AND COALESCE(s.lease_owner,'')!=?)" if pending_only else "s.status IN ('running','blocked') AND COALESCE(s.reason_code,'')!='response_recovery_exhausted'"
         running = self.rows("SELECT a.* FROM attempts a JOIN samples s ON s.attempt_id=a.attempt_id AND s.revision=a.revision AND s.stage=a.role WHERE a.response_applied=0 AND COALESCE(s.reason_code,'')!='phase_recovery_required' AND ("+eligibility+") LIMIT 1024",(time.time(),self.owner) if pending_only else ())
         replay = []
         for a in running:

@@ -48,6 +48,37 @@ async def test_usage_after_finish_is_collected_before_done(fake_http):
     assert result["cost"] == .00006
 
 
+async def test_http_trace_ids_survive_body_id_and_never_imply_termination(fake_http):
+    url, posts = await fake_http(sse({'id':'completion-id', 'choices':[
+        {'delta':{'reasoning_content':'unfinished'}}]}), headers={
+        'X-Request-Id':'http-id', 'NVCF-REQID':'provider-trace',
+        'X-API-Pool-Node':'worker-fixture', 'Set-Cookie':'private-not-for-provenance'})
+    result = await call(url)
+    assert result['request_id'] == 'completion-id'
+    assert result['response_headers'] == {
+        'x-request-id':'http-id', 'nvcf-reqid':'provider-trace',
+        'x-api-pool-node':'worker-fixture'}
+    assert result['execution_state'] == 'execution_unknown'
+    assert result['cost'] is None and len(posts) == 1
+
+
+async def test_client_attempt_identity_is_forwarded_without_enabling_pool_retry():
+    import httpx
+    requests = []
+    def handle(request):
+        requests.append(request)
+        return httpx.Response(200, content=sse(completion(), b'[DONE]'))
+    client = PoolClient(transport=httpx.MockTransport(handle))
+    try:
+        result = await client.call(Endpoint(base_url='http://fixture/v1', model='fixture'), [], 'durable-attempt', 'author')
+        assert result['response_complete']
+        assert requests[0].headers['x-client-request-id'] == 'durable-attempt'
+        assert 'x-pool-request-id' not in requests[0].headers
+        assert len(requests) == 1
+    finally:
+        await client.close()
+
+
 @pytest.mark.parametrize("newline", [b"\r\n", b"\r", b"\n"])
 async def test_chunk_boundaries_preserve_utf8_and_sse_delimiters(fake_http, newline):
     body = b"data: " + json.dumps(completion("中文源码"), ensure_ascii=False).encode() + b"\n\ndata: [DONE]\n\n"

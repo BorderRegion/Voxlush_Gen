@@ -1,0 +1,52 @@
+--- a/cluster_gateway.py
++++ b/cluster_gateway.py
+@@ -85,0 +86,18 @@
++async def receipt_query(request):
++    if not authorized(request):return error('invalid pool credential',401)
++    rid=request.match_info['request_id']
++    if len(rid)!=32 or any(c not in '0123456789abcdef' for c in rid):
++        return error('invalid request identity',400)
++    node=NODES[int(rid,16)%len(NODES)]
++    try:
++        async with request.app['session'].get(node['url']+str(request.rel_url),headers={'Authorization':request.headers['Authorization']},timeout=ClientTimeout(total=10)) as upstream:
++            chunks=[];size=0
++            async for chunk in upstream.content.iter_chunked(65536):
++                size+=len(chunk)
++                if size>16*1024*1024:return error('receipt byte limit',502)
++                chunks.append(chunk)
++            body=b''.join(chunks)
++            return web.Response(status=upstream.status,body=body,headers={'Content-Type':upstream.headers.get('Content-Type','application/json'),'Cache-Control':'no-store'})
++    except Exception:
++        return error('receipt worker unavailable; execution remains unknown',502)
++
+@@ -88 +106,8 @@
+-    if not authorized(request):return error('invalid pool credential',401)
++    def reject(message, status=503):
++        response = error(message, status)
++        rid = request.headers.get('X-Pool-Request-Id', '')
++        if len(rid) == 32 and all(c in '0123456789abcdef' for c in rid):
++            response.headers.update({'X-Pool-Request-Id':rid, 'X-Pool-Receipt-Version':'pool.receipt.v1',
++                                     'X-Pool-Execution-State':'not_sent'})
++        return response
++    if not authorized(request):return reject('invalid pool credential',401)
+@@ -90 +115 @@
+-    except ValueError:return error('Invalid request timeout budget',400)
++    except ValueError:return reject('Invalid request timeout budget',400)
+@@ -93,2 +118,2 @@
+-    except (ValueError,AttributeError):return error('Request body must be a JSON object',400)
+-    if ACTIVE>=LIMIT:return error('Cluster concurrency is full; retry after a completed request')
++    except (ValueError,AttributeError):return reject('Request body must be a JSON object',400)
++    if ACTIVE>=LIMIT:return reject('Cluster concurrency is full; retry after a completed request')
+@@ -96 +121,8 @@
+-    if not eligible:return error('No healthy worker with capacity for the requested model')
++    rid=request.headers.get('X-Pool-Request-Id')
++    if rid:
++        if len(rid)!=32 or any(c not in '0123456789abcdef' for c in rid):return reject('invalid request identity',400)
++        # Stable placement makes a repeated ID hit the same durable reservation.
++        # Worker order must remain pinned; changing it requires draining this mode.
++        node=NODES[int(rid,16)%len(NODES)]
++        eligible=[node] if node in eligible else []
++    if not eligible:return reject('No healthy worker with capacity for the requested model')
+@@ -126,0 +159,2 @@
++app.router.add_get('/v1/pool/requests/{request_id}',receipt_query)
++app.router.add_get('/v1/pool/requests/{request_id}/body',receipt_query)

@@ -12,7 +12,7 @@ from voxlush.core.config import Config
 from voxlush.core.files import atomic_json,digest
 from voxlush.store.store import Store
 from voxlush.store.sqlite import OperationalError
-from voxlush.inference.client import PoolClient
+from voxlush.inference.client import PoolClient, request_body
 from voxlush.inference import execution_state
 from voxlush.themes.planner import runtime_task, task_for
 from voxlush.pipeline.prompts import author_messages,extract_source,review_messages,parse_review,RUBRIC_VERSION
@@ -56,6 +56,8 @@ class Scheduler:
         self.queue_backpressure = False
         self.sandbox_fault = False
         self.next_resource_probe = 0
+        self.next_receipt_poll = 0
+        self.receipt_cursor = (0, '')
         self.round = 0
 
     def cap(self,campaign=None):
@@ -65,12 +67,7 @@ class Scheduler:
 
     async def start(self):
         self.store.apply_commands(self.config.sample_request_limit)
-        for claim,result in self.store.recover():
-            try:
-                await self.consume(claim,result)
-            except Exception as e:
-                self.store.finish(claim,status="blocked",reason="response_recovery_failed",delay=30,response_applied=False)
-                self.loop_error = type(e).__name__
+        await self.recover_responses()
         if self.config.allow_live and self.config.visual and self.config.visual.supports_images:
             self.store.resume_visual_reviews()
         for record in self.archive.pending_commits():
@@ -132,12 +129,10 @@ class Scheduler:
         self.store.apply_commands(self.config.sample_request_limit)
         self.store.reconcile_deadlines()
         if not self.storage_failed:
-            for claim,result in self.store.recover(pending_only=True):
-                try:
-                    await self.consume(claim,result)
-                except Exception as exc:
-                    self.store.finish(claim,status='blocked',reason='response_recovery_failed',delay=30,response_applied=False)
-                    self.loop_error = type(exc).__name__
+            if (time.monotonic() >= self.next_receipt_poll and 'reconcile' not in self.active.values()
+                    and any(e and e.pool_receipts for e in (self.config.author,self.config.visual))):
+                self.submit(self.recover_pool_receipts(),'reconcile')
+            await self.recover_responses(pending_only=True)
         for c in self.store.campaigns():
             if c.get("reason_code") == "emergency_stop":
                 for task,lane in list(self.active.items()):
@@ -324,6 +319,73 @@ class Scheduler:
                 self.storage_failed = True
             raise
 
+    def response_failure(self, claim, error, reason="response_recovery_failed"):
+        """Retry only the saved response's local application, with a durable limit."""
+        self.loop_error = type(error).__name__
+        changes = {}
+        if self.storage_failed or shared_storage_failure(error):
+            self.storage_failed = True
+            reason = "storage_unavailable"
+        else:
+            used = claim['local_retries'] + 1
+            changes['local_retries'] = used
+            if isinstance(error, OSError):
+                reason = "local_artifact_invalid"
+            if used >= 3:
+                reason = "response_recovery_exhausted"
+        self.store.finish(claim,status="blocked",reason=reason,delay=30,
+                          changes=changes,response_applied=False)
+        self.store.record_local_failure(claim,reason,error)
+
+    async def recover_responses(self, pending_only=False):
+        for claim,result in self.store.recover(pending_only=pending_only):
+            try:
+                await self.consume(claim,result)
+            except Exception as error:
+                self.response_failure(claim,error)
+
+    async def recover_pool_receipts(self):
+        if time.monotonic() < self.next_receipt_poll:
+            return
+        self.next_receipt_poll = time.monotonic() + 30
+        endpoints = {'author':self.config.author,'refine':self.config.author,'review':self.config.visual}
+        groups = {e.capacity_key() for e in endpoints.values() if e and e.pool_receipts}
+        if not groups:
+            return
+        placeholders = ','.join('?' for _ in groups)
+        query = "SELECT * FROM attempts WHERE status='outcome_unknown' AND capacity_group IN ("+placeholders+") AND (started_at,attempt_id) > (?,?) ORDER BY started_at,attempt_id LIMIT 16"
+        attempts = self.store.rows(query, (*groups,*self.receipt_cursor))
+        if not attempts:
+            self.receipt_cursor = (0, '')
+            attempts = self.store.rows(query, (*groups,*self.receipt_cursor))
+        for attempt in attempts:
+            self.receipt_cursor = (attempt['started_at'],attempt['attempt_id'])
+            endpoint = endpoints.get(attempt['role'])
+            if not endpoint or not endpoint.pool_receipts or endpoint.capacity_key() != attempt['capacity_group']:
+                continue
+            try:
+                request_path = self.store.root/attempt['response_path'].replace('.json','.request.json')
+                request = json.loads(request_path.read_text())
+                if not request.get('request_sha256') or not request.get('pool_receipts'):
+                    continue  # No retroactive promises for historical, untracked POSTs.
+                snapshot = self.store.one('SELECT config_json FROM config_snapshots WHERE config_hash=?', (attempt['runtime_config_hash'],))
+                original = json.loads(snapshot['config_json'])['visual' if attempt['role']=='review' else 'author']
+                if original['base_url'] != 'sha256:'+hashlib.sha256(endpoint.base_url.encode()).hexdigest():
+                    continue
+                original_endpoint = endpoint.model_copy(update={key:original[key] for key in (
+                    'model','parameters','stream','completion','input_per_million','output_per_million')})
+                result = await self.client.recover_receipt(original_endpoint,attempt['attempt_id'],attempt['role'],request['request_sha256'])
+                if result:
+                    path = (self.store.root/attempt['response_path']).with_suffix('.recovered.json')
+                    self.persist_json(path,result,ledger=True)
+                    self.store.recover_receipt(attempt['attempt_id'],result,path)
+            except (OSError,ValueError,KeyError,TypeError) as error:
+                self.loop_error = type(error).__name__
+                if shared_storage_failure(error):
+                    self.storage_failed = True
+                if self.storage_failed:
+                    break
+
     async def network(self,claim,endpoint):
         result = None
         request_started = False
@@ -342,7 +404,9 @@ class Scheduler:
                 feedback = json.loads(feedback_path.read_text()) if feedback_path.exists() else None
                 messages = author_messages(task,source,feedback,refine=claim["stage"] == "refine")
             request_path = self.store.root/claim["attempt"]["response_path"].replace(".json",".request.json")
-            self.persist_json(request_path,{"messages":messages,"endpoint_alias":endpoint.alias,"model":endpoint.model,"parameters":endpoint.parameters},ledger=True)
+            self.persist_json(request_path,{"messages":messages,"endpoint_alias":endpoint.alias,"model":endpoint.model,"parameters":endpoint.parameters,
+                                           "stream":endpoint.stream,"pool_receipts":endpoint.pool_receipts,
+                                           "request_sha256":hashlib.sha256(request_body(endpoint,messages)).hexdigest()},ledger=True)
             request_started = True
             result = await self.client.call(endpoint,messages,claim["attempt_id"],claim["stage"])
             # Durable response first. Crash here is recovered without a second POST.
@@ -372,8 +436,11 @@ class Scheduler:
                 reason = "local_artifact_invalid"
             try:
                 self.store.settle(claim["attempt_id"],result)
-                self.store.finish(claim,status="blocked",reason=reason,delay=1,response_applied=not request_started)
-                self.store.record_local_failure(claim, reason, e)
+                if response_saved and result.get('response_complete'):
+                    self.response_failure(claim,e,reason)
+                else:
+                    self.store.finish(claim,status="blocked",reason=reason,delay=1,response_applied=not request_started)
+                    self.store.record_local_failure(claim, reason, e)
                 if self.storage_failed:
                     for campaign in self.store.campaigns():
                         if campaign["state"] == "running":
@@ -413,7 +480,7 @@ class Scheduler:
                 self.retry_review(claim,'review_format')
                 return
             if review["passed"]:
-                self.store.finish(claim,stage="archive",changes={"review_json":json.dumps(review)})
+                self.store.finish(claim,stage="archive",changes={"review_json":json.dumps(review),"local_retries":0})
             elif review['status'] == 'gray':
                 # Assessor uncertainty is not a demonstrated author defect.
                 self.retry_review(claim,'review_uncertain')

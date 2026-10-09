@@ -1,6 +1,7 @@
 """One HTTP adapter, no hidden POST retries; termination evidence is explicit."""
 from __future__ import annotations
 import asyncio
+import hashlib
 import json
 import math
 import os
@@ -11,6 +12,12 @@ import httpx
 from voxlush.core.config import Endpoint
 
 MAX_RESPONSE_BYTES = 16 * 1024 * 1024
+
+
+def request_body(endpoint, messages):
+    return json.dumps({**endpoint.parameters, 'model':endpoint.model,
+                       'messages':messages, 'stream':endpoint.stream},
+                      ensure_ascii=False, separators=(',', ':'), allow_nan=False).encode()
 
 
 def provider_error(error):
@@ -71,6 +78,8 @@ async def bounded_lines(response):
 @dataclass
 class ModelResult:
     request_id: str | None = None
+    # Provider HTTP IDs and body completion IDs can differ. Keep both for audit.
+    response_headers: dict = field(default_factory=dict)
     attempt_id: str | None = None
     role: str | None = None
     endpoint_alias: str | None = None
@@ -103,21 +112,30 @@ class PoolClient:
     async def call(self, endpoint: Endpoint, messages: list, attempt_id: str, role: str) -> dict:
         start = time.monotonic()
         r = ModelResult(attempt_id=attempt_id,role=role,endpoint_alias=endpoint.alias,requested_model=endpoint.model)
-        headers = {"Content-Type":"application/json"}
+        headers = {"Content-Type":"application/json", "X-Client-Request-Id":attempt_id}
+        if endpoint.pool_receipts:
+            headers['X-Pool-Request-Id'] = attempt_id
         key = os.getenv(endpoint.api_key_env)
         if key:
             headers["Authorization"] = "Bearer " + key
-        payload = {**endpoint.parameters,"model":endpoint.model,"messages":messages,"stream":endpoint.stream}
+        body = request_body(endpoint, messages)
         url = endpoint.base_url.rstrip("/") + "/chat/completions"
         try:
             r.execution_state = "execution_unknown"
             async with asyncio.timeout(endpoint.total_timeout):
-                async with self.client.stream("POST",url,json=payload,headers=headers,
+                async with self.client.stream("POST",url,content=body,headers=headers,
                     timeout=httpx.Timeout(connect=endpoint.connect_timeout,read=endpoint.idle_timeout,write=endpoint.connect_timeout,pool=endpoint.connect_timeout)) as response:
                     r.request_id = response.headers.get("x-request-id")
+                    r.response_headers = {k:response.headers[k] for k in (
+                        'x-request-id','nvcf-reqid','nvcf-status','x-correlation-id',
+                        'x-api-pool-node','x-pool-request-id','x-pool-receipt-version','x-pool-execution-state'
+                    ) if k in response.headers}
                     if response.status_code >= 300:
                         # A gateway failure can happen after the upstream POST.
-                        r.execution_state = "execution_unknown" if response.status_code in (502,504) else "terminated"
+                        r.execution_state = "execution_unknown" if endpoint.pool_receipts or response.status_code in (502,504) else "terminated"
+                        if (endpoint.pool_receipts and response.headers.get('x-pool-execution-state') == 'not_sent'
+                                and response.status_code != 409):
+                            r.execution_state = 'not_sent'
                         if response.status_code == 429:
                             r.error_category = "rate_limited"
                         elif response.status_code in (401,403):
@@ -159,6 +177,19 @@ class PoolClient:
             r.response_complete = False
             r.error_category = "malformed_response"
         r.elapsed_ms = (time.monotonic()-start)*1000
+        if (endpoint.pool_receipts and (r.execution_state != 'not_sent' or r.response_headers)
+                and (r.response_headers.get('x-pool-request-id') != attempt_id
+                     or r.response_headers.get('x-pool-receipt-version') != 'pool.receipt.v1')):
+            # An old gateway may silently ignore the opt-in header and retry
+            # upstream. Its final response cannot settle those hidden attempts.
+            r.execution_state = 'execution_unknown'
+            r.response_complete = False
+            r.error_category = 'pool_receipt_protocol_unconfirmed'
+        self.price(endpoint, r)
+        return asdict(r)
+
+    @staticmethod
+    def price(endpoint, r):
         if r.usage and endpoint.input_per_million is not None and endpoint.output_per_million is not None:
             inp,out = r.usage.get("prompt_tokens"),r.usage.get("completion_tokens")
             if type(inp) is int and type(out) is int and inp >= 0 and out >= 0:
@@ -170,7 +201,56 @@ class PoolClient:
                 except (ValueError,OverflowError):
                     r.response_complete = False
                     r.error_category = "malformed_response"
-        return asdict(r)
+
+    async def recover_receipt(self, endpoint, attempt_id, role, expected_hash):
+        """Read-only recovery of one identity; never sends a generation POST."""
+        if not endpoint.pool_receipts or not re.fullmatch('[a-f0-9]{32}', attempt_id):
+            return None
+        headers = {}
+        if key := os.getenv(endpoint.api_key_env):
+            headers['Authorization'] = 'Bearer ' + key
+        url = endpoint.base_url.rstrip('/') + '/pool/requests/' + attempt_id
+        async def get(path, limit):
+            async with self.client.stream('GET', path, headers=headers, timeout=10) as response:
+                if response.status_code != 200:
+                    return None
+                return await read_bounded(response, limit)
+        try:
+            async with asyncio.timeout(20):
+                meta_bytes = await get(url, 65536)
+                if meta_bytes is None:
+                    return None
+                meta = json.loads(meta_bytes)
+                if (not isinstance(meta, dict) or meta.get('schema') != 'pool.receipt.v1'
+                        or meta.get('request_id') != attempt_id or meta.get('request_sha256') != expected_hash
+                        or meta.get('upstream_posts') != 1 or meta.get('state') != 'settled'
+                        or meta.get('execution_state') != 'terminated' or meta.get('http_status') != 200):
+                    return None
+                body = await get(url + '/body', MAX_RESPONSE_BYTES)
+                if body is None or hashlib.sha256(body).hexdigest() != meta.get('body_sha256'):
+                    return None
+                r = ModelResult(attempt_id=attempt_id, role=role, endpoint_alias=endpoint.alias,
+                                requested_model=endpoint.model, execution_state='execution_unknown')
+                if endpoint.stream:
+                    await self._stream(httpx.Response(200, content=body), endpoint, r, time.monotonic())
+                else:
+                    r.raw = body.decode()
+                    self._consume(json.loads(r.raw), r, stream=False)
+                    r.response_complete = bool(r.content.strip()) and r.finish_reason == 'stop' and not r.error_category
+                if r.execution_state != 'terminated' or r.finish_reason != meta.get('finish_reason'):
+                    return None
+                started, ended = meta.get('created_at'), meta.get('ended_at')
+                r.elapsed_ms = ((ended-started)*1000 if type(started) in (int,float) and type(ended) in (int,float)
+                                and math.isfinite(ended-started) and ended >= started else None)
+                r.response_headers = {k:v for k,v in meta.get('upstream_headers', {}).items()
+                                      if k in ('x-request-id','nvcf-reqid','nvcf-status','x-correlation-id')}
+                self.price(endpoint, r)
+                return {**asdict(r), 'receipt_evidence':{
+                    'schema':'pool.receipt.v1', 'request_id':attempt_id,
+                    'request_sha256':expected_hash, 'body_sha256':meta['body_sha256'],
+                    'upstream_posts':1}}
+        except (httpx.HTTPError, TimeoutError, ValueError, KeyError, TypeError, AttributeError, IndexError):
+            return None
 
     def _consume(self,obj,r,stream=True):
         if not isinstance(obj,dict):

@@ -24,6 +24,7 @@ class Endpoint(StrictModel):
     server_max_execution_seconds: float | None = Field(default=None, gt=0)
     execution_contract_ref: str | None = Field(default=None, min_length=1, max_length=500)
     supports_images: bool = False
+    pool_receipts: bool = False
     connect_timeout: float = Field(default=10, gt=0)
     first_content_timeout: float = Field(default=90, gt=0,
         description="Seconds to the first nonempty answer or reasoning delta; heartbeats do not count.")
@@ -118,7 +119,8 @@ class Config(StrictModel):
                 return None
             return {"route":hashlib.sha256(endpoint.base_url.encode()).hexdigest(),
                     **endpoint.model_dump(include={"model", "parameters", "stream", "completion", "supports_images",
-                                                   "first_content_timeout", "idle_timeout", "total_timeout"})}
+                                                   "first_content_timeout", "idle_timeout", "total_timeout"}),
+                    **({'pool_receipts':True} if endpoint.pool_receipts else {})}
         fields = {"author": identity(self.author), "visual": identity(self.visual),
                   "prompt": PROMPT_VERSION, "rubric": RUBRIC_HASH, "quality_runtime":versions(),
                   "stream_policy": STREAM_POLICY_VERSION}
