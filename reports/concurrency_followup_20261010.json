@@ -1,0 +1,307 @@
+{
+  "schema": "voxlush.concurrency_followup.v1",
+  "observed_at_utc": "2026-10-09T16:09:51Z",
+  "runtime_commit": "cd9db30a72b6bf0c8bef8f8658836548030cc732",
+  "findings_before_fix": {
+    "configured_cap": 256,
+    "adaptive_cap": 42,
+    "ready_review": 44,
+    "ready_refine": 25,
+    "causes": [
+      "Quality qualification prevented recovery of previously authorized transport concurrency.",
+      "Post-LIMIT sorting hid later refinement and review rows behind an old author backlog."
+    ]
+  },
+  "changes": [
+    "Healthy complete-response windows gradually restore concurrency to the explicitly configured starting cap.",
+    "Rotating lane preference is applied in SQL before LIMIT; oldest-work rounds remain.",
+    "Login form trims surrounding whitespace; the original token was verified and not rotated."
+  ],
+  "upgrade": {
+    "runtime_commit": "cd9db30a72b6bf0c8bef8f8658836548030cc732",
+    "previous_release": "9a975fbe4bc694ffba181a6905eb25289654d20c",
+    "requests_before_upgrade": 403,
+    "requests_after_start_before_resume": 403,
+    "active_interrupted": 0,
+    "original_attempt_ids_retained": true,
+    "same_config_and_budget": true,
+    "starting_campaign_cap": 32,
+    "backup_files": 4218,
+    "backup_bytes": 9520185969,
+    "backup_integrity_verified": true
+  },
+  "services": {
+    "voxlush-production": {
+      "active": "active",
+      "enabled": "enabled"
+    },
+    "voxlush-public-tunnel": {
+      "active": "active",
+      "enabled": "enabled"
+    }
+  },
+  "campaign": {
+    "campaign_id": "production-20261009",
+    "state": "running",
+    "reason_code": null,
+    "target": 1000,
+    "request_limit": 8000,
+    "requests_used": 686,
+    "api_cap": 256,
+    "accepted_unique": 0,
+    "provisional_pass": 12
+  },
+  "live_overview": {
+    "active_requests": 244,
+    "unknown_occupancy": 76,
+    "effective_cap": 179,
+    "configured_cap": 256,
+    "requests_used": 686,
+    "provisional_pass": 12,
+    "accepted_unique": 0,
+    "queues": [
+      {
+        "stage": "author",
+        "ready": 689,
+        "running": 219,
+        "oldest_wait_seconds": 5033.784973621368
+      },
+      {
+        "stage": "refine",
+        "ready": 26,
+        "running": 1,
+        "oldest_wait_seconds": 4625.405881881714
+      },
+      {
+        "stage": "review",
+        "ready": 0,
+        "running": 24,
+        "oldest_wait_seconds": 0.0
+      }
+    ]
+  },
+  "ramp": {
+    "steps": [
+      32,
+      64,
+      96,
+      128,
+      160,
+      192,
+      224,
+      256
+    ],
+    "observed_seconds": 237,
+    "peak_local_active_requests": 245,
+    "minimum_host_available_mib": 7587,
+    "peak_backend_rss_mib": 379,
+    "minimum_data_free_gib": 24.78,
+    "peak_active_by_stage": {
+      "author": 219,
+      "refine": 1,
+      "review": 38
+    }
+  },
+  "attempt_counts": [
+    {
+      "role": "author",
+      "status": "complete",
+      "n": 351
+    },
+    {
+      "role": "author",
+      "status": "outcome_unknown",
+      "n": 58
+    },
+    {
+      "role": "author",
+      "status": "running",
+      "n": 219
+    },
+    {
+      "role": "refine",
+      "status": "running",
+      "n": 1
+    },
+    {
+      "role": "review",
+      "status": "complete",
+      "n": 15
+    },
+    {
+      "role": "review",
+      "status": "outcome_unknown",
+      "n": 18
+    },
+    {
+      "role": "review",
+      "status": "running",
+      "n": 24
+    }
+  ],
+  "stage_usage": {
+    "author": {
+      "requests": 628,
+      "reported_total_tokens": 20271963,
+      "usage_missing_or_pending": 278,
+      "confirmed_cost": null,
+      "cost_missing_or_pending": 628
+    },
+    "review": {
+      "requests": 57,
+      "reported_total_tokens": 116756,
+      "usage_missing_or_pending": 42,
+      "confirmed_cost": null,
+      "cost_missing_or_pending": 57
+    },
+    "refine": {
+      "requests": 1,
+      "reported_total_tokens": 0,
+      "usage_missing_or_pending": 1,
+      "confirmed_cost": null,
+      "cost_missing_or_pending": 1
+    }
+  },
+  "new_attempt_statuses": {
+    "review:running": 24,
+    "review:outcome_unknown": 17,
+    "review:complete": 11,
+    "author:running": 219,
+    "author:complete": 1,
+    "author:outcome_unknown": 10,
+    "refine:running": 1
+  },
+  "new_result_errors": {
+    "no_error_reported_or_pending": 256,
+    "outcome_unknown": 4,
+    "rate_limited": 14,
+    "service_busy": 9
+  },
+  "sample_states": [
+    {
+      "stage": "archive",
+      "status": "provisional_pass",
+      "reason_code": "unqualified_model_profile",
+      "n": 12
+    },
+    {
+      "stage": "author",
+      "status": "blocked",
+      "reason_code": "outcome_unknown",
+      "n": 58
+    },
+    {
+      "stage": "author",
+      "status": "deferred",
+      "reason_code": "not_sent",
+      "n": 1
+    },
+    {
+      "stage": "author",
+      "status": "ready",
+      "reason_code": null,
+      "n": 432
+    },
+    {
+      "stage": "author",
+      "status": "ready",
+      "reason_code": "geometry_repair",
+      "n": 255
+    },
+    {
+      "stage": "author",
+      "status": "ready",
+      "reason_code": "visual_repair",
+      "n": 1
+    },
+    {
+      "stage": "author",
+      "status": "running",
+      "reason_code": null,
+      "n": 218
+    },
+    {
+      "stage": "author",
+      "status": "running",
+      "reason_code": "geometry_repair",
+      "n": 1
+    },
+    {
+      "stage": "refine",
+      "status": "ready",
+      "reason_code": null,
+      "n": 26
+    },
+    {
+      "stage": "refine",
+      "status": "running",
+      "reason_code": null,
+      "n": 1
+    },
+    {
+      "stage": "review",
+      "status": "blocked",
+      "reason_code": "outcome_unknown",
+      "n": 18
+    },
+    {
+      "stage": "review",
+      "status": "running",
+      "reason_code": null,
+      "n": 23
+    },
+    {
+      "stage": "review",
+      "status": "running",
+      "reason_code": "incomplete_response",
+      "n": 1
+    }
+  ],
+  "public_browser": {
+    "login": true,
+    "padded_token_login": true,
+    "tls_verified": true,
+    "secure_httponly_cookie": true,
+    "visited": [
+      "样本作品",
+      "覆盖与质量",
+      "活动与设置",
+      "运行总览"
+    ],
+    "real_candidate_preview": true,
+    "page_errors": [],
+    "production_state": "running",
+    "active_requests": 22,
+    "requests_used": 435,
+    "effective_cap": 32
+  },
+  "checks": {
+    "python_passed": 339,
+    "optional_private_fixture_skipped": 1,
+    "python_seconds": 154.93,
+    "ruff": "passed",
+    "frontend_build": "passed",
+    "real_backend_browser": "passed, including padded-token login",
+    "git_diff_check": "passed"
+  },
+  "limits": [
+    "This is a short live concurrency check, not sustained throughput or formal model qualification.",
+    "Local active requests are not proof of total upstream execution occupancy.",
+    "No unknown execution or fee records were cleared; historical unknowns remain in their original roots.",
+    "Unconfirmed prices and missing usage remain unknown.",
+    "Existing quality and archive gates are unchanged."
+  ],
+  "pool_observation": {
+    "observed_at_utc": "2026-10-09T16:10:15Z",
+    "max_inflight": 512,
+    "worker_reported_inflight": 245,
+    "worker_caps": [
+      64,
+      112,
+      112,
+      112,
+      112
+    ],
+    "note": "Worker-local inflight is observable; it does not prove termination of historical unknown upstream executions."
+  }
+}
