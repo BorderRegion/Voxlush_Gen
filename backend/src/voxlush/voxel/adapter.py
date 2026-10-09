@@ -257,23 +257,27 @@ def validate_model(model: dict, contract: str | None = None) -> None:
         raise ValueError(f"floors must be an integer in {minimum_floors}..256")
     for key, limit in (("spaces", 256), ("features", 1024)):
         values = model.get(key, [])
-        if not isinstance(values, list) or len(values) > limit:
+        if not isinstance(values, list):
+            raise ValueError(f"MODEL_SPEC.{key} must be a literal list of objects")
+        if len(values) > limit:
             raise ValueError(key + " exceeds the metadata budget")
         seen = set()
-        for item in values:
-            if (
-                not isinstance(item, dict)
-                or not isinstance(item.get("id"), str)
-                or not item["id"]
-                or item["id"] in seen
-            ):
-                raise ValueError("Invalid or repeated " + key + " ID")
+        for index, item in enumerate(values):
+            field = f"MODEL_SPEC.{key}[{index}]"
+            if not isinstance(item, dict):
+                raise ValueError(f"{field} must be an object with id and component_ids, not {type(item).__name__}")
+            if not isinstance(item.get("id"), str) or not item["id"]:
+                raise ValueError(f"{field}.id must be a nonempty string")
+            if item["id"] in seen:
+                raise ValueError(f"{field}.id duplicates an earlier {key} ID: {item['id'][:120]}")
             seen.add(item["id"])
             members = item.get("component_ids", [])
             if not isinstance(members, list) or any(not isinstance(cid, str) for cid in members):
-                raise ValueError("Invalid component references in " + key)
+                raise ValueError(f"{field}.component_ids must be a list of component ID strings")
             if key == "spaces":
                 box = item.get("air_bbox", {})
+                if not isinstance(box, dict):
+                    raise ValueError(f"{field}.air_bbox must be an object with min and max integer vectors")
                 low, high, entry = box.get("min", []), box.get("max", []), item.get("entry", [])
                 if any(
                     not isinstance(vector, list)
@@ -281,7 +285,7 @@ def validate_model(model: dict, contract: str | None = None) -> None:
                     or any(type(value) is not int or not 0 <= value < 256 for value in vector)
                     for vector in (low, high, entry)
                 ) or any(high[i] < low[i] for i in range(3)):
-                    raise ValueError("Space boxes and standing entries must stay inside the integer grid")
+                    raise ValueError(f"{field}: Space boxes and standing entries must stay inside the integer grid")
 
 
 def inspect(sample: dict, task: dict) -> dict:
