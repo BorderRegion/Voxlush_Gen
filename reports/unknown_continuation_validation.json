@@ -1,0 +1,184 @@
+{
+  "schema_version": "voxlush.unknown_continuation_validation.v1",
+  "date": "2026-10-09",
+  "timezone": "Asia/Shanghai",
+  "baseline_commit": "a40cc5a",
+  "implementation_commit": "49e3dfbe7a51ee978f0c6888f19c367416432e69",
+  "scope": "User-authorized tolerance of unresolved upstream execution so independent new tasks can continue; not a termination claim or new quality qualification.",
+  "policy": {
+    "field": "unknown_execution_policy",
+    "opt_in": "continue_new_tasks",
+    "existing_config_default": "isolate_pool",
+    "example_config": "continue_new_tasks, but still allow_live=false, cap=0 and no endpoints",
+    "default_unknown_backoff_seconds": 30,
+    "admission_boundaries": [
+      "Store.ready",
+      "Store.reserve transaction",
+      "Scheduler pool selection"
+    ],
+    "preserved": [
+      "original request identity and raw bytes",
+      "outcome_unknown status and occupancy=1",
+      "unknown financial reservation",
+      "request and cost budgets",
+      "RPM/TPM and local active caps",
+      "provider Retry-After",
+      "pause/drain",
+      "finite failure and zero-yield limits",
+      "authenticated late-response recovery",
+      "geometry/render/visual/archive/export gates"
+    ],
+    "remote_execution_termination_inferred": false,
+    "remote_concurrency_bound_claimed": false,
+    "unknown_original_request_replayed": false,
+    "schema_migration": false,
+    "new_model_health_probe": false
+  },
+  "verification": {
+    "before_fix": {
+      "failed": 10,
+      "failure": "new policy config was not yet implemented"
+    },
+    "new_cases": 14,
+    "targeted": {
+      "passed": 65,
+      "seconds": 5.51
+    },
+    "full_backend": {
+      "passed": 322,
+      "skipped": 1,
+      "skip_reason": "optional private legacy fixture",
+      "seconds": 106.82
+    },
+    "ruff": "passed: backend/src and backend/tests",
+    "diff_check": "passed",
+    "real_loopback_disconnect": {
+      "method": "Actual TCP disconnect after complete first POST; second POST returns a fixture SSE response after Store/Scheduler restart.",
+      "posts": 2,
+      "first_attempt_unchanged": true,
+      "first_raw_response_unchanged": true,
+      "first_sample_stays_blocked": true,
+      "next_independent_sample_reaches_build": true,
+      "premature_archive_count": 0,
+      "paid_model_calls": 0
+    },
+    "repeated_unknowns": {
+      "rounds": 12,
+      "request_count": 24,
+      "unknowns_retained": 12,
+      "known_cost_fixture_units": 12,
+      "retained_unknown_reservation_fixture_units": 24,
+      "dispatch_deadlock": false
+    },
+    "limits_and_recovery": [
+      "persistent cooldown through restart",
+      "switch back to strict isolation",
+      "active-slot cap",
+      "request budget",
+      "money budget",
+      "RPM",
+      "TPM",
+      "pause",
+      "drain",
+      "pool Retry-After across restart",
+      "explicit auth/config/quota failure",
+      "no manual replay of unknown"
+    ],
+    "logs": {
+      "before": {
+        "file": "/tmp/voxlush-continuation-before.log",
+        "sha256": "7254c6219873d3c3069d3411a1e27c5c38f32c42dc1605c2a5efc259f06ce250"
+      },
+      "targeted": {
+        "file": "/tmp/voxlush-continuation-targeted.log",
+        "sha256": "c1d8a54129b6d5fef555efc66edcc01f4960eb1c2a909f00619d4c3366bdd9d5"
+      },
+      "full": {
+        "file": "/tmp/voxlush-continuation-full.log",
+        "sha256": "34d4e7f35074e3d2eb1b88ea42dc3578c1b78b5665dedb97f7fe39d4be50d479"
+      }
+    },
+    "unchanged_component_checks": {
+      "source_report": "reports/live_composition_validation.json",
+      "rerun_this_change": false,
+      "frontend_build": "previously passed",
+      "mock_browser_cases": 11,
+      "real_local_backend_docker_render_browser_cases": 1,
+      "pool_loopback_cases": 17
+    }
+  },
+  "pool_configuration_deployment": {
+    "status": "restored_under_authorized_continuation_policy",
+    "worker_active": true,
+    "local_active_requests": 0,
+    "restored_source_count": 1,
+    "source_max_concurrency_unchanged": 2,
+    "source_model_probes_enabled": false,
+    "configuration_change": "enabled_false_to_true_only",
+    "old_receipt_file_count": 102,
+    "old_receipts_byte_identical": true,
+    "counters_nondecreasing": true,
+    "routes_and_service_code_unchanged": true,
+    "new_model_requests": 0,
+    "unknowns_released": 0,
+    "remote_execution_termination_proven": false,
+    "generator_service_started": false,
+    "backup_created": true
+  },
+  "post_restore_authenticated_receipt_check": {
+    "after_authorized_continuity_source_restore": true,
+    "authenticated_get_requests": 6,
+    "post_requests": 0,
+    "ledger_modified": false,
+    "unknowns_released": 0,
+    "checks": [
+      {
+        "request_id": "fcd140f396e6451b91c122da83fd51ba",
+        "body_sha256": "1b049eaa13bbd956dbc8bf2386d9c9eff56e31ae9c4bb59e465414f7859b15ce",
+        "upstream_posts": 1,
+        "execution_state": "execution_unknown",
+        "receipt_and_body_retrievable": true
+      },
+      {
+        "request_id": "b159c8d35a6241029a96844a9b890758",
+        "body_sha256": "02f8ca886cef9bbf00442157b0ea3811f9bd402633f3fb032b92c34966333e6a",
+        "upstream_posts": 1,
+        "execution_state": "execution_unknown",
+        "receipt_and_body_retrievable": true
+      },
+      {
+        "request_id": "2bfb460fea6f4fca9f3faa63d436ebbe",
+        "body_sha256": "bf2a22601876f6350ab823e823642effc596104a25e07f909362139a9cd731be",
+        "upstream_posts": 1,
+        "execution_state": "terminated",
+        "receipt_and_body_retrievable": true
+      }
+    ]
+  },
+  "historical_preservation": {
+    "old_ledger_records_checked": 14,
+    "old_raw_canary_checked": true,
+    "unknowns_released": 0,
+    "total_historical_and_new_unknowns_retained": 21,
+    "assets_changed": 0,
+    "budgets_reset": 0
+  },
+  "new_live_model_experiment": {
+    "model_calls": 0,
+    "new_tasks": 0,
+    "new_candidates": 0,
+    "new_formal_assets": 0,
+    "new_quality_or_soak_evidence": false,
+    "historical_quality_report": "reports/live_composition_validation.json"
+  },
+  "delivery_state": {
+    "implemented": true,
+    "offline_verified": true,
+    "pool_source_reenabled": true,
+    "generator_service_started": false,
+    "existing_private_configs_modified": false,
+    "formal_model_profile_qualified": false,
+    "sustained_live_run_verified": false
+  },
+  "conclusion": "Opt-in local dispatch can continue after an unresolved stream without clearing the old record or weakening admission to the dataset. Production still depends on upstream availability, budgets, working storage and positive yield. Formal large-scale model quality and sustained throughput are not established by this software change."
+}
