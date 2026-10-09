@@ -66,7 +66,7 @@
 +        candidate_list = STATE.candidates(route_key, SOURCES, model)[:1 if self.receipt else MAX_ROUTE_ATTEMPTS]
 @@ -1960,0 +2005,2 @@
 +        if self.receipt:
-+            self.receipt.dispatch()
++            self.receipt.dispatch(source["id"])
 @@ -1964 +2010 @@
 -            proxy,self.request_deadline,source["id"],
 +            proxy,self.request_deadline,source["id"],single_attempt=bool(self.receipt),

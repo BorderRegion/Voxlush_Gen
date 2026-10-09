@@ -71,10 +71,12 @@ class Receipt:
         finally:
             os.close(fd)
 
-    def dispatch(self):
+    def dispatch(self, source_id=None):
         if self.data['upstream_posts']:
             raise RuntimeError('a receipt permits only one upstream POST')
         self.data.update(state='dispatched', execution_state='execution_unknown', upstream_posts=1)
+        if source_id is not None:
+            self.data['source_sha256'] = hashlib.sha256(source_id.encode()).hexdigest()
         self.save()  # Durable before any possibly billable call.
 
     def headers(self, response):

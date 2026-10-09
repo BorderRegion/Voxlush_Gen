@@ -190,6 +190,7 @@ def test_complete_receipt_authenticated_retrievable_duplicate_post_rejected():
         assert meta["response_complete"] and meta["execution_state"] == "terminated"
         assert meta["upstream_headers"]["nvcf-reqid"] == "upstream-fixture"
         assert meta["upstream_posts"] == 1 and meta["cost"] is None
+        assert meta['source_sha256'] == hashlib.sha256(b'0').hexdigest()
         assert post(entry, rid).status_code == 409
         assert requests.get(entry + "/v1/pool/requests/" + rid).status_code == 401
         assert len(calls) == 1
@@ -275,6 +276,7 @@ def test_gateway_pins_ids_and_queries_do_not_compete_with_generation_slots():
             nodes.append({"url": f"http://127.0.0.1:{site._server.sockets[0].getsockname()[1]}"})
         ns = {
             "NODES": nodes,
+            "CONFIG": {},
             "authorized": lambda req: req.headers.get("Authorization") == "Bearer fixture",
             "error": lambda message, status=503: web.json_response({"error": message}, status=status),
             "web": web,
@@ -287,7 +289,7 @@ def test_gateway_pins_ids_and_queries_do_not_compete_with_generation_slots():
                     body=[
                         n
                         for n in tree.body
-                        if isinstance(n, ast.AsyncFunctionDef) and n.name == "receipt_query"
+                        if isinstance(n, (ast.AsyncFunctionDef, ast.FunctionDef)) and n.name in {"receipt_query", "routing"}
                     ],
                     type_ignores=[],
                 ),
@@ -382,6 +384,7 @@ def test_gateway_forward_uses_same_worker_and_never_fails_over():
             )
         ns = dict(
             NODES=nodes,
+            CONFIG={},
             ACTIVE=0,
             PEAK=0,
             CURSOR=0,
@@ -400,7 +403,7 @@ def test_gateway_forward_uses_same_worker_and_never_fails_over():
             compile(
                 ast.Module(
                     body=[
-                        n for n in tree.body if isinstance(n, ast.AsyncFunctionDef) and n.name == "forward"
+                        n for n in tree.body if isinstance(n, (ast.AsyncFunctionDef, ast.FunctionDef)) and n.name in {"forward", "routing"}
                     ],
                     type_ignores=[],
                 ),
@@ -437,4 +440,86 @@ def test_gateway_forward_uses_same_worker_and_never_fails_over():
             for r in runners:
                 await r.cleanup()
 
+    asyncio.run(run())
+
+
+def test_named_model_pool_routes_post_and_receipt_without_legacy_remap():
+    import asyncio
+    import aiohttp
+    from aiohttp import web
+
+    async def run():
+        calls, runners, nodes = [], [], []
+
+        async def handle(request):
+            calls.append((request.app['number'], request.method, request.path))
+            return web.json_response({'worker':request.app['number'], 'path':request.path})
+
+        for i in range(2):
+            worker = web.Application()
+            worker['number'] = i
+            worker.router.add_route('*', '/v1/{path:.*}', handle)
+            runner = web.AppRunner(worker)
+            await runner.setup()
+            site = web.TCPSite(runner, '127.0.0.1', 0)
+            await site.start()
+            runners.append(runner)
+            nodes.append(dict(id=str(i), url=f'http://127.0.0.1:{site._server.sockets[0].getsockname()[1]}',
+                              reachable=True, active=0, peak=0, capacity=1,
+                              models={'legacy':{}}))  # Special aliases are hidden in shared catalog.
+        ns = dict(NODES=nodes, CONFIG={'model_pools':{'independent':{'nodes':['0'], 'models':['special']}}},
+                  ACTIVE=0, PEAK=0, CURSOR=0, LIMIT=2,
+                  HOP={'host','content-length','transfer-encoding'}, os=os, json=json, web=web,
+                  ClientTimeout=aiohttp.ClientTimeout,
+                  authorized=lambda req: req.headers.get('Authorization') == 'Bearer fixture',
+                  error=lambda message,status=503:web.json_response({'error':message},status=status),
+                  request_budget=lambda *a:3)
+        tree = ast.parse((BASE/'cluster_gateway.py').read_text())
+        functions = [n for n in tree.body if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef))
+                     and n.name in {'routing','forward','receipt_query','models'}]
+        exec(compile(ast.Module(body=functions,type_ignores=[]),'gateway','exec'),ns)
+        app = web.Application()
+        app['session'] = aiohttp.ClientSession()
+        for prefix in ('/v1', '/v1/pools/{pool_name}'):
+            app.router.add_get(prefix+'/models',ns['models'])
+            app.router.add_post(prefix+'/chat/completions',ns['forward'])
+            app.router.add_get(prefix+'/pool/requests/{request_id}',ns['receipt_query'])
+            app.router.add_get(prefix+'/pool/requests/{request_id}/body',ns['receipt_query'])
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner,'127.0.0.1',0)
+        await site.start()
+        runners.append(runner)
+        url = f'http://127.0.0.1:{site._server.sockets[0].getsockname()[1]}'
+        rid = 'a'*31+'1'  # Legacy hashes to worker 1, which lacks the special model.
+        try:
+            async with aiohttp.ClientSession(headers={'Authorization':'Bearer fixture'}) as client:
+                for prefix, model, expected in [('/v1','legacy',1),('/v1/pools/independent','special',0)]:
+                    async with client.post(url+prefix+'/chat/completions',json={'model':model},
+                                           headers={'X-Pool-Request-Id':rid}) as response:
+                        assert (await response.json())['worker'] == expected
+                    for suffix in ('','/body'):
+                        async with client.get(url+prefix+'/pool/requests/'+rid+suffix) as response:
+                            result = await response.json()
+                            assert result == {'worker':expected,'path':'/v1/pool/requests/'+rid+suffix}
+                before = len(calls)
+                async with client.post(url+'/v1/pools/independent/chat/completions',json={'model':'legacy'},
+                                       headers={'X-Pool-Request-Id':rid}) as response:
+                    assert response.status == 400 and response.headers['X-Pool-Execution-State'] == 'not_sent'
+                async with client.get(url+'/v1/pools/absent/pool/requests/'+rid) as response:
+                    assert response.status == 404  # Does not imply termination or query another pool.
+                async with client.get(url+'/v1/pools/independent/models') as response:
+                    assert len((await response.json())['data']) == 1
+                nodes[0]['reachable'] = False
+                async with client.post(url+'/v1/pools/independent/chat/completions',json={'model':'special'},
+                                       headers={'X-Pool-Request-Id':rid}) as response:
+                    assert response.status == 503
+                assert len(calls) == before and ns['ACTIVE'] == 0
+                async with client.get(url+'/v1/pools/independent/pool/requests/'+rid,
+                                      headers={'Authorization':'Bearer wrong'}) as response:
+                    assert response.status == 401
+        finally:
+            await app['session'].close()
+            for runner in runners:
+                await runner.cleanup()
     asyncio.run(run())

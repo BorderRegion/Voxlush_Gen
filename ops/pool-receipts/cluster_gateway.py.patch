@@ -1,14 +1,43 @@
 --- a/cluster_gateway.py
 +++ b/cluster_gateway.py
-@@ -85,0 +86,18 @@
+@@ -69,0 +70,14 @@
++def routing(request):
++    """Pinned named subsets preserve legacy ID placement and receipt lookup."""
++    name=request.match_info.get('pool_name')
++    if name is None:return NODES,None,str(request.rel_url)
++    spec=CONFIG.get('model_pools',{}).get(name)
++    if not isinstance(spec,dict) or not spec.get('nodes') or not spec.get('models'):
++        raise ValueError('Unknown or invalid model pool')
++    by_id={n['id']:n for n in NODES}
++    ids=spec['nodes']
++    if len(set(ids))!=len(ids) or any(i not in by_id for i in ids):
++        raise ValueError('Invalid pinned model pool workers')
++    path=str(request.rel_url).replace('/v1/pools/'+name+'/', '/v1/', 1)
++    return [by_id[i] for i in ids],set(spec['models']),path
++
+@@ -71,0 +86,2 @@
++    try:nodes,allowed,_=routing(request)
++    except ValueError as exc:return error(str(exc),404)
+@@ -73,2 +89,6 @@
+-    for node in NODES:
+-        if node['reachable']:merged.update(node['models'])
++    for node in nodes:
++        if node['reachable']:merged.update({k:v for k,v in node['models'].items() if allowed is None or k in allowed})
++    if allowed is not None and any(n['reachable'] for n in nodes):
++        # Explicit routes may expose models intentionally hidden from the shared catalog.
++        # The worker still enforces its source allowlist and actual availability.
++        merged={m:merged.get(m,{'id':m,'object':'model','owned_by':'configured_pool'}) for m in sorted(allowed)}
+@@ -85,0 +106,20 @@
 +async def receipt_query(request):
 +    if not authorized(request):return error('invalid pool credential',401)
 +    rid=request.match_info['request_id']
 +    if len(rid)!=32 or any(c not in '0123456789abcdef' for c in rid):
 +        return error('invalid request identity',400)
-+    node=NODES[int(rid,16)%len(NODES)]
++    try:nodes,_,path=routing(request)
++    except ValueError as exc:return error(str(exc),404)
++    node=nodes[int(rid,16)%len(nodes)]
 +    try:
-+        async with request.app['session'].get(node['url']+str(request.rel_url),headers={'Authorization':request.headers['Authorization']},timeout=ClientTimeout(total=10)) as upstream:
++        async with request.app['session'].get(node['url']+path,headers={'Authorization':request.headers['Authorization']},timeout=ClientTimeout(total=10)) as upstream:
 +            chunks=[];size=0
 +            async for chunk in upstream.content.iter_chunked(65536):
 +                size+=len(chunk)
@@ -19,7 +48,7 @@
 +    except Exception:
 +        return error('receipt worker unavailable; execution remains unknown',502)
 +
-@@ -88 +106,8 @@
+@@ -88 +128,8 @@
 -    if not authorized(request):return error('invalid pool credential',401)
 +    def reject(message, status=503):
 +        response = error(message, status)
@@ -29,24 +58,36 @@
 +                                     'X-Pool-Execution-State':'not_sent'})
 +        return response
 +    if not authorized(request):return reject('invalid pool credential',401)
-@@ -90 +115 @@
+@@ -90 +137 @@
 -    except ValueError:return error('Invalid request timeout budget',400)
 +    except ValueError:return reject('Invalid request timeout budget',400)
-@@ -93,2 +118,2 @@
+@@ -93,4 +140,15 @@
 -    except (ValueError,AttributeError):return error('Request body must be a JSON object',400)
 -    if ACTIVE>=LIMIT:return error('Cluster concurrency is full; retry after a completed request')
-+    except (ValueError,AttributeError):return reject('Request body must be a JSON object',400)
-+    if ACTIVE>=LIMIT:return reject('Cluster concurrency is full; retry after a completed request')
-@@ -96 +121,8 @@
+-    eligible=[n for n in NODES if n['reachable'] and not os.path.exists('/var/lib/api-pool/draining/'+n['id']) and n['active']<n['capacity'] and (not model or model in n['models'])]
 -    if not eligible:return error('No healthy worker with capacity for the requested model')
++    except (ValueError,AttributeError):return reject('Request body must be a JSON object',400)
++    try:nodes,allowed,path=routing(request)
++    except ValueError as exc:return reject(str(exc),404)
++    if allowed is not None and (model not in allowed or path!='/v1/chat/completions' or request.method!='POST'):
++        return reject('Model or operation is outside this pool',400)
++    if ACTIVE>=LIMIT:return reject('Cluster concurrency is full; retry after a completed request')
++    eligible=[n for n in nodes if n['reachable'] and not os.path.exists('/var/lib/api-pool/draining/'+n['id']) and n['active']<n['capacity'] and (allowed is not None or not model or model in n['models'])]
 +    rid=request.headers.get('X-Pool-Request-Id')
 +    if rid:
 +        if len(rid)!=32 or any(c not in '0123456789abcdef' for c in rid):return reject('invalid request identity',400)
 +        # Stable placement makes a repeated ID hit the same durable reservation.
 +        # Worker order must remain pinned; changing it requires draining this mode.
-+        node=NODES[int(rid,16)%len(NODES)]
++        node=nodes[int(rid,16)%len(nodes)]
 +        eligible=[node] if node in eligible else []
 +    if not eligible:return reject('No healthy worker with capacity for the requested model')
-@@ -126,0 +159,2 @@
+@@ -102 +160 @@
+-        async with request.app['session'].request(request.method,node['url']+str(request.rel_url),data=body,headers=headers,allow_redirects=False,timeout=ClientTimeout(total=budget,sock_connect=min(10,budget),sock_read=min(600,budget))) as upstream:
++        async with request.app['session'].request(request.method,node['url']+path,data=body,headers=headers,allow_redirects=False,timeout=ClientTimeout(total=budget,sock_connect=min(10,budget),sock_read=min(600,budget))) as upstream:
+@@ -126,0 +185,6 @@
 +app.router.add_get('/v1/pool/requests/{request_id}',receipt_query)
 +app.router.add_get('/v1/pool/requests/{request_id}/body',receipt_query)
++app.router.add_get('/v1/pools/{pool_name}/models',models)
++app.router.add_get('/v1/pools/{pool_name}/pool/requests/{request_id}',receipt_query)
++app.router.add_get('/v1/pools/{pool_name}/pool/requests/{request_id}/body',receipt_query)
++app.router.add_route('*','/v1/pools/{pool_name}/{path:.*}',forward)

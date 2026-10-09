@@ -27,6 +27,27 @@ Authenticated GETs using the existing pool credential read:
 - `/v1/pool/requests/{id}`: original request hash, upstream POST count, HTTP/provider IDs, usage, execution evidence and body hash.
 - `/v1/pool/requests/{id}/body`: persisted original response bytes after settlement.
 
+New worker receipts also persist `source_sha256` before the upstream POST. This
+identifies the selected account without publishing its ID or credential. It is
+dispatch attribution, not evidence that remote execution has ended.
+
+### Explicit model routes
+
+When only some workers serve a model, an operator can configure `model_pools` in
+the existing gateway cluster JSON, for example
+`{"special":{"nodes":["worker-0"],"models":["model-alias"]}}`. Set the client
+base URL to `/v1/pools/special`. Model listing, generation and receipt queries
+then use that same pinned subset; unsupported models are rejected before send.
+The original `/v1` placement and its historical receipt queries are unchanged.
+Explicit allowlists can expose aliases hidden from the shared model catalog;
+the worker still checks actual source availability and account limits.
+
+Keep each route's name, worker order and membership fixed after tracked calls.
+Never move an existing attempt to another base URL to retry or recover it. A
+named route does **not** establish independent capacity: account/provider quota
+evidence and enforced source separation are still needed before assigning a
+different client `capacity_pool`.
+
 The scheduler queries at most 16 unknown attempts per batch, rotating every 30 seconds in a background lane. It only reconciles opted-in attempts with the matching original route, request hash, exactly one upstream execution and a verified semantic finish. It saves a separate recovered response before advancing the original sample. It never repeats the POST or resets counters. Missing prices/usage remain unknown financial reservations even after execution ends.
 
 ## Deployment and recovery boundaries
