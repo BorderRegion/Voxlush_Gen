@@ -109,6 +109,8 @@ X east, Y up, Z south; integer occupied coordinates 0..255; max 600000 voxels.
 Materials accept full states such as minecraft:oak_log[axis=x]; namespace/properties are
 preserved in authoritative arrays. Only known base blocks are accepted; unknown states fail.
 Every occupied P/B must specify component_id; P/B with material None clears voxels.
+C registers each component ID once; reuse that ID in P/B instead of calling C again.
+W/G/K register their opening/roof owners: use a fresh cid per instance.
 C defines semantic ownership, never draws geometry; floor is mandatory, parent is an existing
 object/component or building_01. Each separate door/window/column needs its own component ID.
 Every C call, including natural terrain/rock, needs a non-None floor such as 'ground'.
@@ -122,7 +124,8 @@ plane is Z and a0/a1 are X; for east/west, plane is X and a0/a1 are Z.
 plane is the lowest wall coordinate and depth covers its thickness along increasing Z/X.
 Opening width/height >=3 inclusive. G axis instead specifies ridge direction 'x' or 'z'.
 glazing=None gives an open door; entry is standing air at floor top+1 with two clear voxels.
-Draw walls before W; later strokes must not refill apertures. G is a generic gable stroke,
+Draw walls before W; later strokes must not refill apertures or put opaque furniture/partitions
+directly against either side of the glass. G is a generic gable stroke,
 K a hollow octagonal cone stroke; all positions and dimensions are chosen by your program.
 spaces=[{id,kind:'enclosed'|'open_gallery'|'porch'|'terrace',air_bbox:{min:[x,y,z],max:[x,y,z]},
 entry:[x,y,z],component_ids:[...]}] must describe actual walkable interiors, not invented boxes.

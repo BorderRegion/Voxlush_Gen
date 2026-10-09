@@ -20,7 +20,8 @@ INSTRUCTIONS = {
         'ground/contact treatment, a short path, a few plants or a small fence; avoid distracting scenery.',
     'contextual': 'Compose a coherent building-and-surroundings scene. Moderate terrain, courtyard, paths, '
         'water or planting must form a visible moderate context, not merely a bare building or rich landscape; '
-        'keep the building one of the main visual subjects.',
+        'keep the building one of the main visual subjects. Coordinate bounds are limits, not an area '
+        'to fill with empty ground; keep surroundings proportionate to the building.',
     'environment_rich': 'Rich environmental storytelling, estate grounds, settlement slices and building-nature '
         'compositions need a visibly substantial, coherent environment, not merely a bare building or a few props. '
         'Keep the architectural subject recognizable and object boundaries/use clear.',
