@@ -1357,5 +1357,13 @@
     "maximum_upstream_execution_contract_found": false,
     "upstream_tls_and_route_retries_present": true,
     "service_modified": false
+  },
+  "latest_review": {
+    "baseline_commit": "2672ca76e2c0e1fba73a2f0b8d683ad0b311c41c",
+    "report": "production_validation.json",
+    "scope": "Subsequent engineering and authorized API-pool deployment; all preceding measurements in this file remain the historical six-task cohort.",
+    "new_paid_model_requests": 0,
+    "historical_unknowns_retained": 15,
+    "model_profile_qualified": false
   }
 }

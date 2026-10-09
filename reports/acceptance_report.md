@@ -6,6 +6,59 @@ Repository baseline: `4f4be137d3924b38cb7301c2c4a0081ff32a7c2a`.
 
 Environment: Python 3.12.3, Node 20.19.0, npm 10.8.2, Docker 29.1.3, APSW SQLite 3.51.3, Linux, `voxlush-sandbox:v1` (`sha256:50712f3b25dc`). The checked-in profile has `allow_live=false`, no author or visual endpoint, and global API cap 0. The acceptance data root was `/tmp/voxlush-acceptance-20261008`; it is outside the repository and is not production data.
 
+## Review 2672ca7: response recovery, deployed pool receipts and quality evidence
+
+Baseline `2672ca76e2c0e1fba73a2f0b8d683ad0b311c41c` matched freshly fetched main before editing. Reliability/protocol commit: `44f8be5`; quality diagnostics/gallery commit: `f52766e`. [Machine-readable evidence](production_validation.json) separates this review from the historical paid cohorts. Broad API use was authorized; prior small-call limits no longer apply. The user separately authorized draining, backing up and rolling out the reviewed API-pool patch.
+
+| Change | Evidence and boundary |
+|---|---|
+| Complete paid responses stuck after `local_artifact_invalid` | Four regressions failed before the fix. Startup/tick/callback recovery reuses the saved response, including after a real path collision. Three local application failures are terminal across restart; explicit retry after path repair still uses the original response. No duplicate POST, budget reset or author repair consumption. Shared storage faults continue to block paid admission. |
+| Pool/client request lifecycle was unobservable | Optional `pool_receipts` pins one attempt UUID to one worker and one upstream POST; captures request/body hashes and provider HTTP IDs; persists the upstream response after downstream disconnection. Authenticated GET reconciliation verifies identity, original request hash, single execution, body integrity and semantic finish before applying it. Polling rotates through bounded batches without blocking controls. Unknown charges remain reserved independently of released execution. |
+| Window repair feedback did not identify the actual obstruction | Diagnostic coordinates now include final component owner and material. Unchanged saved source identifies the timber obstruction as `cabin_balcony`; courtyard obstructions include actual wall/window components. Five original programs retain their prior pass/fail; all three that produced canonical voxels retain their hashes. No final contract, geometry, prompt v5, rubric v3 or thinking setting was weakened. A higher real model repair success rate is **not yet established**. |
+| Candidate blind review lacked a usable anonymous package | CLI exports verified, stratified candidates, two actual saved previews, blank scores and a separate private mapping. Browser inspection caught burned-in IDs/names/voxel counts in the initial package. The final package removes only known caption margins losslessly, records original/derived hashes and crop coordinates, and rejects unknown layouts. Geometry pixels are unchanged. Eleven historical candidates/22 images load on desktop/mobile; no human scores or promotions. |
+
+Complete Python suite: **248 passed, 1 optional private fixture skipped, 103.47 s**. Ruff passed for backend/tests and the new ops package. TypeScript/Vite build passed; **10 mocked-transport browser tests** and **1 real local backend/browser test** passed. The latter uses actual Docker geometry/render and fixture review, not a model. Ten separate pool protocol tests execute the real copied gateway/worker handlers against loopback upstreams; their two warnings are aiohttp test application string-key warnings.
+
+Actual process stop/start retained running intent, pause/drain/emergency controls, the existing request and budget; continuation needed no manual resume. Its duplicate fixture was rejected. An actual absent Docker socket recovered through the 30-second local probe in **32.37 s**, preserving source/revision with zero author repairs or model calls. Nonempty historical backup restore retained 79 attempts/three unknowns, re-exported **11 candidates and 17 repair pairs**, and rebuilt/rendered a complex original to the same **267209-voxel hash**. These counts are historical replay, not newly generated assets. Existing regression coverage still exercises historical permanent failures beside healthy tasks, finite local failures, repaired archive/export and skeleton repair followed by exactly one refinement.
+
+### Authorized production pool deployment
+
+The gateway and all five workers now run the pinned receipt patch. Deployment drained local handlers, backed up code/config/units/state, rolled workers and gateway, checked cumulative request/token/cost counters, and tested backup extraction plus an actual worker canary rollback/re-upgrade. The initial canary lacked the existing `proxy_allocator.py` dependency; it was immediately rolled back, the pinned dependency was included, and the canary and rollback were repeated successfully before proceeding. No active model handler was interrupted by that canary. The source-only [ops package](../ops/pool-receipts/README.md) reproduces the tested release from the exact private originals.
+
+All six services were running, all five workers reachable, deployment drain markers removed, and counters retained. Actual external authenticated GETs reached each worker's receipt route (404 for unused IDs); unauthenticated queries returned 401. **No inference POST was used for deployment or smoke tests.** The generator itself has not been deployed or qualified for production. Tracked mode remains an explicit client opt-in; existing unopted behavior is retained.
+
+The old worker could structurally make **3 candidate attempts × 2 TLS attempts**, up to six upstream POSTs per client call; this is an audited code bound, not a measured history. The new tracked mode permits at most one. It can recover a future client/gateway disconnect when the worker survives and receives the final upstream response. It cannot reconstruct old request IDs or prove termination after upstream EOF, worker crash or local deadline. The provider documents tracing/HTTP behavior, but no reliable termination/cancel/maximum-execution contract for the configured route was established. An alternate model catalog also supplies no proof of independent capacity or image/model capability.
+
+**All 15 historical unknown executions remain unresolved:** 14 ledger records across six original roots plus one raw visual canary. Read-only comparison retained status, occupancy, cost and response hashes; none was released or replayed. The patch is not retrospective evidence. The [operations guide](../docs/OPERATIONS.md#unknown-execution-reconciliation) describes evidence-backed reconciliation; the private dossier retains attempt IDs, original ledger locations, timestamps and available model IDs for upstream investigation. Finance remains unknown even if a later valid terminal receipt releases execution.
+
+### Actual quality and efficiency: no new paid cohort this review
+
+**This review made zero model calls and produced zero new independent tasks, candidates or formal samples.** The blocker is unresolved shared execution capacity, not missing API permission or a former small-call allowance. No fresh-ledger admission exception was repeated. Stages A–D (new full-chain calibration, matched optimization, 100–200 tasks and sustained operation) remain unverified.
+
+The historical mixed-version 24-task cohort is useful diagnostic evidence, with every attempted task retained in the denominator:
+
+| Group / scale | Tasks | Initial / ever executed source | Final geometry | Visual pass / archived | Observed tokens per candidate* | Candidate mean elapsed* |
+|---|---:|---:|---:|---:|---:|---:|
+| Natural / S | 8 | 3 / 7 | 7 (87.5%) | 5 (62.5%) | 201896 | 81.9 min |
+| Direct architecture / S | 8 | 0 / 6 | 5 (62.5%) | 5 (62.5%) | 218070 | 95.2 min |
+| Two-stage architecture / L | 8 | 0 / 2 | 1 (12.5%) | 1 (12.5%) | 1220922 | 108.2 min |
+
+*Tokens include failed tasks but omit missing usage, so these are observed lower bounds. Elapsed means include pauses/local recovery; concurrent call-seconds are not wall-clock throughput. Per-stage requests/tokens, scale groups and failure occurrences are in the JSON report. The cohort used **24 initial author + 36 repair + 2 refinement + 17 review = 79 requests**. All 79 currency charges are unknown; actual cost per candidate is **null**, not zero. It covered 24 theme seeds, with 11 archived unique geometries and no recorded duplicate rejection; human aesthetic repetition/diversity measurement is absent. Formal accepted and human-reviewed counts are both zero.
+
+The later uniform six-task cohort remains unchanged: **six initial DeepSeek calls, five complete programs, three successful executions, one final geometry pass, zero repairs/refinements/visual calls and zero archives**. Its two natural S/M, two direct S/M and two complex L/XL tasks all remain incomplete/censored. Five calls reported **233261 tokens**; one usage and all six currency charges remain unknown. The sixth call introduced the fifteenth cumulative unknown and stopped admission. Its detailed [historical report](final_quality_validation.json) is preserved; zero visual passes here means no evaluated images, not an aesthetic rejection rate.
+
+Observed failures remain separated: unsupported coast material is a source/runtime error; library strings instead of space objects are metadata errors; balcony-covered windows and courtyard disconnection are geometry errors; missing floor relations are spatial semantics; review-format exhaustion is an assessor-format issue. The new obstruction feedback and earlier metadata fix target these causes without redrawing for infrastructure/review faults. They have offline replay evidence only. Prompt, thinking and two-stage freedom remain intact; no building template or additional review loop was introduced.
+
+### Readiness and minimum remaining work
+
+**Not yet a qualified low-maintenance generator; do not start 10000–100000 formal assets.** The genuine remaining blockers are:
+
+1. Provider evidence resolving all possible historical upstream executions, or documented independent execution capacity; reliable query/cancel/dispatch-to-termination evidence is also needed for future upstream EOF/crash. Gateway receipts alone cannot supply that external fact.
+2. One pinned real full-chain calibration with repairs/refinement and actual image review, particularly for complex buildings; matched quality/efficiency comparison, then positive-result-gated 100–200 tasks and a sustained concurrency/recovery window.
+3. One hundred same-profile auto-pass candidates and genuine human blind calibration under the existing contract. The exported eleven historical mixed-profile candidates have blank scores and cannot qualify or become accepted.
+
+Reproduce software checks with `.venv/bin/pytest -q backend/tests --tb=short`, `.venv/bin/ruff check backend/src backend/tests ops/pool-receipts`, `npm --prefix frontend run build`, `npm --prefix frontend run test:e2e`, and `npm --prefix frontend run test:real`; pool protocol setup is in its ops guide. Raw responses, credentials, galleries, generated assets and backups remain outside Git. README/LICENSE are unchanged.
+
 ## Review 4f95a9e: final reliability and bounded quality validation
 
 Review baseline: `4f95a9e1359d0ce66ca04a5fe414b0c53960662e`. Reliability code: `b684fcf5d1667cbd553f41490dd7597ddfd7f486`. Final metadata diagnostics: `8b424344739115e1897710c397a0d7aa1a329a25`. The remote baseline was checked before editing. No architecture replacement, template generator, new panel, multi-agent workflow, production deployment or pool change was introduced.

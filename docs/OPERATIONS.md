@@ -32,6 +32,8 @@ This releases execution occupancy, retains unknown cost, and does not retry the 
 
 Roles on one service share capacity by default. Configure `capacity_pool` only for documented independent pools; roles sharing a pool must agree on cap/RPM/TPM. Config revision history is available from authenticated `GET /api/v1/config/history?campaign_id=<id>`; `before=<revision>` pages older records. Pure cap changes do not invalidate model qualification.
 
+For the explicitly patched pool, enable endpoint `pool_receipts: true` to record a single-send identity and recover a saved upstream response through authenticated GETs. See the [receipt protocol and deployment guide](../ops/pool-receipts/README.md). This does not reconcile historical untracked requests, clear unknown costs or prove termination after upstream EOF. Keep the original ledger and capacity identity.
+
 ## Backup and restore
 
 1. Pause or drain the campaign and wait for leases and pending archive commits to settle.
@@ -58,9 +60,20 @@ Docker/image faults pause dependent author, refinement, build and render work. A
 
 Missing/corrupt sample artifacts retain a local diagnostic and do not automatically mark all storage failed. Database failures, shared-volume errors (including full/read-only storage), and an unwritable request/response ledger stop new paid dispatch. Repair the storage cause before resuming. Filesystem, Docker and renderer failures never spend author repair allowance or change authored source. An uncertain/invalid visual verdict gets only the bounded review retry; only an actual valid visual failure can request an author repair.
 
+A complete saved model response is reapplied automatically after a sample path fault, without a new model request. Three local application failures produce `response_recovery_exhausted`, including across restart. Repair the path, then use the normal sample retry control to reuse that same response. Author repair counts and request/cost budgets remain intact; the saved response and local failure events provide the diagnosis.
+
+## Candidate blind review
+
+```bash
+voxlush --config <config> blind-gallery --campaign <campaign_id> \
+  --output <new-directory> --count 100 --seed 42
+```
+
+This makes a stratified random gallery of verified calibration candidates with actual model visual reviews. Give reviewers only `reviewer/`; keep `curator/` private. The supported renderer's identity/voxel-count captions are cropped losslessly without removing geometry, with original/derived image hashes and crop coordinates retained for audit. Unknown layouts are rejected. Scores start blank, in `reviewer/scores.json`; no score or qualification is inferred. The 11 mixed-version historical candidates are an inspection aid, not the required 100 same-profile candidates or a formal blind holdout.
+
 ## Updates and rollback
 
-Production update procedure is not exercised. When authorized, use a pinned commit/tag: drain, take and verify a consistent backup, inspect schema compatibility, deploy one process, run doctor and a local canary, and verify API/store/artifact counts. Before rollback, confirm the older binary can read the current schema. If it cannot, stop and restore the consistent backup to a new root, then reconcile artifacts and database records before switching traffic. Do not reset the live database or run two scheduler owners.
+The API-pool receipt patch was deployed with explicit authorization on 2026-10-09, including backup, drain, rolling service updates, counter checks and a tested canary rollback. This does not deploy or qualify the Voxlush production generator. For its later deployment, use a pinned commit/tag: drain, take and verify a consistent backup, inspect schema compatibility, deploy one process, run doctor and a local canary, and verify API/store/artifact counts. Before rollback, confirm the older binary can read the current schema. If it cannot, stop and restore the consistent backup to a new root, then reconcile artifacts and database records before switching traffic. Do not reset the live database or run two scheduler owners.
 
 ## systemd template
 

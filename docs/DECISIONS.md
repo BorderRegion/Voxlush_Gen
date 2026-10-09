@@ -48,7 +48,7 @@ The four-request DeepSeek/GLM probe is recorded as model evidence, but it did no
 
 ## Deployment is not inferred from local readiness
 
-No production service, production data root, or external endpoint was changed. A service unit and release checklist are documented for a later authorized deployment; deployment and rollback evidence remain outstanding.
+At the initial implementation stage no production service, production data root, or external endpoint was changed. The later expressly authorized pool-only deployment is recorded below; generator production deployment remains outstanding.
 
 ## Review correction: shared primitive contract v3
 
@@ -94,3 +94,16 @@ The 16-request concurrent author run exposed a GLM HTTP stream that closed after
 ## Live archive: adapt observed labels at the manifest boundary
 
 The first passing real GLM image review contained three nonempty tag/evidence/confidence records. These matched the visual rubric but lacked the manifest's key/value fields, so archive failed after rendering and review. Archive now maps this explicit visual-review shape to key=visual_tag/value=tag while retaining all evidence and the unchanged review artifact. Existing canonical observations pass through. This also supports archive-only retry of an already persisted review; no model call, schema relaxation, geometry editing or requested-tag inference is needed. The actual arch resumed via the API, exported as provisional and survived nonempty backup/restore. Human calibration and formal acceptance remain separate.
+
+
+## Review 2672ca7: receipts add evidence, not assumed termination
+
+The audited pool could retry three candidates and twice at the TLS layer; a client UUID therefore did not identify exactly one upstream execution. Under separate user deployment authorization, the optional receipt patch pins UUID placement, disables both retry layers for tracked requests, persists the response after downstream disconnection, and exposes authenticated GETs. The client binds recovery to original route/config/request/body hashes and a single semantic finish. No second scheduler/state machine or paid health probe is added. The five-worker order and receipt storage must remain stable; a rollback after tracked calls must retain duplicate rejection and retrieval. Real loopback protocol tests, a deployed canary rollback/re-upgrade and external read-only smoke checks are separate evidence from a paid model lifecycle, which remains untested.
+
+Historical untracked requests and genuine upstream EOF/crash still require provider evidence. Local drain, zero handler count, health, timeout and elapsed time cannot supply it. All 15 historical unknowns remain. Broad API-use permission does not turn uncertain remote capacity into documented free capacity; no fresh-ledger exception is repeated. Execution proof releases occupancy only; unknown billing remains reserved.
+
+## Review 2672ca7: local response recovery and blind inspection
+
+Complete persisted model responses use the existing local retry counter and Store recovery index. A sample path failure is retried locally up to three failures across restarts; after path repair, explicit retry reapplies the same response. Budgets/attempt IDs and author repair counts are unchanged. Global storage failure still stops paid dispatch.
+
+Saved real source identified a balcony as the window obstruction; feedback now reports actual coordinates, owning components and materials without changing quality contracts or author code. The new candidate gallery verifies immutable assets and separates private identity mapping from blank reviewer scores. Browser inspection exposed captions leaking IDs and voxel counts; a hash-pinned known-layout crop now removes only the caption margins, losslessly preserving every geometry pixel. Unsupported layouts are rejected. These are diagnostic/inspection improvements with offline evidence, not new model quality qualification.

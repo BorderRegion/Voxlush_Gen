@@ -1,0 +1,880 @@
+{
+  "schema_version": "voxlush.production_validation.v1",
+  "date": "2026-10-09",
+  "timezone": "Asia/Shanghai",
+  "baseline_commit": "2672ca76e2c0e1fba73a2f0b8d683ad0b311c41c",
+  "reliability_commit": "44f8be5",
+  "quality_tooling_commit": "f52766e",
+  "scope": "Current engineering/deployment review; historical model cohorts below are not new generation or matched optimization evidence.",
+  "authorization": {
+    "api_usage": "Broad authorized usage within actual service limits; prior small-call limits superseded.",
+    "shared_pool_deployment": "Explicit user authorization to drain, back up and roll out the reviewed patch."
+  },
+  "current_model_experiment": {
+    "paid_model_requests": 0,
+    "independent_tasks": 0,
+    "archived_candidates": 0,
+    "formal_accepted": 0,
+    "tokens_per_candidate": null,
+    "seconds_per_candidate": null,
+    "actual_cost_per_candidate": null,
+    "stage_A_complete": false,
+    "stage_B_matched_comparison_complete": false,
+    "stage_C_100_to_200_tasks_complete": false,
+    "stage_D_sustained_run_complete": false,
+    "reason": "15 retained historical unknowns have no reliable upstream terminal/cancel/all-executions deadline evidence. New receipt deployment does not reconcile them. No fresh-ledger admission exception or presumed independent alternate route was used."
+  },
+  "implemented": {
+    "saved_paid_response": "Recover local_artifact_invalid on startup/tick; at most three local application failures across restart, then response_recovery_exhausted. Operator retry reuses the same response after path repair.",
+    "receipts": "Opt-in single-send UUID, durable request/body hashes and provider HTTP IDs, authenticated GET-only reconciliation in a bounded background lane. Original request budget/repair counters retained, unknown currency remains reserved.",
+    "quality_feedback": "Window diagnostics include actual obstruction coordinates, owner component and material. No authored source, final quality threshold, prompt v5, rubric v3, stream v4 or thinking setting was changed.",
+    "blind_gallery": "Verified stratified candidate export with blank scores and private identity mapping; known caption margins removed losslessly, original/derived image hashes retained. No automatic qualification."
+  },
+  "verification": {
+    "initial_saved_response_regression": {
+      "failed_before_fix": 4
+    },
+    "python": {
+      "passed": 248,
+      "skipped": 1,
+      "skip_reason": "optional private legacy fixture unavailable",
+      "seconds": 103.47
+    },
+    "ruff": "passed: backend/src, backend/tests and ops/pool-receipts",
+    "frontend_build": "passed: TypeScript and Vite, 2m30s",
+    "browser_mock_transport": {
+      "passed": 10,
+      "seconds": 16.8
+    },
+    "browser_real_local_backend": {
+      "passed": 1,
+      "seconds": 16.2,
+      "paid_model": false
+    },
+    "pool_loopback_protocol": {
+      "passed": 10,
+      "seconds": 4.11,
+      "warnings": 2,
+      "warning_scope": "aiohttp test application string-key warnings",
+      "paid_model": false
+    },
+    "actual_process_restart": {
+      "kind": "Actual CLI process stop/start and actual local geometry/render; loopback fixture HTTP, not paid model evidence",
+      "normal_running_intent_retained": true,
+      "pause_drain_emergency_retained": true,
+      "saved_attempt_and_budget_equal_at_restart": true,
+      "generation_continued_without_resume_or_start": true,
+      "fixture_http_requests_before": 1,
+      "fixture_http_requests_after": 2,
+      "new_model_requests": 0,
+      "fixture_candidates": 1,
+      "fixture_duplicate_rejected": 1
+    },
+    "actual_docker_recovery": {
+      "evidence_kind": "real local Docker/renderer, fixture geometry/mock review; zero model calls",
+      "fault": "Docker CLI against absent local socket; real daemon and other services untouched",
+      "failed_reason": "sandbox_unavailable",
+      "automatic_probe_cooldown_seconds": 30,
+      "source_unchanged": true,
+      "revision_unchanged": true,
+      "manual_sample_retry": false,
+      "model_requests": 0,
+      "author_repairs": 0,
+      "status": "provisional_pass",
+      "exports": {
+        "assets": 1,
+        "accepted": 0,
+        "provisional": 1,
+        "source_sft": 1,
+        "repair_pairs": 0,
+        "train": 0,
+        "val": 0,
+        "test": 0,
+        "calibration": 0,
+        "excluded": 1
+      },
+      "elapsed_seconds": 32.37
+    },
+    "nonempty_historical_restore_rebuild_export": {
+      "evidence_kind": "Offline replay of previous 24-task model run; excludes new six-task quality cohort",
+      "new_model_requests": 0,
+      "new_candidates": 0,
+      "requests_retained": 79,
+      "unknown_execution_retained": 3,
+      "historical_complex_asset": "673e090e56755a425c855976",
+      "source_unchanged": true,
+      "canonical_hash_equal": true,
+      "voxels": 267209,
+      "build_render_passed": true,
+      "nonempty_backup_restored": true,
+      "ledger_unchanged": true,
+      "exports": {
+        "formal": {
+          "assets": 0,
+          "accepted": 0,
+          "provisional": 0,
+          "source_sft": 0,
+          "repair_pairs": 0,
+          "train": 0,
+          "val": 0,
+          "test": 0,
+          "calibration": 0,
+          "excluded": 0
+        },
+        "provisional": {
+          "assets": 11,
+          "accepted": 0,
+          "provisional": 11,
+          "source_sft": 11,
+          "repair_pairs": 17,
+          "train": 0,
+          "val": 0,
+          "test": 0,
+          "calibration": 11,
+          "excluded": 0
+        }
+      }
+    },
+    "unchanged_saved_model_source_replays": {
+      "evidence_kind": "offline unchanged real model source replay, not new model generation",
+      "new_model_requests": 0,
+      "tasks": [
+        {
+          "sample_id": "afef8914d456ca81ad86576d",
+          "scene_type": "natural",
+          "phase": "final",
+          "passed": true,
+          "source_unchanged": true,
+          "pass_fail_unchanged": true,
+          "voxel_hash_equal": true,
+          "rules": {},
+          "obstructing_components": [],
+          "repair_feedback_bytes": 126,
+          "canonical_voxel_hash_available": true
+        },
+        {
+          "sample_id": "0c05ab1d1a5e2701636abbd8",
+          "scene_type": "architecture",
+          "phase": "final",
+          "passed": false,
+          "source_unchanged": true,
+          "pass_fail_unchanged": true,
+          "voxel_hash_equal": true,
+          "rules": {
+            "window_backed_by_solid_wall": 1,
+            "opening_filled_by_later_geometry": 1
+          },
+          "obstructing_components": [
+            "cabin_balcony"
+          ],
+          "repair_feedback_bytes": 1020,
+          "canonical_voxel_hash_available": true
+        },
+        {
+          "sample_id": "32963baa28e84103de8692e2",
+          "scene_type": "natural",
+          "phase": "final",
+          "passed": false,
+          "source_unchanged": true,
+          "pass_fail_unchanged": true,
+          "voxel_hash_equal": null,
+          "rules": {
+            "sandbox_execution_failed": 1
+          },
+          "obstructing_components": [],
+          "repair_feedback_bytes": 686,
+          "canonical_voxel_hash_available": false
+        },
+        {
+          "sample_id": "b72f46ec2d28df4313f0838a",
+          "scene_type": "architecture",
+          "phase": "final",
+          "passed": false,
+          "source_unchanged": true,
+          "pass_fail_unchanged": true,
+          "voxel_hash_equal": null,
+          "rules": {
+            "source_or_build_invalid": 1
+          },
+          "obstructing_components": [],
+          "repair_feedback_bytes": 157,
+          "canonical_voxel_hash_available": false
+        },
+        {
+          "sample_id": "60db2efc0936c45221d10ce1",
+          "scene_type": "architecture",
+          "phase": "skeleton",
+          "passed": false,
+          "source_unchanged": true,
+          "pass_fail_unchanged": true,
+          "voxel_hash_equal": true,
+          "rules": {
+            "disconnected_geometry": 1,
+            "window_backed_by_solid_wall": 2,
+            "missing_floor_semantics": 1,
+            "opening_filled_by_later_geometry": 1
+          },
+          "obstructing_components": [
+            "court_wall_e_s",
+            "exh_wall_s",
+            "exh_win_s1",
+            "rest_win_n1"
+          ],
+          "repair_feedback_bytes": 4963,
+          "canonical_voxel_hash_available": true
+        }
+      ]
+    },
+    "gallery_browser": {
+      "cards": 11,
+      "images": 22,
+      "browser_errors": [],
+      "scores_blank": true,
+      "all_images_1200x800": true,
+      "mobile_no_overflow": true
+    }
+  },
+  "pool": {
+    "production_services_modified": true,
+    "generator_production_deployed": false,
+    "old_retry_structure": {
+      "candidate_attempts": 3,
+      "tls_attempts_per_candidate": 2,
+      "structural_max_posts_per_call": 6,
+      "observed_historical_multiplicity": null
+    },
+    "deployment": {
+      "phase": "deployed",
+      "services": [
+        {
+          "service": "api-pool-worker@0.service",
+          "running": true,
+          "source_sha256": "1b1c94dccbd3919c6f5f405d1eb5de2eb55709da57d59ad9a9ef641b88b7d915"
+        },
+        {
+          "service": "api-pool-worker@1.service",
+          "running": true,
+          "source_sha256": "1b1c94dccbd3919c6f5f405d1eb5de2eb55709da57d59ad9a9ef641b88b7d915"
+        },
+        {
+          "service": "api-pool-worker@2.service",
+          "running": true,
+          "source_sha256": "1b1c94dccbd3919c6f5f405d1eb5de2eb55709da57d59ad9a9ef641b88b7d915"
+        },
+        {
+          "service": "api-pool-worker@3.service",
+          "running": true,
+          "source_sha256": "1b1c94dccbd3919c6f5f405d1eb5de2eb55709da57d59ad9a9ef641b88b7d915"
+        },
+        {
+          "service": "api-pool-worker@4.service",
+          "running": true,
+          "source_sha256": "1b1c94dccbd3919c6f5f405d1eb5de2eb55709da57d59ad9a9ef641b88b7d915"
+        },
+        {
+          "service": "api-pool-gateway.service",
+          "running": true,
+          "source_sha256": "8c555c4edab1da1fc3d453a5c07f338a2d206b86878cd880edfc11f954af9ed3"
+        }
+      ],
+      "rolling_events": [
+        {
+          "time": 1791521404.3592837,
+          "canary_rollback": "missing_local_dependency",
+          "requests": 24040
+        },
+        {
+          "time": 1791521454.8308122,
+          "worker_deployed": 0,
+          "rollback_tested": true,
+          "requests_before": 24040,
+          "requests_after": 24040
+        },
+        {
+          "time": 1791521512.2500203,
+          "worker_deployed": 1,
+          "rollback_tested": false,
+          "requests_before": 25042,
+          "requests_after": 25042
+        },
+        {
+          "time": 1791521538.04067,
+          "worker_deployed": 2,
+          "rollback_tested": false,
+          "requests_before": 25059,
+          "requests_after": 25059
+        },
+        {
+          "time": 1791521564.8841922,
+          "worker_deployed": 3,
+          "rollback_tested": false,
+          "requests_before": 25065,
+          "requests_after": 25065
+        },
+        {
+          "time": 1791521609.1707678,
+          "worker_deployed": 4,
+          "rollback_tested": false,
+          "requests_before": 25003,
+          "requests_after": 25003
+        },
+        {
+          "time": 1791521743.657449,
+          "gateway_deployed": true
+        }
+      ],
+      "drain_markers_removed": true,
+      "rollback_artifact_verified": true,
+      "actual_canary_rollback_tested": true,
+      "counters_preserved": true,
+      "receipt_storage_persistent": true,
+      "historical_unknowns_released": 0,
+      "nodes_reachable": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "patch_sha256": {
+        "api_pool.py": "1b1c94dccbd3919c6f5f405d1eb5de2eb55709da57d59ad9a9ef641b88b7d915",
+        "cluster_gateway.py": "8c555c4edab1da1fc3d453a5c07f338a2d206b86878cd880edfc11f954af9ed3",
+        "pool_receipts.py": "bf07be9b6c4b442b1003e2331c3062743e43fc6c0d9964f229e047dec73d1de5",
+        "proxy_allocator.py": "03e83bd8ddcaab5d0206160ac215a7fc2742b939ccd7f4bf5065eefd53355ffa"
+      }
+    },
+    "real_external_GET_smoke": {
+      "real_external_gateway": true,
+      "authenticated_query_each_worker": [
+        {
+          "worker": 0,
+          "http_status": 404
+        },
+        {
+          "worker": 1,
+          "http_status": 404
+        },
+        {
+          "worker": 2,
+          "http_status": 404
+        },
+        {
+          "worker": 3,
+          "http_status": 404
+        },
+        {
+          "worker": 4,
+          "http_status": 404
+        }
+      ],
+      "unauthenticated_status": 401,
+      "model_posts": 0
+    },
+    "historical_integrity": {
+      "ledger_unknowns": 14,
+      "raw_canary_unknowns": 1,
+      "total_unknowns": 15,
+      "released": 0,
+      "replayed": 0,
+      "ledger_status_occupancy_cost_and_result_hashes_preserved": true,
+      "raw_canary_sha256": "3e206a4212927dd169da6fbcae88d6469b50cf1199f2beb622c8322cb50177f5"
+    },
+    "new_paid_upstream_receipt_lifecycle_verified": false,
+    "downstream_recovery_verified": "Real loopback handlers and saved-byte client/Store tests. External deployment GET/auth smoke only; no actual model disconnect-recovery experiment.",
+    "unresolved_cases": [
+      "Untracked historical POSTs",
+      "Upstream EOF without semantic finish",
+      "Worker crash before receiving/persisting finish",
+      "Local deadlines without an upstream execution contract"
+    ],
+    "provider_audit": {
+      "reliable_termination_or_cancel_evidence_found": false,
+      "reliable_maximum_execution_contract_found": false,
+      "independent_alternate_capacity_proven": false,
+      "note": "Provider docs expose tracing headers and HTTP invocation behavior, not an established termination guarantee for this configured shared route. Alternate catalog GET does not prove model/image capability or independent capacity.",
+      "documentation": [
+        "https://docs.nvidia.com/nvcf/overview/generic-http-function-invocation.md",
+        "https://docs.nvidia.com/nvcf/overview/streaming-functions.md"
+      ]
+    }
+  },
+  "historical_mixed_24": {
+    "scope": "Historical mixed-version 24-task run, no new inference; never a matched comparison for current code. Token sums omit unavailable usage; elapsed times include pauses/local retries. Geometry-only failures and incomplete tasks remain in denominators.",
+    "groups": {
+      "complex": {
+        "tasks": 8,
+        "initial_source_executed": 0,
+        "ever_source_executed": 2,
+        "final_geometry_pass": 1,
+        "visual_pass": 1,
+        "archived_candidates": 1,
+        "formal_accepted": 0,
+        "stages": {
+          "author": {
+            "requests": 8,
+            "reported_total_tokens": 388912,
+            "calls_missing_total_tokens": 1,
+            "sum_call_seconds": 9214.338313702494
+          },
+          "repair": {
+            "requests": 13,
+            "reported_total_tokens": 720478,
+            "calls_missing_total_tokens": 1,
+            "sum_call_seconds": 13894.107218496501
+          },
+          "refine": {
+            "requests": 2,
+            "reported_total_tokens": 105281,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 1557.7420185022056
+          },
+          "review": {
+            "requests": 1,
+            "reported_total_tokens": 6251,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 275.6099178781733
+          }
+        },
+        "reported_tokens_per_candidate_including_failed_tasks": 1220922.0,
+        "candidate_end_to_end_seconds": {
+          "n": 1,
+          "mean": 6494.218076944351
+        },
+        "recorded_build_seconds": 10.222999999999999,
+        "cost": {
+          "known_sum": 0,
+          "unknown_calls": 24,
+          "actual_cost_per_candidate": null
+        },
+        "unknown_execution": 2,
+        "geometry_failure_occurrences": {
+          "sandbox_execution_failed": 18
+        },
+        "theme_seeds": 8,
+        "task_rates": {
+          "initial_source_executed": 0.0,
+          "ever_source_executed": 0.25,
+          "final_geometry_pass": 0.125,
+          "visual_pass": 0.125,
+          "archived_candidates": 0.125
+        }
+      },
+      "direct_architecture": {
+        "tasks": 8,
+        "initial_source_executed": 0,
+        "ever_source_executed": 6,
+        "final_geometry_pass": 5,
+        "visual_pass": 5,
+        "archived_candidates": 5,
+        "formal_accepted": 0,
+        "stages": {
+          "author": {
+            "requests": 8,
+            "reported_total_tokens": 357654,
+            "calls_missing_total_tokens": 1,
+            "sum_call_seconds": 8396.623813948594
+          },
+          "repair": {
+            "requests": 11,
+            "reported_total_tokens": 690380,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 12698.325890443753
+          },
+          "refine": {
+            "requests": 0,
+            "reported_total_tokens": 0,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 0
+          },
+          "review": {
+            "requests": 6,
+            "reported_total_tokens": 42314,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 1848.1442025755532
+          }
+        },
+        "reported_tokens_per_candidate_including_failed_tasks": 218069.6,
+        "candidate_end_to_end_seconds": {
+          "n": 5,
+          "mean": 5711.626787042618
+        },
+        "recorded_build_seconds": 11.399,
+        "cost": {
+          "known_sum": 0,
+          "unknown_calls": 25,
+          "actual_cost_per_candidate": null
+        },
+        "unknown_execution": 1,
+        "geometry_failure_occurrences": {
+          "sandbox_execution_failed": 7,
+          "source_or_build_invalid": 3,
+          "window_backed_by_solid_wall": 1,
+          "merged_column_instances": 3,
+          "actual_floor_unreachable": 1,
+          "space_filled_or_wrong_box": 1
+        },
+        "theme_seeds": 8,
+        "task_rates": {
+          "initial_source_executed": 0.0,
+          "ever_source_executed": 0.75,
+          "final_geometry_pass": 0.625,
+          "visual_pass": 0.625,
+          "archived_candidates": 0.625
+        }
+      },
+      "natural": {
+        "tasks": 8,
+        "initial_source_executed": 3,
+        "ever_source_executed": 7,
+        "final_geometry_pass": 7,
+        "visual_pass": 5,
+        "archived_candidates": 5,
+        "formal_accepted": 0,
+        "stages": {
+          "author": {
+            "requests": 8,
+            "reported_total_tokens": 329896,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 7162.159006896894
+          },
+          "repair": {
+            "requests": 12,
+            "reported_total_tokens": 615149,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 13758.57342266431
+          },
+          "refine": {
+            "requests": 0,
+            "reported_total_tokens": 0,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 0
+          },
+          "review": {
+            "requests": 10,
+            "reported_total_tokens": 64436,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 2377.580755098257
+          }
+        },
+        "reported_tokens_per_candidate_including_failed_tasks": 201896.2,
+        "candidate_end_to_end_seconds": {
+          "n": 5,
+          "mean": 4916.455584049225
+        },
+        "recorded_build_seconds": 53.476000000000006,
+        "cost": {
+          "known_sum": 0,
+          "unknown_calls": 30,
+          "actual_cost_per_candidate": null
+        },
+        "unknown_execution": 0,
+        "geometry_failure_occurrences": {
+          "sandbox_execution_failed": 6,
+          "space_filled_or_wrong_box": 8,
+          "entry_blocked_or_unsupported": 10,
+          "source_or_build_invalid": 3,
+          "space_missing_floor_or_wrong_level": 1,
+          "unapproved_environment": 8
+        },
+        "theme_seeds": 8,
+        "task_rates": {
+          "initial_source_executed": 0.375,
+          "ever_source_executed": 0.875,
+          "final_geometry_pass": 0.875,
+          "visual_pass": 0.625,
+          "archived_candidates": 0.625
+        }
+      }
+    },
+    "scales": {
+      "L": {
+        "tasks": 8,
+        "initial_source_executed": 0,
+        "ever_source_executed": 2,
+        "final_geometry_pass": 1,
+        "visual_pass": 1,
+        "archived_candidates": 1,
+        "formal_accepted": 0,
+        "stages": {
+          "author": {
+            "requests": 8,
+            "reported_total_tokens": 388912,
+            "calls_missing_total_tokens": 1,
+            "sum_call_seconds": 9214.338313702494
+          },
+          "repair": {
+            "requests": 13,
+            "reported_total_tokens": 720478,
+            "calls_missing_total_tokens": 1,
+            "sum_call_seconds": 13894.107218496501
+          },
+          "refine": {
+            "requests": 2,
+            "reported_total_tokens": 105281,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 1557.7420185022056
+          },
+          "review": {
+            "requests": 1,
+            "reported_total_tokens": 6251,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 275.6099178781733
+          }
+        },
+        "reported_tokens_per_candidate_including_failed_tasks": 1220922.0,
+        "candidate_end_to_end_seconds": {
+          "n": 1,
+          "mean": 6494.218076944351
+        },
+        "recorded_build_seconds": 10.222999999999999,
+        "cost": {
+          "known_sum": 0,
+          "unknown_calls": 24,
+          "actual_cost_per_candidate": null
+        },
+        "unknown_execution": 2,
+        "geometry_failure_occurrences": {
+          "sandbox_execution_failed": 18
+        },
+        "theme_seeds": 8,
+        "task_rates": {
+          "initial_source_executed": 0.0,
+          "ever_source_executed": 0.25,
+          "final_geometry_pass": 0.125,
+          "visual_pass": 0.125,
+          "archived_candidates": 0.125
+        }
+      },
+      "S": {
+        "tasks": 16,
+        "initial_source_executed": 3,
+        "ever_source_executed": 13,
+        "final_geometry_pass": 12,
+        "visual_pass": 10,
+        "archived_candidates": 10,
+        "formal_accepted": 0,
+        "stages": {
+          "author": {
+            "requests": 16,
+            "reported_total_tokens": 687550,
+            "calls_missing_total_tokens": 1,
+            "sum_call_seconds": 15558.782820845488
+          },
+          "repair": {
+            "requests": 23,
+            "reported_total_tokens": 1305529,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 26456.899313108064
+          },
+          "refine": {
+            "requests": 0,
+            "reported_total_tokens": 0,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 0
+          },
+          "review": {
+            "requests": 16,
+            "reported_total_tokens": 106750,
+            "calls_missing_total_tokens": 0,
+            "sum_call_seconds": 4225.72495767381
+          }
+        },
+        "reported_tokens_per_candidate_including_failed_tasks": 209982.9,
+        "candidate_end_to_end_seconds": {
+          "n": 10,
+          "mean": 5314.0411855459215
+        },
+        "recorded_build_seconds": 64.875,
+        "cost": {
+          "known_sum": 0,
+          "unknown_calls": 55,
+          "actual_cost_per_candidate": null
+        },
+        "unknown_execution": 1,
+        "geometry_failure_occurrences": {
+          "sandbox_execution_failed": 13,
+          "space_filled_or_wrong_box": 9,
+          "entry_blocked_or_unsupported": 10,
+          "source_or_build_invalid": 6,
+          "window_backed_by_solid_wall": 1,
+          "merged_column_instances": 3,
+          "space_missing_floor_or_wrong_level": 1,
+          "actual_floor_unreachable": 1,
+          "unapproved_environment": 8
+        },
+        "theme_seeds": 16,
+        "task_rates": {
+          "initial_source_executed": 0.1875,
+          "ever_source_executed": 0.8125,
+          "final_geometry_pass": 0.75,
+          "visual_pass": 0.625,
+          "archived_candidates": 0.625
+        }
+      }
+    },
+    "overall": {
+      "tasks": 24,
+      "initial_source_executed": 3,
+      "ever_source_executed": 15,
+      "final_geometry_pass": 13,
+      "visual_pass": 11,
+      "archived_candidates": 11,
+      "formal_accepted": 0,
+      "stages": {
+        "author": {
+          "requests": 24,
+          "reported_total_tokens": 1076462,
+          "calls_missing_total_tokens": 2,
+          "sum_call_seconds": 24773.121134547982
+        },
+        "repair": {
+          "requests": 36,
+          "reported_total_tokens": 2026007,
+          "calls_missing_total_tokens": 1,
+          "sum_call_seconds": 40351.006531604566
+        },
+        "refine": {
+          "requests": 2,
+          "reported_total_tokens": 105281,
+          "calls_missing_total_tokens": 0,
+          "sum_call_seconds": 1557.7420185022056
+        },
+        "review": {
+          "requests": 17,
+          "reported_total_tokens": 113001,
+          "calls_missing_total_tokens": 0,
+          "sum_call_seconds": 4501.334875551984
+        }
+      },
+      "reported_tokens_per_candidate_including_failed_tasks": 301886.45,
+      "candidate_end_to_end_seconds": {
+        "n": 11,
+        "mean": 5421.32999385487
+      },
+      "recorded_build_seconds": 75.098,
+      "cost": {
+        "known_sum": 0,
+        "unknown_calls": 79,
+        "actual_cost_per_candidate": null
+      },
+      "unknown_execution": 3,
+      "geometry_failure_occurrences": {
+        "sandbox_execution_failed": 31,
+        "space_filled_or_wrong_box": 9,
+        "entry_blocked_or_unsupported": 10,
+        "source_or_build_invalid": 6,
+        "window_backed_by_solid_wall": 1,
+        "merged_column_instances": 3,
+        "space_missing_floor_or_wrong_level": 1,
+        "actual_floor_unreachable": 1,
+        "unapproved_environment": 8
+      },
+      "theme_seeds": 24,
+      "task_rates": {
+        "initial_source_executed": 0.125,
+        "ever_source_executed": 0.625,
+        "final_geometry_pass": 0.5416666666666666,
+        "visual_pass": 0.4583333333333333,
+        "archived_candidates": 0.4583333333333333
+      }
+    },
+    "measurement_limits": [
+      "The 24-task cohort used mixed prompt/model settings. It cannot establish improvement from the current diagnostic change.",
+      "Reported token totals exclude missing usage and include failures. Tokens per candidate are observed lower bounds, not total billed tokens.",
+      "Source execution means an execution record exists in a saved geometry report; it is separate from geometry and visual quality.",
+      "Durations include pauses and local retries. Summed concurrent request seconds are not wall-clock throughput.",
+      "All 79 currency charges are unknown. Known sum zero is not zero cost; actual cost per candidate is null.",
+      "No exact or near-duplicate rejection occurred in this cohort; this does not establish a low aesthetic repetition rate. Human diversity scores are absent.",
+      "Build timing is only recorded container time, not full host CPU/memory/disk or total resource consumption."
+    ],
+    "duplicate_evidence": {
+      "registered_assets": 11,
+      "distinct_canonical_hashes": 11,
+      "recorded_duplicate_rejections": 0,
+      "human_aesthetic_repetition_rate": null
+    }
+  },
+  "historical_uniform_6": {
+    "report": "final_quality_validation.json",
+    "tasks": 6,
+    "author_calls": 6,
+    "complete_programs": 5,
+    "successful_source_execution": 3,
+    "final_geometry_pass": 1,
+    "repair_calls": 0,
+    "refine_calls": 0,
+    "visual_calls": 0,
+    "archived_candidates": 0,
+    "formal_accepted": 0,
+    "reported_total_tokens": 233261,
+    "usage_missing_calls": 1,
+    "currency_unknown_calls": 6,
+    "new_unknowns_in_that_cohort": 1,
+    "profile": "prompt v5 / visual rubric v3 configured / stream v4, thinking enabled",
+    "limit": "Historical run stopped before repair/review; latest validator/receipt profile has no new paid qualification."
+  },
+  "blind_review_package": {
+    "schema_version": "voxlush.blind_gallery.v1",
+    "requested": 100,
+    "selected": 11,
+    "available": 11,
+    "seed": 2672,
+    "human_reviewed": 0,
+    "qualified": false,
+    "preview_transform": "lossless caption-margin crop; full geometry pixels retained",
+    "strata": [
+      {
+        "scene_type": "architecture",
+        "scale": "L",
+        "generation_mode": "two_stage",
+        "available": 1,
+        "selected": 1
+      },
+      {
+        "scene_type": "architecture",
+        "scale": "S",
+        "generation_mode": "direct",
+        "available": 5,
+        "selected": 5
+      },
+      {
+        "scene_type": "natural",
+        "scale": "S",
+        "generation_mode": "direct",
+        "available": 5,
+        "selected": 5
+      }
+    ],
+    "instructions": "Send only reviewer/ to reviewers. curator/ reveals identities. Missing scores stay missing; this export never qualifies or promotes assets.",
+    "source": "11 candidates from historical mixed 24-task cohort",
+    "human_scores_received": 0,
+    "same_profile_100_candidate_requirement_met": false,
+    "original_assets_modified": false,
+    "geometry_pixel_comparison": "lossless crop verified; caption layout/version/dimensions checked"
+  },
+  "readiness": {
+    "local_reliability_verified": true,
+    "model_profile_qualified": false,
+    "fully_unattended_low_maintenance": false,
+    "ready_for_10000_to_100000_formal_assets": false,
+    "minimum_next_steps": [
+      "Obtain reliable provider completion/cancellation evidence for every possible historic upstream execution, or document independent execution capacity. For future upstream EOF/crash, obtain query/cancel or a dispatch-to-termination contract; the gateway alone cannot invent it.",
+      "Complete uniform author/repair/refine/real-image-review calibration under one pinned profile; compare matched theme/scale tasks and prove complex-path yield, then expand only on positive results to 100-200 tasks and sustained lawful concurrency.",
+      "Collect 100 same-profile auto-pass candidates and actual human blind scores under the existing qualification contract. Preserve provisional status and missing human scores until qualification."
+    ]
+  },
+  "evidence_log_sha256": {
+    "response-before.txt": "00763d90cc635dc1f312cd948329ef31b0d7866854b4385b6f207c27638fea1b",
+    "python-tests-final-v2.txt": "059d79604f90f44497dbfb360ba3f436e44256add08626199964d79f99689748",
+    "pool-public-patch-tests-v2.txt": "da3f108f794e26a8214b30cb96ccbf7c7a38b77c9aa090fe225a249dc5b09bc0",
+    "frontend-build.txt": "c254794adbbdc53227b8f09fb4baf6052e0da7ab8cd22079fcf544f1eb700a20",
+    "browser-tests.txt": "51ed9c79f6b255d822d7adab8b7c1b259b6cfcdcca2e46857f05d2b652228345",
+    "browser-real.txt": "02c83d9762f2bba6c24d66667e3a172151152e34ab77e09275d8babadfc2ff21",
+    "process-restart/result.public.json": "baeea4f7f4bd281a0c773b2134a4809e1a18af7c28f2a32b8b78982f2e460f23",
+    "docker-recovery/result.public.json": "d931495fbc809858c7e0a8c3498ab9e7f2bbcf70a1f55dec84a7fee7b094407a",
+    "historical-replay/result.public.json": "45415f1715b75e9700ef97422d754ee5df5af58433d833ecd87b73aacac0bdd6",
+    "source-replay.public.json": "f04e01713b7b4fb08000086dfaa6c75e986910346636e5cee02839e9ddfb9604",
+    "gallery-browser-v2.public.json": "40bd5c83d9cd5dea3e4d6015ed9740ae153b114e31c7621f800c59ad8ba49c00",
+    "unknown-integrity.public.json": "c619b24b6eb7dc988242321cb171c8d8d285339c433cce9b1ee999052f87ffbb"
+  }
+}
