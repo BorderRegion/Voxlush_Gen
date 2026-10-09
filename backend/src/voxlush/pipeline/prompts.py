@@ -8,8 +8,20 @@ from voxlush.voxel.adapter import primitive_contract, MAX_SOURCE_BYTES
 from voxlush.core.files import digest
 
 PROMPT_VERSION = "voxlush.prompt.v5"
-RUBRIC_VERSION = "voxlush.visual.v2"
-RUBRIC_TEXT = "Inspect actual multi-view images for coherent structure/landforms, usable spatial composition, visible design focus and defects. Do not infer requested tags without evidence. Return one JSON object only: verdict is a string ('pass', 'fail' or 'gray'); issues is a list of strings describing concrete visible defects (empty when none); observed_tags is a list of objects with tag (string), evidence (nonempty string describing visible support), and confidence (a JSON number between 0 and 1, e.g. 0.8; never 'high', 'medium' or 'low')."
+RUBRIC_VERSION = "voxlush.visual.v3"
+RUBRIC_TEXT = """Inspect the actual complementary voxel views. Assess completeness, silhouette and
+proportions, structural/detail logic, material harmony, visual hierarchy, style consistency,
+theme recognizability and conspicuous repetitive detailing. Passing geometry alone does not
+establish visual quality. Fail concrete visible defects such as unfinished masses, incoherent
+proportions/materials or missing defining features; do not average away a serious defect.
+Use the task's scene contract: landscapes need coherent landforms/ecology, not rooms or roofs;
+intentional ruins need coherent damage, not intact walls. Do not invent hidden interior evidence
+or claim cross-asset duplication without comparison evidence. Use gray when these views cannot
+support a decision, with the specific uncertainty. Do not infer requested tags without evidence.
+Return one JSON object only: verdict is a string ('pass', 'fail' or 'gray'); issues is a list of
+strings describing concrete visible defects or uncertainties (empty for pass, nonempty otherwise);
+observed_tags is a list of objects with tag (string), evidence (nonempty string describing visible
+support), and confidence (a JSON number between 0 and 1, e.g. 0.8; never 'high', 'medium' or 'low')."""
 RUBRIC_HASH = hashlib.sha256((RUBRIC_VERSION + "\0" + RUBRIC_TEXT).encode()).hexdigest()
 
 def extract_source(content: str) -> str:
@@ -83,8 +95,12 @@ def parse_review(content,geometry_hash,image_hashes,qualified=False):
     value = json.loads(text)
     if not isinstance(value,dict) or value.get("verdict") not in ("pass","fail","gray") or not isinstance(value.get("issues"),list):
         raise ValueError("invalid review verdict/issues")
+    if any(not isinstance(issue,str) or not issue.strip() for issue in value['issues']):
+        raise ValueError("review issues require concrete text")
+    if (value['verdict'] == 'pass') != (not value['issues']):
+        raise ValueError("review verdict and issues disagree")
     tags = value.get("observed_tags",[])
-    if not isinstance(tags,list) or any(not isinstance(t,dict) or not isinstance(t.get("tag"),str) or not t.get("evidence") or not isinstance(t.get("confidence"),(int,float)) or not 0<=t["confidence"]<=1 for t in tags):
+    if not isinstance(tags,list) or any(not isinstance(t,dict) or not isinstance(t.get("tag"),str) or not t['tag'].strip() or not isinstance(t.get('evidence'),str) or not t['evidence'].strip() or type(t.get("confidence")) not in (int,float) or not 0<=t["confidence"]<=1 for t in tags):
         raise ValueError("observed tags require concrete evidence and confidence")
     return {**value,"status":value["verdict"],"passed":value["verdict"]=="pass",
         "input_voxel_sha256":geometry_hash,"image_sha256":image_hashes,"evidence_kind":"live_model",

@@ -280,6 +280,31 @@ class Store:
                     ("rejected" if reason else "applied",reason,time.time(),cmd["command_id"]))
                 self._event(db,cmd["campaign_id"],"command",{"command_id":cmd["command_id"],"reason":reason,"state":state})
 
+    def restore_shutdown_campaigns(self):
+        """Only older service shutdowns wrote this unambiguous reason.
+
+        New owners retain campaign state. User drain/pause never has this reason;
+        queued user controls must be applied before calling this recovery method.
+        """
+        with self.transaction() as db:
+            for c in db.execute("SELECT campaign_id FROM campaigns WHERE state='draining' AND reason_code='shutdown'").fetchall():
+                db.execute("UPDATE campaigns SET state='running',reason_code=NULL,updated_at=? WHERE campaign_id=?", (time.time(),c['campaign_id']))
+                self._event(db,c['campaign_id'],'shutdown_recovered',{'state':'running'})
+
+    def resume_resource_tasks(self):
+        """A successful local probe requeues unchanged work, retaining retry limits."""
+        with self.transaction() as db:
+            rows = db.execute("SELECT sample_id,campaign_id FROM samples WHERE status IN ('deferred','blocked') AND stage IN ('build','render') AND reason_code IN ('sandbox_unavailable','sandbox_image_version_mismatch') AND local_retries<=3 AND lease_token IS NULL").fetchall()
+            for row in rows:
+                db.execute("UPDATE samples SET status='ready',reason_code='resource_recovered',next_ready_at=0,updated_at=? WHERE sample_id=?", (time.time(),row['sample_id']))
+                self._event(db,row['campaign_id'],'resource_recovered',{},row['sample_id'])
+
+    def record_local_failure(self, claim, reason, error):
+        with self.transaction() as db:
+            self._event(db,claim['campaign_id'],'local_failure',
+                        {'reason':reason,'exception':type(error).__name__,
+                         'errno':getattr(error,'errno',None),'detail':str(error)[-2000:]},claim['sample_id'])
+
     def set_campaign_state(self, campaign_id, state, reason=None):
         with self.transaction() as db:
             db.execute("UPDATE campaigns SET state=?,reason_code=?,updated_at=? WHERE campaign_id=?",

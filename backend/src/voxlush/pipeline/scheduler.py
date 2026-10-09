@@ -1,6 +1,7 @@
 """One bounded scheduler, independent resource lanes and finite evidence-guided repairs."""
 from __future__ import annotations
 import asyncio
+import errno
 import hashlib
 import json
 import shutil
@@ -14,14 +15,23 @@ from voxlush.store.sqlite import OperationalError
 from voxlush.inference.client import PoolClient
 from voxlush.inference import execution_state
 from voxlush.themes.planner import runtime_task, task_for
-from voxlush.pipeline.prompts import author_messages,extract_source,review_messages,parse_review
+from voxlush.pipeline.prompts import author_messages,extract_source,review_messages,parse_review,RUBRIC_VERSION
 from voxlush.voxel.adapter import build,render
-from voxlush.voxel.sandbox import SandboxError
+from voxlush.voxel.sandbox import SandboxError, probe_resource
 from voxlush.dataset.archive import Archive
 from voxlush.voxel.canonical import load_and_validate
 from voxlush.dataset.dedup import features_from_asset
 
 NETWORK = ("author","refine","review")
+SHARED_SANDBOX = ("sandbox_unavailable", "sandbox_image_version_mismatch")
+
+
+def shared_storage_failure(error):
+    """Storage scope, not every file-related exception, stops paid dispatch."""
+    return isinstance(error, OperationalError) or (
+        isinstance(error, OSError)
+        and error.errno in {errno.ENOSPC, errno.EDQUOT, errno.EROFS, errno.EIO, errno.ENODEV}
+    )
 
 class Scheduler:
     def __init__(self,store: Store,config: Config,client=None):
@@ -43,6 +53,9 @@ class Scheduler:
         self.snapshots = {}
         self.last_snapshot = 0
         self.backpressure = False
+        self.queue_backpressure = False
+        self.sandbox_fault = False
+        self.next_resource_probe = 0
         self.round = 0
 
     def cap(self,campaign=None):
@@ -51,6 +64,7 @@ class Scheduler:
         return min(self.config.global_api_cap,self.adaptive_cap,campaign["api_cap"] if campaign else 512) if self.config.author or self.config.visual else 0
 
     async def start(self):
+        self.store.apply_commands(self.config.sample_request_limit)
         for claim,result in self.store.recover():
             try:
                 await self.consume(claim,result)
@@ -69,13 +83,12 @@ class Scheduler:
                 if claim:
                     self.store.commit_asset(claim,record)
                     self.archive.acknowledge(record["commit_id"])
+        self.store.restore_shutdown_campaigns()
         self.task = asyncio.create_task(self.run())
 
     async def stop(self,timeout=30):
         self.stopping = True
-        for c in self.store.campaigns():
-            if c["state"] == "running":
-                self.store.set_campaign_state(c["campaign_id"],"draining","shutdown")
+        # Closing this owner stops admission, not the user's durable run intent.
         if self.task:
             await self.task
         if self.active:
@@ -106,6 +119,8 @@ class Scheduler:
         self.active_campaigns[task] = campaign_id
 
     async def tick(self):
+        if self.stopping:
+            return
         for task in list(self.active):
             if task.done():
                 self.active.pop(task)
@@ -134,11 +149,13 @@ class Scheduler:
         local_backlog = queued.get("build",0)+queued.get("render",0)
         high,low = self.config.render_workers*8,self.config.render_workers*3
         if local_backlog>high:
-            self.backpressure = True
+            self.queue_backpressure = True
         elif local_backlog<low:
-            self.backpressure = False
-        if self.store.one("SELECT 1 FROM samples WHERE status IN ('deferred','blocked') AND stage IN ('build','render') AND reason_code IN ('sandbox_unavailable','sandbox_image_version_mismatch','build_failed','render_failed') LIMIT 1"):
-            self.backpressure = True
+            self.queue_backpressure = False
+        await self.check_local_resource()
+        self.backpressure = self.queue_backpressure or self.sandbox_fault
+        if self.stopping:
+            return
         self.adapt()
         for c0 in self.store.campaigns():
             c = self.store.campaign(c0["campaign_id"])
@@ -170,6 +187,8 @@ class Scheduler:
                     self.plan(c)
         # Local stages use dedicated bounded lanes, including during drain/budget stop.
         for stage,limit in (("archive",self.config.archive_workers),("render",self.config.render_workers),("build",self.config.build_workers)):
+            if self.sandbox_fault and stage in ("build", "render"):
+                continue
             used = sum(lane == stage for lane in self.active.values())
             for row in self.store.ready([stage],limit=max(0,limit-used),allow_network=False) if limit>used else []:
                 c = self.store.campaign(row["campaign_id"])
@@ -184,7 +203,7 @@ class Scheduler:
                 claim = self.store.claim(row["sample_id"],row["revision"])
                 if claim:
                     self.store.finish(claim,status="awaiting_review",reason="awaiting_visual")
-        if self.config.allow_live and disk_ok and not self.backpressure and not self.storage_failed:
+        if self.config.allow_live and disk_ok and not self.queue_backpressure and not self.storage_failed:
             used = sum(lane == "network" for lane in self.active.values())
             # Weighted rotating preferences borrow unused capacity; oldest work is periodically first.
             weights = ("author","refine","author","review","author","review","author")
@@ -193,6 +212,8 @@ class Scheduler:
             pools = {r['capacity_group']:r for r in self.store.rows("SELECT capacity_group,COUNT(*) n,SUM(status='outcome_unknown') unknown FROM attempts WHERE occupancy=1 GROUP BY capacity_group")}
             eligible = []
             for stage in NETWORK:
+                if self.sandbox_fault and stage != 'review':
+                    continue
                 endpoint = self.config.visual if stage == 'review' else self.config.author
                 if endpoint is None or endpoint.alias in self.blocked_endpoints or (stage == 'review' and not endpoint.supports_images):
                     continue
@@ -275,11 +296,32 @@ class Scheduler:
     def work_dir(self,sample):
         return self.store.root/"work"/sample["sample_id"][:2]/sample["sample_id"]/f"v{sample['revision']:04d}"
 
-    def persist_json(self,path,value):
+    async def check_local_resource(self):
+        waiting = self.store.one("SELECT 1 FROM samples WHERE status IN ('deferred','blocked') AND stage IN ('build','render') AND reason_code IN ('sandbox_unavailable','sandbox_image_version_mismatch') LIMIT 1")
+        if not self.sandbox_fault and not waiting:
+            return
+        self.sandbox_fault = True
+        if time.monotonic() < self.next_resource_probe:
+            return
+        self.next_resource_probe = time.monotonic() + 30
+        try:
+            # Trusted tiny container work; never an author request or sample retry.
+            await asyncio.to_thread(probe_resource, self.config.model_dump())
+        except Exception as exc:
+            if shared_storage_failure(exc):
+                self.storage_failed = True
+            self.loop_error = type(exc).__name__
+            return
+        self.sandbox_fault = False
+        self.store.resume_resource_tasks()
+
+    def persist_json(self,path,value, *, ledger=False):
         try:
             atomic_json(path,value)
-        except OSError:
-            self.storage_failed = True
+        except OSError as exc:
+            # An unwritable request/response ledger prevents safe paid work.
+            if ledger or shared_storage_failure(exc):
+                self.storage_failed = True
             raise
 
     async def network(self,claim,endpoint):
@@ -300,11 +342,11 @@ class Scheduler:
                 feedback = json.loads(feedback_path.read_text()) if feedback_path.exists() else None
                 messages = author_messages(task,source,feedback,refine=claim["stage"] == "refine")
             request_path = self.store.root/claim["attempt"]["response_path"].replace(".json",".request.json")
-            self.persist_json(request_path,{"messages":messages,"endpoint_alias":endpoint.alias,"model":endpoint.model,"parameters":endpoint.parameters})
+            self.persist_json(request_path,{"messages":messages,"endpoint_alias":endpoint.alias,"model":endpoint.model,"parameters":endpoint.parameters},ledger=True)
             request_started = True
             result = await self.client.call(endpoint,messages,claim["attempt_id"],claim["stage"])
             # Durable response first. Crash here is recovered without a second POST.
-            self.persist_json(response_path,result)
+            self.persist_json(response_path,result,ledger=True)
             response_saved = True
             self.store.settle(claim["attempt_id"],result)
             self.window_results.append({"error_category":result.get("error_category"),"response_complete":result.get("response_complete"),"elapsed_ms":result.get("elapsed_ms")})
@@ -313,7 +355,7 @@ class Scheduler:
             await self.consume(claim,result)
         except (Exception,asyncio.CancelledError) as e:
             self.loop_error = type(e).__name__
-            if isinstance(e,OperationalError):
+            if shared_storage_failure(e):
                 self.storage_failed = True
             if result is None:
                 result = {"error_category":"outcome_unknown" if request_started else "not_sent",
@@ -322,13 +364,16 @@ class Scheduler:
             # replace a complete response with an unknown outcome.
             if not response_saved:
                 try:
-                    self.persist_json(response_path,result)
+                    self.persist_json(response_path,result,ledger=True)
                 except OSError:
                     pass
             reason = "outcome_unknown" if execution_state(result) == "execution_unknown" else "storage_unavailable" if self.storage_failed else "finish_callback_failed"
+            if isinstance(e, OSError) and not self.storage_failed and reason != "outcome_unknown":
+                reason = "local_artifact_invalid"
             try:
                 self.store.settle(claim["attempt_id"],result)
-                self.store.finish(claim,status="blocked",reason=reason,delay=1,response_applied=False)
+                self.store.finish(claim,status="blocked",reason=reason,delay=1,response_applied=not request_started)
+                self.store.record_local_failure(claim, reason, e)
                 if self.storage_failed:
                     for campaign in self.store.campaigns():
                         if campaign["state"] == "running":
@@ -369,6 +414,9 @@ class Scheduler:
                 return
             if review["passed"]:
                 self.store.finish(claim,stage="archive",changes={"review_json":json.dumps(review)})
+            elif review['status'] == 'gray':
+                # Assessor uncertainty is not a demonstrated author defect.
+                self.retry_review(claim,'review_uncertain')
             else:
                 self.repair(claim,review,visual=True)
         else:
@@ -382,15 +430,16 @@ class Scheduler:
             try:
                 directory.mkdir(parents=True,exist_ok=True)
                 source_path.write_text(source)
-            except OSError:
-                self.storage_failed = True
+            except OSError as exc:
+                if shared_storage_failure(exc):
+                    self.storage_failed = True
                 raise
             self.store.finish(claim,stage="build",changes={"source_path":str(source_path),"source_hash":hashlib.sha256(source.encode()).hexdigest(),"local_retries":0})
 
     def retry_review(self, claim, reason):
         used = claim['review_format_retries']
         if used >= self.config.review_format_retries or claim['request_count'] >= self.config.sample_request_limit:
-            self.store.finish(claim,status='awaiting_review',reason='review_format_exhausted')
+            self.store.finish(claim,status='awaiting_review',reason='review_uncertain' if reason == 'review_uncertain' else 'review_format_exhausted')
         else:
             self.store.finish(claim,stage='review',status='deferred',reason=reason,
                               changes={'review_format_retries':used+1})
@@ -411,6 +460,12 @@ class Scheduler:
     def local_failure(self, claim, reason, *, retryable=True):
         """Environment work stays on the same source/revision and never costs a POST."""
         used = claim["local_retries"]
+        if reason in SHARED_SANDBOX:
+            self.sandbox_fault = True
+            if used >= 3:
+                # A passing probe must not cause infinite retries of a bad task.
+                reason = "sandbox_recovery_exhausted"
+                retryable = False
         retry = retryable and used < 2
         self.store.finish(claim,status="deferred" if retry else "blocked",reason=reason,
                           delay=2**(used+1) if retry else 0,changes={"local_retries":used+1})
@@ -429,8 +484,9 @@ class Scheduler:
                         if (cached.get("canonical_voxel_hash") == canonical["canonical_voxel_hash"]
                                 and cached.get("phase") == task["phase"]):
                             result = cached
-                    except (ValueError,OSError,KeyError):
-                        pass
+                    except (ValueError,OSError,KeyError) as exc:
+                        if shared_storage_failure(exc):
+                            raise
                 if result is None:
                     # Recover partial local work into a new isolated destination.
                     output = directory
@@ -471,13 +527,20 @@ class Scheduler:
                 async with self.archive_lock:
                     await self.archive_asset(claim)
         except Exception as e:
-            if isinstance(e,(OSError,OperationalError)):
+            reason = f"{claim['stage']}_failed"
+            if shared_storage_failure(e):
                 self.storage_failed = True
-                self.store.finish(claim,status="blocked",reason="storage_unavailable")
+                reason = "storage_unavailable"
+                self.store.finish(claim,status="blocked",reason=reason)
             elif isinstance(e,SandboxError):
+                reason = e.reason
                 self.local_failure(claim,e.reason,retryable=e.reason != "sandbox_image_version_mismatch")
+            elif isinstance(e, OSError):
+                reason = "local_artifact_invalid"
+                self.local_failure(claim,reason,retryable=claim['stage'] == 'render')
             else:
-                self.local_failure(claim,f"{claim['stage']}_failed")
+                self.local_failure(claim,reason)
+            self.store.record_local_failure(claim, reason, e)
             self.loop_error = type(e).__name__
 
     async def archive_asset(self,claim):
@@ -489,7 +552,7 @@ class Scheduler:
         if not configs or any(item['profile_hash'] != self.config.profile_hash() for item in configs):
             claim['profile_qualified'] = False
         claim["record_kind"] = task.get("record_kind","calibration")
-        claim["versions"] = {**geometry.get("versions",{}),"rubric":"voxlush.visual.v1"}
+        claim["versions"] = {**geometry.get("versions",{}),"rubric":RUBRIC_VERSION}
         claim.update(self.store.attempt_provenance(claim["sample_id"]))
         claim["observed_tags"] = claim["review"].get("observed_tags",[])
         model = json.loads((directory/"sample.json").read_text()).get("model",{})

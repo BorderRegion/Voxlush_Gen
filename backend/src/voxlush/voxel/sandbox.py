@@ -53,6 +53,18 @@ def image_info(image: str = DEFAULT_IMAGE) -> dict:
     return {"image_id": info["Id"], "runtime_hash": runtime_hash()}
 
 
+def probe_resource(config: dict | None = None) -> None:
+    """Exercise Docker and the real renderer with one trusted voxel, without AI."""
+    sample = {"sample_id": "resource-probe", "seed": 0,
+              "building": {"name": "Local resource probe"},
+              "blocks": [{"x": 0, "y": 0, "z": 0, "type": "stone"}]}
+    artifacts, _ = run(json.dumps(sample).encode(), mode="render",
+                       config={**(config or {}), "build_timeout_seconds": 10})
+    if not all(artifacts.get("previews/" + name) for name in
+               ("view_a.webp", "view_b.webp", "contact.webp")):
+        raise SandboxError("render_missing_artifacts")
+
+
 def run(
     payload: bytes, *, mode: str = "build", config: dict | None = None, seed: int = 0
 ) -> tuple[dict[str, bytes], dict]:
