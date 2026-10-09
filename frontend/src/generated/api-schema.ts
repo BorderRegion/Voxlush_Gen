@@ -350,6 +350,10 @@ export interface components {
       };
       /** Cost Limit */
       cost_limit?: number | null;
+      /** Composition Weights */
+      composition_weights?: {
+        [key: string]: number;
+      };
     };
     /** CommandCreate */
     CommandCreate: {
@@ -404,6 +408,21 @@ export interface components {
        * @default false
        */
       include_provisional: boolean;
+      /** Composition Modes */
+      composition_modes?:
+        | (
+            | "pure_target"
+            | "light_context"
+            | "contextual"
+            | "environment_rich"
+          )[]
+        | null;
+      /** Composition Weights */
+      composition_weights?: {
+        [key: string]: number;
+      } | null;
+      /** Composition Count */
+      composition_count?: number | null;
     };
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -489,6 +508,10 @@ export interface components {
       theme_seed_id: string;
       /** Scene Type */
       scene_type: string;
+      /** Composition Mode */
+      composition_mode?:
+        | ("pure_target" | "light_context" | "contextual" | "environment_rich")
+        | null;
       /** Revision */
       revision: number;
       /** Updated At */
@@ -804,6 +827,14 @@ export interface operations {
         status?: string | null;
         stage?: string | null;
         q?: string | null;
+        composition_mode?:
+          | (
+              | "pure_target"
+              | "light_context"
+              | "contextual"
+              | "environment_rich"
+            )
+          | null;
       };
       header?: never;
       path?: never;

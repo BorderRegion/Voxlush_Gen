@@ -4,17 +4,108 @@ test.beforeEach(async ({ request }) => {
   await request.post("http://127.0.0.1:8067/__test/reset");
 });
 
-test("R09: repeated snapshot stays stale while fresh idle snapshots stay live", async ({ page, request }) => {
+test("composition filters, honest mode statistics and weighted export controls", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "样本作品", exact: true }).click();
+  await page
+    .getByLabel("场景构成", { exact: true })
+    .selectOption("pure_target");
+  await expect(page.locator(".sample-card")).toHaveCount(12);
+  await expect(page.locator(".sample-card").first()).toContainText(
+    "纯目标建筑",
+  );
+  const state = await (
+    await request.get("http://127.0.0.1:8067/__test/state")
+  ).json();
+  expect(
+    state.requests.some(
+      (r: { query: Record<string, string> }) =>
+        r.query.composition_mode === "pure_target",
+    ),
+  ).toBe(true);
+  await page.getByRole("button", { name: "覆盖与质量", exact: true }).click();
+  const table = page.locator("table").filter({ hasText: "正式 / 暂定" });
+  await expect(table).toContainText("0 / 3");
+  await expect(table).toContainText("30%");
+  await expect(table).toContainText("75%");
+  await expect(table).toContainText("环境占地过广 × 2");
+  await page.getByRole("button", { name: "活动与设置", exact: true }).click();
+  await page.getByLabel("导出构成", { exact: true }).selectOption("mixed");
+  await page.getByLabel("混合样本数", { exact: true }).fill("20");
+  await page.getByLabel("纯目标建筑份额", { exact: true }).fill("50");
+  await page
+    .getByLabel("包含候选校准数据（保持 calibration / excluded）", {
+      exact: true,
+    })
+    .check();
+  await page
+    .getByRole("button", { name: "创建可重建发布", exact: true })
+    .click();
+  await expect(page.getByRole("link", { name: "下载发布工件" })).toBeVisible();
+  const result = await (
+    await request.get("http://127.0.0.1:8067/__test/state")
+  ).json();
+  expect(result.exportPosts).toHaveLength(1);
+  expect(result.exportPosts[0]).toMatchObject({
+    composition_count: 20,
+    include_provisional: true,
+    composition_weights: {
+      pure_target: 50,
+      light_context: 30,
+      contextual: 20,
+      environment_rich: 10,
+    },
+  });
+  await page.getByText("建筑场景构成配额", { exact: true }).click();
+  await page
+    .getByRole("textbox", { name: "活动名称", exact: true })
+    .fill("composition-ui-fixture");
+  for (const [mode, value] of Object.entries({
+    pure_target: "70",
+    light_context: "20",
+    contextual: "10",
+    environment_rich: "0",
+  })) {
+    await page.locator(`input[name="composition_${mode}"]`).fill(value);
+  }
+  await page.getByRole("button", { name: "创建活动", exact: true }).click();
+  await expect(page.getByText(/已创建：/)).toBeVisible();
+  const created = await (
+    await request.get("http://127.0.0.1:8067/__test/state")
+  ).json();
+  expect(created.campaignPosts[0].composition_weights).toEqual({
+    pure_target: 70,
+    light_context: 20,
+    contextual: 10,
+    environment_rich: 0,
+  });
+});
+
+test("R09: repeated snapshot stays stale while fresh idle snapshots stay live", async ({
+  page,
+  request,
+}) => {
   await page.clock.install();
-  await request.post("http://127.0.0.1:8067/__test/change", { data: { frozenTime: 123 } });
+  await request.post("http://127.0.0.1:8067/__test/change", {
+    data: { frozenTime: 123 },
+  });
   await page.goto("/");
   await expect(page.getByText("实时连接", { exact: true })).toBeVisible();
   await page.clock.fastForward(17000);
-  await expect(page.getByRole("status").filter({ hasText: "快照已过期" })).toBeVisible();
+  await expect(
+    page.getByRole("status").filter({ hasText: "快照已过期" }),
+  ).toBeVisible();
   // The stream continues sending the same old server_time every second.
   await page.waitForTimeout(1200);
-  await expect(page.getByRole("status").filter({ hasText: "快照已过期" })).toBeVisible();
-  await request.post("http://127.0.0.1:8067/__test/change", { data: { frozenTime: null } });
+  await expect(
+    page.getByRole("status").filter({ hasText: "快照已过期" }),
+  ).toBeVisible();
+  await request.post("http://127.0.0.1:8067/__test/change", {
+    data: { frozenTime: null },
+  });
   await expect(page.getByText("实时连接", { exact: true })).toBeVisible();
   await page.clock.fastForward(17000);
   await page.waitForTimeout(1200);

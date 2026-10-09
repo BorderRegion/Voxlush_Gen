@@ -65,6 +65,14 @@ export function useDialogFocus(
 }
 
 const labels: Record<string, string> = {
+  pure_target: "纯目标建筑",
+  light_context: "轻上下文",
+  contextual: "标准上下文",
+  environment_rich: "环境丰富",
+  calibration_target_reached: "候选校准目标已达到",
+  composition_context_voxels: "环境体素过多",
+  composition_context_extent: "环境占地过广",
+  composition_subject_missing: "缺少建筑主体",
   idle: "未启动",
   running: "运行中",
   draining: "排空中",
@@ -231,7 +239,11 @@ export function SampleCard({
         <span>{sample.theme_seed_id}</span>
         <div>
           <span>
-            {label(sample.scene_type)} · v{sample.revision}
+            {label(sample.scene_type)} ·{" "}
+            {sample.composition_mode
+              ? label(sample.composition_mode)
+              : "未指定 / 不适用"}{" "}
+            · v{sample.revision}
           </span>
           <span>{label(sample.stage)}</span>
         </div>
@@ -528,9 +540,39 @@ export function Drawer({
                 </dd>
                 <dt>生成模式</dt>
                 <dd>{String(data.task.generation_mode ?? "—")}</dd>
+                <dt>请求场景构成</dt>
+                <dd>
+                  {data.composition_mode
+                    ? label(data.composition_mode)
+                    : "未指定 / 不适用"}
+                </dd>
+                <dt>观察到的构成</dt>
+                <dd>
+                  {data.composition?.observed?.visual.observed_mode
+                    ? label(data.composition.observed.visual.observed_mode)
+                    : "暂无独立图像证据"}
+                </dd>
+                <dt>构成目标符合</dt>
+                <dd>
+                  {data.composition?.meets_requested === true
+                    ? "通过"
+                    : data.composition?.meets_requested === false
+                      ? "未通过"
+                      : "未确认 / 不适用"}
+                </dd>
                 <dt>任务种子</dt>
                 <dd>{String(data.task.seed ?? "—")}</dd>
               </dl>
+              {data.composition?.observed && (
+                <p className="muted">
+                  测得非主体体素{" "}
+                  {(
+                    data.composition.observed.geometry.context_fraction * 100
+                  ).toFixed(1)}
+                  %（基于声明语义）；图像证据：
+                  {data.composition.observed.visual.evidence}
+                </p>
+              )}
               <details>
                 <summary>任务与标签来源</summary>
                 <pre>{JSON.stringify(data.task, null, 2)}</pre>

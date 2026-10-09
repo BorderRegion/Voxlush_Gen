@@ -20,6 +20,8 @@ function reset() {
     requests: [],
     source: "<script>window.unsafeExecuted = true</script>",
     exports: null,
+    exportPosts: [],
+    campaignPosts: [],
     campaign: "running",
     activeStreams: 0,
     maxStreams: 0,
@@ -72,8 +74,9 @@ const sample = (i) => ({
   stage: i === 2 ? "review" : "archive",
   status: i === 2 ? "awaiting_review" : "accepted",
   reason_code: i === 2 ? "awaiting_visual" : "fixture",
-  theme_seed_id: "island_s01",
-  scene_type: "natural",
+  theme_seed_id: "timber_01",
+  scene_type: "architecture",
+  composition_mode: i % 2 ? "pure_target" : "contextual", // Synthetic filter fixture only.
   revision: 1,
   updated_at: Date.parse("2026-10-06T12:00:00Z") / 1000,
   preview_artifact_id: null,
@@ -114,8 +117,11 @@ createServer(async (request, response) => {
     );
   if (path.endsWith("/campaigns") && request.method === "GET")
     return send(response, { items: [campaign()] });
-  if (path.endsWith("/campaigns"))
-    return send(response, { campaign_id: (await read(request)).campaign_id });
+  if (path.endsWith("/campaigns")) {
+    const payload = await read(request);
+    state.campaignPosts.push(payload);
+    return send(response, { campaign_id: payload.campaign_id });
+  }
   if (path.endsWith("/overview")) return send(response, overview());
   if (path.endsWith("/events")) {
     response.writeHead(200, {
@@ -157,7 +163,12 @@ createServer(async (request, response) => {
           (_, i) => sample(i + 1),
         );
     return send(response, {
-      items,
+      items: url.searchParams.get("composition_mode")
+        ? items.filter(
+            (s) =>
+              s.composition_mode === url.searchParams.get("composition_mode"),
+          )
+        : items,
       next_cursor: url.searchParams.get("cursor") ? null : "fixture_cursor",
     });
   }
@@ -168,8 +179,8 @@ createServer(async (request, response) => {
       task: {
         instruction: state.source,
         quality_contract: "landscape",
-        requested_tags: { "spatial_relation": "水陆关系" },
-        sampling_tags: { "landform": "群岛" },
+        requested_tags: { spatial_relation: "水陆关系" },
+        sampling_tags: { landform: "群岛" },
         seed: 7,
         generation_mode: "direct",
       },
@@ -210,6 +221,25 @@ createServer(async (request, response) => {
     });
   if (path.endsWith("/coverage"))
     return send(response, {
+      composition: {
+        items: [
+          {
+            scene_type: "architecture",
+            composition_mode: "pure_target",
+            target: 40,
+            tasks: 10,
+            accepted: 0,
+            provisional: 3,
+            candidate_archives: 3,
+            debt: 40,
+            candidate_debt: 37,
+            archive_rate: 0.3,
+            average_requests: 2.5,
+            visual_pass_rate: 0.75,
+            failures: [{ reason_code: "composition_context_extent", count: 2 }],
+          },
+        ],
+      },
       items: [
         {
           family_id: "islands",
@@ -237,7 +267,17 @@ createServer(async (request, response) => {
   if (path.endsWith("/config"))
     return send(response, {
       allow_live: false,
-      campaign_defaults: { target: 100, request_limit: 800, api_cap: 8 },
+      campaign_defaults: {
+        target: 100,
+        request_limit: 800,
+        api_cap: 8,
+        composition_weights: {
+          pure_target: 40,
+          light_context: 30,
+          contextual: 20,
+          environment_rich: 10,
+        },
+      },
     });
   if (path.endsWith("/config/validate"))
     return send(response, { valid: true, errors: [] });
@@ -272,8 +312,10 @@ createServer(async (request, response) => {
   if (path.includes("/commands/"))
     return send(response, state.commands[path.split("/").pop()]);
   if (path.endsWith("/exports")) {
+    const payload = await read(request);
+    state.exportPosts.push(payload);
     state.exports = {
-      export_id: (await read(request)).export_id,
+      export_id: payload.export_id,
       status: "queued",
     };
     setTimeout(() => {

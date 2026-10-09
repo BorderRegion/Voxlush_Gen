@@ -24,7 +24,9 @@ import type {
   Page,
   Sample,
   CommandAction,
+  CompositionCoverage,
 } from "./types";
+import { compositionModes } from "./types";
 
 const pages = [
   { id: "overview", name: "运行总览", path: "M3 11 12 3l9 8v10h-6v-7H9v7H3Z" },
@@ -313,6 +315,7 @@ function SamplesPage({
   initialStage: string;
 }) {
   const [status, setStatus] = useState("");
+  const [composition, setComposition] = useState("");
   const [stage, setStage] = useState(initialStage);
   const [search, setSearch] = useState("");
   const [term, setTerm] = useState("");
@@ -323,7 +326,7 @@ function SamplesPage({
     setCursors([""]);
   }, [initialStage]);
   const list = useApi<Page<Sample>>(
-    `/samples?${query({ campaign_id: campaignId, limit: 24, cursor, status, stage, q: term })}`,
+    `/samples?${query({ campaign_id: campaignId, limit: 24, cursor, status, stage, q: term, composition_mode: composition })}`,
     tick,
   );
   const filter = (fn: () => void) => {
@@ -333,6 +336,21 @@ function SamplesPage({
   return (
     <>
       <div className="filter-bar">
+        <label>
+          场景构成{" "}
+          <select
+            aria-label="场景构成"
+            value={composition}
+            onChange={(e) => filter(() => setComposition(e.target.value))}
+          >
+            <option value="">全部构成</option>
+            {compositionModes.map((mode) => (
+              <option key={mode} value={mode}>
+                {label(mode)} · {mode}
+              </option>
+            ))}
+          </select>
+        </label>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -456,6 +474,7 @@ function CoveragePage({
   const coverage = useApi<{
     items: Coverage[];
     totals: Record<string, number>;
+    composition?: { items: CompositionCoverage[] };
   }>(`/coverage?${query({ campaign_id: campaignId })}`, tick);
   const [scene, setScene] = useState("");
   const [debtOnly, setDebtOnly] = useState(false);
@@ -469,6 +488,71 @@ function CoveragePage({
       <div className="notice">
         覆盖只由实际合格资产抵扣。暂定通过、在途候选和重复几何单独列出；未获得资格的主题保持可见。
       </div>
+      <Panel
+        title="场景构成配额与质量"
+        note="建筑与复合场景分别补齐；自然场景不套用建筑构成"
+      >
+        <p className="muted">
+          归档率 = 唯一候选或正式样本 /
+          全部独立任务；视觉通过率按已评任务的最后有效图像判断统计。候选用于校准补齐，正式欠账只由
+          accepted 抵扣。
+        </p>
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>场景 / 构成</th>
+                <th>任务</th>
+                <th>目标</th>
+                <th>正式 / 暂定</th>
+                <th>正式 / 候选欠账</th>
+                <th>归档率</th>
+                <th>视觉通过率</th>
+                <th>平均请求</th>
+                <th>失败原因</th>
+              </tr>
+            </thead>
+            <tbody>
+              {coverage.data?.composition?.items
+                .filter((r) => !scene || r.scene_type === scene)
+                .map((r) => (
+                  <tr key={`${r.scene_type}:${r.composition_mode}`}>
+                    <td>
+                      {label(r.scene_type)} /{" "}
+                      {r.composition_mode
+                        ? label(r.composition_mode)
+                        : "未指定 / 不适用"}
+                    </td>
+                    <td>{number(r.tasks)}</td>
+                    <td>{r.composition_mode ? number(r.target) : "—"}</td>
+                    <td>
+                      {number(r.accepted)} / {number(r.provisional)}
+                    </td>
+                    <td>
+                      {number(r.debt)} / {number(r.candidate_debt)}
+                    </td>
+                    <td>
+                      {r.archive_rate === null
+                        ? "—"
+                        : `${number(r.archive_rate * 100, 1)}%`}
+                    </td>
+                    <td>
+                      {r.visual_pass_rate === null
+                        ? "—"
+                        : `${number(r.visual_pass_rate * 100, 1)}%`}
+                    </td>
+                    <td>{number(r.average_requests, 1)}</td>
+                    <td>
+                      {r.failures
+                        .map((f) => `${label(f.reason_code)} × ${f.count}`)
+                        .join("；") || "—"}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </Panel>
       <div className="coverage-summary">
         {["target", "accepted", "active", "rejected", "duplicate", "debt"].map(
           (key) => (
@@ -586,6 +670,10 @@ function SettingsPage({
   const [busy, setBusy] = useState(false);
   const [created, setCreated] = useState<string | null>(null);
   const [exportJob, setExportJob] = useState<ExportJob | null>(null);
+  const [exportMode, setExportMode] = useState("");
+  const [includeProvisional, setIncludeProvisional] = useState(false);
+  const [mixCount, setMixCount] = useState("100");
+  const [mixWeights, setMixWeights] = useState<Record<string, string>>({});
   const exportId = useRef<string | null>(null);
   const creationId = useRef<string>(crypto.randomUUID());
   const currentCampaign = campaigns.find(
@@ -608,6 +696,17 @@ function SettingsPage({
         ...validatable
       } = config.data;
       setEditor(JSON.stringify(validatable, null, 2));
+      const weights = (
+        config.data.campaign_defaults as
+          | { composition_weights?: Record<string, number> }
+          | undefined
+      )?.composition_weights;
+      if (weights)
+        setMixWeights(
+          Object.fromEntries(
+            Object.entries(weights).map(([k, v]) => [k, String(v)]),
+          ),
+        );
     }
   }, [config.data]);
   useEffect(() => {
@@ -656,6 +755,19 @@ function SettingsPage({
         ]),
       );
     }
+    const contextWeights = compositionModes.map((key) =>
+      String(fields.get(`composition_${key}`) ?? "").trim(),
+    );
+    if (contextWeights.some(Boolean)) {
+      if (!contextWeights.every(Boolean)) {
+        setError(new Error("请填写全部四个构成份额，可以为零。"));
+        setBusy(false);
+        return;
+      }
+      values.composition_weights = Object.fromEntries(
+        compositionModes.map((key, i) => [key, Number(contextWeights[i])]),
+      );
+    }
     try {
       await post("/campaigns", values);
       setCreated(creationId.current);
@@ -689,7 +801,22 @@ function SettingsPage({
       const job = await post<ExportJob>("/exports", {
         export_id: exportId.current,
         campaign_id: campaignId,
-        include_provisional: false,
+        include_provisional: includeProvisional,
+        ...(exportMode === "mixed"
+          ? {
+              composition_count: Number(mixCount),
+              composition_weights: Object.fromEntries(
+                compositionModes.map((m) => [m, Number(mixWeights[m] ?? 0)]),
+              ),
+            }
+          : exportMode
+            ? {
+                composition_modes:
+                  exportMode === "pure_light"
+                    ? ["pure_target", "light_context"]
+                    : [exportMode],
+              }
+            : {}),
       });
       setExportJob(job);
       if (!["queued", "running"].includes(job.status)) exportId.current = null;
@@ -774,6 +901,32 @@ function SettingsPage({
                 ))}
               </div>
             </details>
+            <details>
+              <summary>建筑场景构成配额</summary>
+              <p className="muted">
+                留空使用后端默认比例；按最终有效归档补齐，失败不抵扣。自然场景不适用。聚落与建筑地景复合主题按标准／环境丰富两项权重归一分配。
+              </p>
+              <div className="form-row">
+                {compositionModes.map((mode) => (
+                  <label key={mode}>
+                    {label(mode)}
+                    <input
+                      name={`composition_${mode}`}
+                      type="number"
+                      min={0}
+                      step="any"
+                      placeholder={String(
+                        (
+                          defaults?.composition_weights as
+                            | Record<string, number>
+                            | undefined
+                        )?.[mode] ?? "",
+                      )}
+                    />
+                  </label>
+                ))}
+              </div>
+            </details>
             <button type="submit" disabled={busy}>
               {busy ? "正在提交…" : "创建活动"}
             </button>
@@ -788,6 +941,76 @@ function SettingsPage({
           <p className="muted">
             导出当前活动的正式合格资产，按衍生组分配训练、验证、测试集。暂定通过与未验证旧数据不混入正例。
           </p>
+          <fieldset
+            disabled={
+              busy || ["queued", "running"].includes(exportJob?.status ?? "")
+            }
+            onChange={() => {
+              exportId.current = null;
+            }}
+          >
+            <label>
+              导出构成{" "}
+              <select
+                aria-label="导出构成"
+                value={exportMode}
+                onChange={(e) => setExportMode(e.target.value)}
+              >
+                <option value="">全部构成与自然场景</option>
+                {compositionModes.map((mode) => (
+                  <option key={mode} value={mode}>
+                    {label(mode)}
+                  </option>
+                ))}
+                <option value="pure_light">纯建筑 + 轻上下文</option>
+                <option value="mixed">按配额混合</option>
+              </select>
+            </label>
+            {exportMode === "mixed" && (
+              <>
+                <label>
+                  混合样本数
+                  <input
+                    type="number"
+                    min={1}
+                    max={1000000}
+                    value={mixCount}
+                    onChange={(e) => setMixCount(e.target.value)}
+                  />
+                </label>
+                <div className="form-row">
+                  {compositionModes.map((mode) => (
+                    <label key={mode}>
+                      {label(mode)}份额
+                      <input
+                        type="number"
+                        min={0}
+                        step="any"
+                        value={mixWeights[mode] ?? ""}
+                        onChange={(e) =>
+                          setMixWeights({
+                            ...mixWeights,
+                            [mode]: e.target.value,
+                          })
+                        }
+                      />
+                    </label>
+                  ))}
+                </div>
+                <p className="muted">
+                  有效样本不足时明确报告缺额，不用其他构成替代。
+                </p>
+              </>
+            )}
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={includeProvisional}
+                onChange={(e) => setIncludeProvisional(e.target.checked)}
+              />
+              包含候选校准数据（保持 calibration / excluded）
+            </label>
+          </fieldset>
           <button
             disabled={
               !campaignId ||
