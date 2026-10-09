@@ -1,10 +1,57 @@
 # Acceptance Report
 
-Date: 2026-10-09 (Asia/Shanghai); latest live pilot began 2026-10-08
+Date: 2026-10-09 (Asia/Shanghai); historical pilots are recorded separately below.
 
 Repository baseline: `4f4be137d3924b38cb7301c2c4a0081ff32a7c2a`.
 
 Environment: Python 3.12.3, Node 20.19.0, npm 10.8.2, Docker 29.1.3, APSW SQLite 3.51.3, Linux, `voxlush-sandbox:v1` (`sha256:50712f3b25dc`). The checked-in profile has `allow_live=false`, no author or visual endpoint, and global API cap 0. The acceptance data root was `/tmp/voxlush-acceptance-20261008`; it is outside the repository and is not production data.
+
+## Review 4f95a9e: final reliability and bounded quality validation
+
+Review baseline: `4f95a9e1359d0ce66ca04a5fe414b0c53960662e`. Reliability code: `b684fcf5d1667cbd553f41490dd7597ddfd7f486`. Final metadata diagnostics: `8b424344739115e1897710c397a0d7aa1a329a25`. The remote baseline was checked before editing. No architecture replacement, template generator, new panel, multi-agent workflow, production deployment or pool change was introduced.
+
+| Defect | Correction and evidence |
+|---|---|
+| Historical blocked/render_failed poisoned global backpressure | Historical terminal samples no longer imply a current bottleneck. Queue hysteresis remains. A regression dispatches a healthy campaign beside the failed sample. |
+| Shared Docker failure could remain blocked or retry indefinitely | Local trusted one-voxel Docker/render probe, at most once per 30 s, automatically requeues unchanged source; at most four failed sandbox executions per task. Repeated healthy probes cannot loop a permanent failure. Actual absent-socket recovery completed build/render/archive in 32.231 s with zero model calls/author repairs. |
+| Normal stop persisted user drain | Owner stop now preserves campaign state. Startup applies queued controls, recovers saved requests/artifacts and only revives legacy draining/shutdown. Actual CLI stop/start retained one settled request and budget; cap restoration continued the second fixture without start/resume. Pause/drain/emergency stop stayed unchanged. The second identical fixture was correctly rejected as duplicate. |
+| Every local OSError could stop paid work globally | Explicit shared-volume/database/durable-ledger failures stop admission; missing/path/permission errors in one sample stay local with diagnostics. Local render retries remain finite and spend no author repairs. |
+| Review uncertainty could redraw correct source | Gray or inconsistent verdicts use bounded review-only retry. Rubric v3 explicitly evaluates image composition, proportions, detail, materials, theme and visible repetition. Evidence types and tag sources remain separate. |
+| Weak-model metadata errors were misleading or treated as environment failure | Actual library source had strings in MODEL_SPEC.spaces but received an ID error. Feedback now locates the list item and required object type. A non-object air_bbox previously raised host AttributeError and retried locally; it now becomes a bounded author repair. Saved source remains rejected and unmodified; no claimed real model repair success. |
+
+The first liveness regression run had **7 failures / 6 passes**. The later metadata cases had **4 failures / 1 prior pass** before repair. Final complete suite: **221 passed, 1 optional private fixture skipped / 92.20 s**, including 31 new regressions. Ruff, frontend build, 10 mocked-transport browser cases and 1 real local backend/browser case passed; the real browser case was rerun on final backend code (17.3 s). Crash-after-response, unknown occupancy/billing/budget retention, finite local failures, skeleton repair → exactly one refinement and repaired archive/export remain covered. Fake HTTP/SSE and injected faults are software evidence, not model-quality measurements.
+
+Actual local evidence also includes restoration of the previous nonempty model backup, verified export of **11 historical provisional assets and 17 repair pairs**, and unchanged complex-source rebuild/render with the same **267209-voxel hash**. Its 79-attempt ledger and three historical unknowns remain unchanged. These are historical replay counts, not new output. The new forest source independently rebuilt to its original **125204-voxel hash**, with all three saved previews loading in an authenticated browser. It has not passed visual review and was not archived.
+
+### New uniform cohort: stopped before quality calibration completed
+
+The existing explicit own-pool authorization was bounded to six tasks / 48 calls, with no automatic expansion. All **six actual calls** used DeepSeek v4.1 Flash, prompt v5, rubric v3 configuration and stream v4 on one pinned b684fcf profile. Thinking stayed enabled; max_tokens=262144, temperature=1, top_p=.95. GLM 5.3 Flash with reasoning_effort=max / max_tokens=8192 was configured, but **zero visual requests were sent**. First-progress/idle/total budgets were 600/240/2300 s. The final metadata patch was made after the batch and changes validator/profile identity; it has only offline evidence.
+
+| Group / scale | Independent tasks | Successful source execution | Skeleton pass | Final geometry pass | Visual calls / passes | Archived |
+|---|---:|---:|---:|---:|---:|---:|
+| Natural / S, M | 2 | 1 (50%) | N/A | 1 (50%) | 0 / 0 | 0 |
+| Direct architecture / S, M | 2 | 1 (50%) | N/A | 0 | 0 / 0 | 0 |
+| Two-stage architecture / L, XL | 2 | 1 (50%) | 0 | 0 | 0 / 0 | 0 |
+
+Five complete author programs returned. Forest passed geometry; coast used an unsupported gravel material; timber had a window backed/refilled by wall geometry; library supplied strings instead of space records; courtyard had detached lanterns, backed/refilled windows and missing floor semantics. The other complex author stream stopped without final content or semantic termination. It retained **10694 SSE events / 118202 reasoning characters**, but no finish_reason or DONE. The saved stream does not locate the disconnect or prove upstream termination. No W-cardinal-argument error occurred in the five returned programs; this tiny unmatched sample cannot demonstrate improvement over the mixed-version historical run.
+
+Four returned samples are queued for their bounded author repair and one for review. All six tasks are censored/incomplete, including the unknown. The table uses all attempted tasks as denominator; zero visual passes is **zero assessed samples**, not a measured aesthetic rejection rate. No repairs or refinements were sent, so complex two-stage success and new-rubric visual quality were not validated. Formal accepted_unique=0 and human reviews=0.
+
+| Group | Initial author calls | Reported total tokens | Calls missing usage | Repair / refine / review calls |
+|---|---:|---:|---:|---:|
+| Natural | 2 | 72604 | 0 | 0 / 0 / 0 |
+| Direct architecture | 2 | 116952 | 0 | 0 / 0 / 0 |
+| Two-stage architecture | 2 | 43705 | 1 | 0 / 0 / 0 |
+
+Total known reported tokens: **233261** (10478 prompt, 222783 completion, including 189297 reasoning); one call has no usage. All six currency costs are unknown because no verified prices/settlement are available; zero known cost is not zero total cost. Tokens/time per qualified candidate are undefined because no new candidate completed. Per-stage tokens, p50/p95 call latency, measured local container durations, group/scale rows and per-task failures are in [final_quality_validation.json](final_quality_validation.json). Five families / six seeds were attempted. No archived assets exist for a new-cohort duplicate-rate estimate; no cross-asset aesthetic diversity claim is possible.
+
+The experiment admitted at most six new occupied slots alongside 14 externally retained historical client reservations (combined ceiling 20); internal upstream retry multiplicity remains unconfirmed. This fresh-ledger test is an **explicit supervised historical admission exception**, not independent capacity or validation of normal admission with all historical unknowns in one Store. The unmodified CLI/Scheduler/Store held cap0 after initial dispatch to prepare a paid-safe restart. A new unknown then triggered harness drain before cap restoration. **The planned paid restart and further calibration did not occur.** Separate loopback tests verify automatic running-intent recovery and production unknown isolation; this paid test does not establish unattended recovery. Historical unknowns remain unchanged, **14 → 15 total**; no unknown was released/replayed and no budget was reset. Empty new-cohort exports and nonempty ledger backup/restore verified.
+
+Read-only pool audit again found the same gateway and five workers, no per-request termination/cancellation receipt and no dispatch-to-termination contract. Socket EOF, local deadlines and health recovery remain insufficient. Production whole-pool unknown isolation is unchanged. Software fixes do not solve that external evidence gap.
+
+**Readiness:** software reliability corrections are verified; high-quality generation is not qualified. Neither low-maintenance unattended operation nor 10000–100000 formal generation is ready. Minimum blockers are (1) reliable upstream execution termination/reconciliation or documented independent capacity, (2) bounded uniform real validation of author repairs and complex-path yield plus actual visual review, and (3) human blind calibration followed by sustained recovery/throughput observation. A one-item geometry-only preview package with blank scores is prepared privately; it is not the required 100-candidate blind-review evidence. No provisional record was promoted.
+
+Reproduce the final software checks with `.venv/bin/pytest -q backend/tests --tb=short`, `.venv/bin/ruff check backend/src backend/tests`, `npm --prefix frontend run build`, `npm --prefix frontend run test:e2e` and `npm --prefix frontend run test:real`. Raw responses/reasoning, credentials, runtime roots, previews and backups remain outside Git. README/LICENSE are unchanged.
 
 ## Review b02c362: software and supervised live validation
 

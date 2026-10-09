@@ -1,0 +1,1361 @@
+{
+  "schema_version": "voxlush.final_quality_validation.v1",
+  "review_baseline": "4f95a9e1359d0ce66ca04a5fe414b0c53960662e",
+  "source_commit": "b684fcf5d1667cbd553f41490dd7597ddfd7f486",
+  "profile_hash": "4319d3c5696123a4e83927e5066379ae73bb18d58c04df5940a2ba92746f48ad",
+  "versions": {
+    "prompt_version": "voxlush.prompt.v5",
+    "rubric_version": "voxlush.visual.v3",
+    "stream_policy": "voxlush.stream.v4"
+  },
+  "scope": "Six new independent fixed-cohort calibration tasks; excludes all prior trials, canaries, fixtures and offline replays.",
+  "model_profile_qualified": false,
+  "human_reviews": 0,
+  "production_modified": false,
+  "requests": 6,
+  "peak_active": 6,
+  "elapsed_window_seconds": 1314.653,
+  "task_statuses": {
+    "ready": 5,
+    "blocked": 1
+  },
+  "overall": {
+    "independent_tasks": 6,
+    "counts": {
+      "initial_source_executed": 3,
+      "source_executed_successfully": 3,
+      "final_source_executed": 2,
+      "skeleton_geometry_pass": 0,
+      "final_geometry_pass": 1,
+      "valid_visual_review": 0,
+      "visual_pass": 0,
+      "candidate_archived": 0,
+      "formal_accepted": 0,
+      "unresolved_or_unfinished": 6
+    },
+    "rates_per_independent_task": {
+      "initial_source_executed": 0.5,
+      "source_executed_successfully": 0.5,
+      "final_source_executed": 0.3333,
+      "skeleton_geometry_pass": 0.0,
+      "final_geometry_pass": 0.1667,
+      "valid_visual_review": 0.0,
+      "visual_pass": 0.0,
+      "candidate_archived": 0.0,
+      "formal_accepted": 0.0,
+      "unresolved_or_unfinished": 1.0
+    },
+    "stages": {
+      "author": {
+        "requests": 6,
+        "tokens": {
+          "prompt_tokens": {
+            "reported_sum": 10478,
+            "known_attempts": 5,
+            "unknown_attempts": 1
+          },
+          "completion_tokens": {
+            "reported_sum": 222783,
+            "known_attempts": 5,
+            "unknown_attempts": 1
+          },
+          "total_tokens": {
+            "reported_sum": 233261,
+            "known_attempts": 5,
+            "unknown_attempts": 1
+          },
+          "reasoning_tokens": {
+            "reported_sum": 189297,
+            "known_attempts": 5,
+            "unknown_attempts": 1
+          }
+        },
+        "duration": {
+          "n": 6,
+          "p50_seconds": 721.667,
+          "p95_seconds": 1311.978,
+          "method": "nearest rank"
+        }
+      },
+      "repair": {
+        "requests": 0,
+        "tokens": {
+          "prompt_tokens": 0,
+          "completion_tokens": 0,
+          "total_tokens": 0,
+          "reasoning_tokens": 0
+        },
+        "measurement": "No request sent"
+      },
+      "refine": {
+        "requests": 0,
+        "tokens": {
+          "prompt_tokens": 0,
+          "completion_tokens": 0,
+          "total_tokens": 0,
+          "reasoning_tokens": 0
+        },
+        "measurement": "No request sent"
+      },
+      "review": {
+        "requests": 0,
+        "tokens": {
+          "prompt_tokens": 0,
+          "completion_tokens": 0,
+          "total_tokens": 0,
+          "reasoning_tokens": 0
+        },
+        "measurement": "No request sent"
+      }
+    },
+    "tokens": {
+      "prompt_tokens": {
+        "reported_sum": 10478,
+        "known_attempts": 5,
+        "unknown_attempts": 1
+      },
+      "completion_tokens": {
+        "reported_sum": 222783,
+        "known_attempts": 5,
+        "unknown_attempts": 1
+      },
+      "total_tokens": {
+        "reported_sum": 233261,
+        "known_attempts": 5,
+        "unknown_attempts": 1
+      },
+      "reasoning_tokens": {
+        "reported_sum": 189297,
+        "known_attempts": 5,
+        "unknown_attempts": 1
+      }
+    },
+    "task_terminal_duration": {
+      "n": 0,
+      "p50_seconds": null,
+      "p95_seconds": null,
+      "method": "nearest rank"
+    },
+    "candidate_task_duration": {
+      "n": 0,
+      "p50_seconds": null,
+      "p95_seconds": null,
+      "method": "nearest rank"
+    },
+    "local_container_duration_seconds": {
+      "build": 5.828,
+      "render": 3.683
+    },
+    "amortized_per_candidate_including_failures": {
+      "reported_total_tokens": null,
+      "sum_call_seconds": null,
+      "local_container_seconds": null
+    },
+    "unknown_cost_attempts": 6,
+    "known_currency_cost": 0,
+    "new_unknown_execution": 1
+  },
+  "groups": {
+    "direct_architecture": {
+      "independent_tasks": 2,
+      "counts": {
+        "initial_source_executed": 1,
+        "source_executed_successfully": 1,
+        "final_source_executed": 1,
+        "skeleton_geometry_pass": 0,
+        "final_geometry_pass": 0,
+        "valid_visual_review": 0,
+        "visual_pass": 0,
+        "candidate_archived": 0,
+        "formal_accepted": 0,
+        "unresolved_or_unfinished": 2
+      },
+      "rates_per_independent_task": {
+        "initial_source_executed": 0.5,
+        "source_executed_successfully": 0.5,
+        "final_source_executed": 0.5,
+        "skeleton_geometry_pass": 0.0,
+        "final_geometry_pass": 0.0,
+        "valid_visual_review": 0.0,
+        "visual_pass": 0.0,
+        "candidate_archived": 0.0,
+        "formal_accepted": 0.0,
+        "unresolved_or_unfinished": 1.0
+      },
+      "stages": {
+        "author": {
+          "requests": 2,
+          "tokens": {
+            "prompt_tokens": {
+              "reported_sum": 4203,
+              "known_attempts": 2,
+              "unknown_attempts": 0
+            },
+            "completion_tokens": {
+              "reported_sum": 112749,
+              "known_attempts": 2,
+              "unknown_attempts": 0
+            },
+            "total_tokens": {
+              "reported_sum": 116952,
+              "known_attempts": 2,
+              "unknown_attempts": 0
+            },
+            "reasoning_tokens": {
+              "reported_sum": 97937,
+              "known_attempts": 2,
+              "unknown_attempts": 0
+            }
+          },
+          "duration": {
+            "n": 2,
+            "p50_seconds": 948.066,
+            "p95_seconds": 1311.978,
+            "method": "nearest rank"
+          }
+        },
+        "repair": {
+          "requests": 0,
+          "tokens": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "measurement": "No request sent"
+        },
+        "refine": {
+          "requests": 0,
+          "tokens": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "measurement": "No request sent"
+        },
+        "review": {
+          "requests": 0,
+          "tokens": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "measurement": "No request sent"
+        }
+      },
+      "tokens": {
+        "prompt_tokens": {
+          "reported_sum": 4203,
+          "known_attempts": 2,
+          "unknown_attempts": 0
+        },
+        "completion_tokens": {
+          "reported_sum": 112749,
+          "known_attempts": 2,
+          "unknown_attempts": 0
+        },
+        "total_tokens": {
+          "reported_sum": 116952,
+          "known_attempts": 2,
+          "unknown_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 97937,
+          "known_attempts": 2,
+          "unknown_attempts": 0
+        }
+      },
+      "task_terminal_duration": {
+        "n": 0,
+        "p50_seconds": null,
+        "p95_seconds": null,
+        "method": "nearest rank"
+      },
+      "candidate_task_duration": {
+        "n": 0,
+        "p50_seconds": null,
+        "p95_seconds": null,
+        "method": "nearest rank"
+      },
+      "local_container_duration_seconds": {
+        "build": 0.844,
+        "render": 0
+      },
+      "amortized_per_candidate_including_failures": {
+        "reported_total_tokens": null,
+        "sum_call_seconds": null,
+        "local_container_seconds": null
+      },
+      "unknown_cost_attempts": 2,
+      "known_currency_cost": 0,
+      "new_unknown_execution": 0
+    },
+    "natural": {
+      "independent_tasks": 2,
+      "counts": {
+        "initial_source_executed": 1,
+        "source_executed_successfully": 1,
+        "final_source_executed": 1,
+        "skeleton_geometry_pass": 0,
+        "final_geometry_pass": 1,
+        "valid_visual_review": 0,
+        "visual_pass": 0,
+        "candidate_archived": 0,
+        "formal_accepted": 0,
+        "unresolved_or_unfinished": 2
+      },
+      "rates_per_independent_task": {
+        "initial_source_executed": 0.5,
+        "source_executed_successfully": 0.5,
+        "final_source_executed": 0.5,
+        "skeleton_geometry_pass": 0.0,
+        "final_geometry_pass": 0.5,
+        "valid_visual_review": 0.0,
+        "visual_pass": 0.0,
+        "candidate_archived": 0.0,
+        "formal_accepted": 0.0,
+        "unresolved_or_unfinished": 1.0
+      },
+      "stages": {
+        "author": {
+          "requests": 2,
+          "tokens": {
+            "prompt_tokens": {
+              "reported_sum": 4140,
+              "known_attempts": 2,
+              "unknown_attempts": 0
+            },
+            "completion_tokens": {
+              "reported_sum": 68464,
+              "known_attempts": 2,
+              "unknown_attempts": 0
+            },
+            "total_tokens": {
+              "reported_sum": 72604,
+              "known_attempts": 2,
+              "unknown_attempts": 0
+            },
+            "reasoning_tokens": {
+              "reported_sum": 57511,
+              "known_attempts": 2,
+              "unknown_attempts": 0
+            }
+          },
+          "duration": {
+            "n": 2,
+            "p50_seconds": 511.017,
+            "p95_seconds": 614.831,
+            "method": "nearest rank"
+          }
+        },
+        "repair": {
+          "requests": 0,
+          "tokens": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "measurement": "No request sent"
+        },
+        "refine": {
+          "requests": 0,
+          "tokens": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "measurement": "No request sent"
+        },
+        "review": {
+          "requests": 0,
+          "tokens": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "measurement": "No request sent"
+        }
+      },
+      "tokens": {
+        "prompt_tokens": {
+          "reported_sum": 4140,
+          "known_attempts": 2,
+          "unknown_attempts": 0
+        },
+        "completion_tokens": {
+          "reported_sum": 68464,
+          "known_attempts": 2,
+          "unknown_attempts": 0
+        },
+        "total_tokens": {
+          "reported_sum": 72604,
+          "known_attempts": 2,
+          "unknown_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 57511,
+          "known_attempts": 2,
+          "unknown_attempts": 0
+        }
+      },
+      "task_terminal_duration": {
+        "n": 0,
+        "p50_seconds": null,
+        "p95_seconds": null,
+        "method": "nearest rank"
+      },
+      "candidate_task_duration": {
+        "n": 0,
+        "p50_seconds": null,
+        "p95_seconds": null,
+        "method": "nearest rank"
+      },
+      "local_container_duration_seconds": {
+        "build": 1.688,
+        "render": 3.683
+      },
+      "amortized_per_candidate_including_failures": {
+        "reported_total_tokens": null,
+        "sum_call_seconds": null,
+        "local_container_seconds": null
+      },
+      "unknown_cost_attempts": 2,
+      "known_currency_cost": 0,
+      "new_unknown_execution": 0
+    },
+    "two_stage_architecture": {
+      "independent_tasks": 2,
+      "counts": {
+        "initial_source_executed": 1,
+        "source_executed_successfully": 1,
+        "final_source_executed": 0,
+        "skeleton_geometry_pass": 0,
+        "final_geometry_pass": 0,
+        "valid_visual_review": 0,
+        "visual_pass": 0,
+        "candidate_archived": 0,
+        "formal_accepted": 0,
+        "unresolved_or_unfinished": 2
+      },
+      "rates_per_independent_task": {
+        "initial_source_executed": 0.5,
+        "source_executed_successfully": 0.5,
+        "final_source_executed": 0.0,
+        "skeleton_geometry_pass": 0.0,
+        "final_geometry_pass": 0.0,
+        "valid_visual_review": 0.0,
+        "visual_pass": 0.0,
+        "candidate_archived": 0.0,
+        "formal_accepted": 0.0,
+        "unresolved_or_unfinished": 1.0
+      },
+      "stages": {
+        "author": {
+          "requests": 2,
+          "tokens": {
+            "prompt_tokens": {
+              "reported_sum": 2135,
+              "known_attempts": 1,
+              "unknown_attempts": 1
+            },
+            "completion_tokens": {
+              "reported_sum": 41570,
+              "known_attempts": 1,
+              "unknown_attempts": 1
+            },
+            "total_tokens": {
+              "reported_sum": 43705,
+              "known_attempts": 1,
+              "unknown_attempts": 1
+            },
+            "reasoning_tokens": {
+              "reported_sum": 33849,
+              "known_attempts": 1,
+              "unknown_attempts": 1
+            }
+          },
+          "duration": {
+            "n": 2,
+            "p50_seconds": 721.667,
+            "p95_seconds": 759.245,
+            "method": "nearest rank"
+          }
+        },
+        "repair": {
+          "requests": 0,
+          "tokens": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "measurement": "No request sent"
+        },
+        "refine": {
+          "requests": 0,
+          "tokens": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "measurement": "No request sent"
+        },
+        "review": {
+          "requests": 0,
+          "tokens": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "measurement": "No request sent"
+        }
+      },
+      "tokens": {
+        "prompt_tokens": {
+          "reported_sum": 2135,
+          "known_attempts": 1,
+          "unknown_attempts": 1
+        },
+        "completion_tokens": {
+          "reported_sum": 41570,
+          "known_attempts": 1,
+          "unknown_attempts": 1
+        },
+        "total_tokens": {
+          "reported_sum": 43705,
+          "known_attempts": 1,
+          "unknown_attempts": 1
+        },
+        "reasoning_tokens": {
+          "reported_sum": 33849,
+          "known_attempts": 1,
+          "unknown_attempts": 1
+        }
+      },
+      "task_terminal_duration": {
+        "n": 0,
+        "p50_seconds": null,
+        "p95_seconds": null,
+        "method": "nearest rank"
+      },
+      "candidate_task_duration": {
+        "n": 0,
+        "p50_seconds": null,
+        "p95_seconds": null,
+        "method": "nearest rank"
+      },
+      "local_container_duration_seconds": {
+        "build": 3.296,
+        "render": 0
+      },
+      "amortized_per_candidate_including_failures": {
+        "reported_total_tokens": null,
+        "sum_call_seconds": null,
+        "local_container_seconds": null
+      },
+      "unknown_cost_attempts": 2,
+      "known_currency_cost": 0,
+      "new_unknown_execution": 1
+    }
+  },
+  "scales": {
+    "L": {
+      "independent_tasks": 1,
+      "counts": {
+        "initial_source_executed": 0,
+        "source_executed_successfully": 0,
+        "final_source_executed": 0,
+        "skeleton_geometry_pass": 0,
+        "final_geometry_pass": 0,
+        "valid_visual_review": 0,
+        "visual_pass": 0,
+        "candidate_archived": 0,
+        "formal_accepted": 0,
+        "unresolved_or_unfinished": 1
+      },
+      "rates_per_independent_task": {
+        "initial_source_executed": 0.0,
+        "source_executed_successfully": 0.0,
+        "final_source_executed": 0.0,
+        "skeleton_geometry_pass": 0.0,
+        "final_geometry_pass": 0.0,
+        "valid_visual_review": 0.0,
+        "visual_pass": 0.0,
+        "candidate_archived": 0.0,
+        "formal_accepted": 0.0,
+        "unresolved_or_unfinished": 1.0
+      }
+    },
+    "M": {
+      "independent_tasks": 2,
+      "counts": {
+        "initial_source_executed": 1,
+        "source_executed_successfully": 1,
+        "final_source_executed": 1,
+        "skeleton_geometry_pass": 0,
+        "final_geometry_pass": 0,
+        "valid_visual_review": 0,
+        "visual_pass": 0,
+        "candidate_archived": 0,
+        "formal_accepted": 0,
+        "unresolved_or_unfinished": 2
+      },
+      "rates_per_independent_task": {
+        "initial_source_executed": 0.5,
+        "source_executed_successfully": 0.5,
+        "final_source_executed": 0.5,
+        "skeleton_geometry_pass": 0.0,
+        "final_geometry_pass": 0.0,
+        "valid_visual_review": 0.0,
+        "visual_pass": 0.0,
+        "candidate_archived": 0.0,
+        "formal_accepted": 0.0,
+        "unresolved_or_unfinished": 1.0
+      }
+    },
+    "S": {
+      "independent_tasks": 2,
+      "counts": {
+        "initial_source_executed": 1,
+        "source_executed_successfully": 1,
+        "final_source_executed": 1,
+        "skeleton_geometry_pass": 0,
+        "final_geometry_pass": 1,
+        "valid_visual_review": 0,
+        "visual_pass": 0,
+        "candidate_archived": 0,
+        "formal_accepted": 0,
+        "unresolved_or_unfinished": 2
+      },
+      "rates_per_independent_task": {
+        "initial_source_executed": 0.5,
+        "source_executed_successfully": 0.5,
+        "final_source_executed": 0.5,
+        "skeleton_geometry_pass": 0.0,
+        "final_geometry_pass": 0.5,
+        "valid_visual_review": 0.0,
+        "visual_pass": 0.0,
+        "candidate_archived": 0.0,
+        "formal_accepted": 0.0,
+        "unresolved_or_unfinished": 1.0
+      }
+    },
+    "XL": {
+      "independent_tasks": 1,
+      "counts": {
+        "initial_source_executed": 1,
+        "source_executed_successfully": 1,
+        "final_source_executed": 0,
+        "skeleton_geometry_pass": 0,
+        "final_geometry_pass": 0,
+        "valid_visual_review": 0,
+        "visual_pass": 0,
+        "candidate_archived": 0,
+        "formal_accepted": 0,
+        "unresolved_or_unfinished": 1
+      },
+      "rates_per_independent_task": {
+        "initial_source_executed": 1.0,
+        "source_executed_successfully": 1.0,
+        "final_source_executed": 0.0,
+        "skeleton_geometry_pass": 0.0,
+        "final_geometry_pass": 0.0,
+        "valid_visual_review": 0.0,
+        "visual_pass": 0.0,
+        "candidate_archived": 0.0,
+        "formal_accepted": 0.0,
+        "unresolved_or_unfinished": 1.0
+      }
+    }
+  },
+  "failure_category_occurrences": {
+    "geometric_defect": 6,
+    "material_not_allowlisted": 1,
+    "metadata_declaration": 1,
+    "spatial_semantics": 1
+  },
+  "geometry_rule_occurrences": {
+    "window_backed_by_solid_wall": 3,
+    "opening_filled_by_later_geometry": 2,
+    "sandbox_execution_failed": 1,
+    "source_or_build_invalid": 1,
+    "disconnected_geometry": 1,
+    "missing_floor_semantics": 1
+  },
+  "transport_or_answer_error_occurrences": {
+    "outcome_unknown": 1
+  },
+  "execution_terminated": 5,
+  "complete_protocol_responses": 5,
+  "responses_with_reasoning": 6,
+  "coverage": {
+    "theme_seeds": 6,
+    "families": 5,
+    "duplicate_archived_assets": {
+      "canonical_voxel_hash": 0,
+      "lineage_group": 0,
+      "upright_hash": 0
+    },
+    "assessed_assets": 0,
+    "limit": "Exact/translation/upright rotation/material variants and declared lineage only; tiny cohort cannot establish aesthetic or population duplication rate."
+  },
+  "request_limits": {
+    "cohort_tasks": 6,
+    "cohort_calls": 48,
+    "sample_calls": 8,
+    "global_fresh_cap": 6,
+    "historical_client_reservations": 14,
+    "combined_client_admission_ceiling": 20
+  },
+  "model_configuration": {
+    "author": {
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "max_tokens": 262144,
+      "temperature": 1,
+      "top_p": 0.95
+    },
+    "review": {
+      "model": "z-ai/glm-5.3-flash",
+      "max_tokens": 8192,
+      "reasoning_effort": "max"
+    },
+    "first_progress_idle_total_seconds": [
+      600,
+      240,
+      2300
+    ]
+  },
+  "historical_unknown_before": 14,
+  "new_unknown_execution": 1,
+  "historical_and_new_unknown_after": 15,
+  "historical_policy_exception": "Historical unknowns retain original authoritative ledgers and count as 14 client reservations outside the fresh ledger. Own-pool supervised admission only; does not establish upstream ended, independent capacity or default-production whole-pool admission. New unknown uses default isolation and stops this batch.",
+  "upstream_multiplicity_unconfirmed": true,
+  "new_unknown_evidence": {
+    "sse_events": 10694,
+    "reasoning_content_characters": 118202,
+    "final_answer_present": false,
+    "finish_reason": null,
+    "done_marker": false,
+    "upstream_termination_proven": false
+  },
+  "ledger_audit": {
+    "historical_unknown_unchanged": true,
+    "requests_equal_attempts": true,
+    "unknown_replayed": false,
+    "uniform_profile": true,
+    "backup_restore_preserved_state": true
+  },
+  "actual_restart": null,
+  "drain_reason": "new_unknown",
+  "exports": {
+    "formal": {
+      "assets": 0,
+      "accepted": 0,
+      "provisional": 0,
+      "source_sft": 0,
+      "repair_pairs": 0,
+      "train": 0,
+      "val": 0,
+      "test": 0,
+      "calibration": 0,
+      "excluded": 0
+    },
+    "provisional": {
+      "assets": 0,
+      "accepted": 0,
+      "provisional": 0,
+      "source_sft": 0,
+      "repair_pairs": 0,
+      "train": 0,
+      "val": 0,
+      "test": 0,
+      "calibration": 0,
+      "excluded": 0
+    }
+  },
+  "backup_restore_verified": true,
+  "limits": [
+    "No verified endpoint prices: known cost zero is not total cost; missing usage is not imputed as zero.",
+    "Tokens and summed call seconds per candidate include failures; concurrent call seconds are not wall time. Terminal durations include planned cap0/restart wait. Unfinished tasks are censored.",
+    "Container duration sums retained reports with a completed sandbox execution; failed executions lacking duration are omitted. It is not host CPU or peak memory. Memory is a 512 MiB bound, not measured use.",
+    "Model image approval is provisional, not human quality proof. No holdout, matched A/B improvement claim, long soak qualification or production deployment.",
+    "The paid batch held cap0 after its six initial sends, before a planned restart. New unknown caused drain before restoring cap6. It does not demonstrate paid restart continuation or isolate the real admission effect of unknown from cap0. Actual process intent/restart is verified separately with loopback transport.",
+    "No W-side argument failure appeared among the five returned initial programs; the cohort is too small, incomplete and unmatched to show an improved rate over the mixed-version 24-task run."
+  ],
+  "software_verification": {
+    "python_passed": 221,
+    "python_skipped": 1,
+    "python_seconds": 92.2,
+    "new_regressions": 31,
+    "metadata_before_fix_failed": 4,
+    "before_fix_failed": 7,
+    "before_fix_passed": 6,
+    "ruff": "passed",
+    "frontend_build": "passed",
+    "mock_browser_passed": 10,
+    "real_local_browser_passed": 1,
+    "final_source_commit": "8b424344739115e1897710c397a0d7aa1a329a25",
+    "real_local_browser_seconds": 17.3,
+    "real_local_browser_rerun_after_metadata_patch": true
+  },
+  "tasks": [
+    {
+      "task_id": "afef8914d456ca81ad86576d",
+      "theme_seed_id": "forest_01",
+      "group": "natural",
+      "scene_type": "natural",
+      "scale": "S",
+      "status": "ready",
+      "stage": "review",
+      "reason": null,
+      "revision": 1,
+      "creative_phase": "final",
+      "calls": {
+        "author": 1
+      },
+      "source_executed_successfully": true,
+      "initial_source_executed": true,
+      "final_source_executed": true,
+      "skeleton_geometry_pass": false,
+      "final_geometry_pass": true,
+      "valid_visual_review": false,
+      "visual_pass": false,
+      "candidate_archived": false,
+      "formal_accepted": false,
+      "unresolved_or_unfinished": true,
+      "task_terminal_seconds": null,
+      "unknown_executions": 0,
+      "tokens": {
+        "prompt_tokens": {
+          "reported_sum": 2071,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "completion_tokens": {
+          "reported_sum": 34751,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "total_tokens": {
+          "reported_sum": 36822,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 27178,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        }
+      },
+      "local_container_duration_seconds": {
+        "build": 1.688,
+        "render": 3.683
+      },
+      "failure_occurrences": [],
+      "valid_visual_verdicts": [],
+      "skeleton_build_revisions": [],
+      "refine_requests": 0
+    },
+    {
+      "task_id": "0c05ab1d1a5e2701636abbd8",
+      "theme_seed_id": "timber_02",
+      "group": "direct_architecture",
+      "scene_type": "architecture",
+      "scale": "M",
+      "status": "ready",
+      "stage": "author",
+      "reason": "geometry_repair",
+      "revision": 2,
+      "creative_phase": "final",
+      "calls": {
+        "author": 1
+      },
+      "source_executed_successfully": true,
+      "initial_source_executed": true,
+      "final_source_executed": true,
+      "skeleton_geometry_pass": false,
+      "final_geometry_pass": false,
+      "valid_visual_review": false,
+      "visual_pass": false,
+      "candidate_archived": false,
+      "formal_accepted": false,
+      "unresolved_or_unfinished": true,
+      "task_terminal_seconds": null,
+      "unknown_executions": 0,
+      "tokens": {
+        "prompt_tokens": {
+          "reported_sum": 2097,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "completion_tokens": {
+          "reported_sum": 49120,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "total_tokens": {
+          "reported_sum": 51217,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 42438,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        }
+      },
+      "local_container_duration_seconds": {
+        "build": 0.844,
+        "render": 0
+      },
+      "failure_occurrences": [
+        {
+          "revision_path": "v0001",
+          "category": "geometric_defect",
+          "rule": "window_backed_by_solid_wall"
+        },
+        {
+          "revision_path": "v0001",
+          "category": "geometric_defect",
+          "rule": "opening_filled_by_later_geometry"
+        }
+      ],
+      "valid_visual_verdicts": [],
+      "skeleton_build_revisions": [],
+      "refine_requests": 0
+    },
+    {
+      "task_id": "1538e2b4f30741e63b720555",
+      "theme_seed_id": "timber_06",
+      "group": "two_stage_architecture",
+      "scene_type": "architecture",
+      "scale": "L",
+      "status": "blocked",
+      "stage": "author",
+      "reason": "outcome_unknown",
+      "revision": 1,
+      "creative_phase": "skeleton",
+      "calls": {
+        "author": 1
+      },
+      "source_executed_successfully": false,
+      "initial_source_executed": false,
+      "final_source_executed": false,
+      "skeleton_geometry_pass": false,
+      "final_geometry_pass": false,
+      "valid_visual_review": false,
+      "visual_pass": false,
+      "candidate_archived": false,
+      "formal_accepted": false,
+      "unresolved_or_unfinished": true,
+      "task_terminal_seconds": null,
+      "unknown_executions": 1,
+      "tokens": {
+        "prompt_tokens": {
+          "reported_sum": 0,
+          "known_attempts": 0,
+          "unknown_attempts": 1
+        },
+        "completion_tokens": {
+          "reported_sum": 0,
+          "known_attempts": 0,
+          "unknown_attempts": 1
+        },
+        "total_tokens": {
+          "reported_sum": 0,
+          "known_attempts": 0,
+          "unknown_attempts": 1
+        },
+        "reasoning_tokens": {
+          "reported_sum": 0,
+          "known_attempts": 0,
+          "unknown_attempts": 1
+        }
+      },
+      "local_container_duration_seconds": {
+        "build": 0,
+        "render": 0
+      },
+      "failure_occurrences": [],
+      "valid_visual_verdicts": [],
+      "skeleton_build_revisions": [],
+      "refine_requests": 0
+    },
+    {
+      "task_id": "32963baa28e84103de8692e2",
+      "theme_seed_id": "coast_03",
+      "group": "natural",
+      "scene_type": "natural",
+      "scale": "M",
+      "status": "ready",
+      "stage": "author",
+      "reason": "geometry_repair",
+      "revision": 2,
+      "creative_phase": "final",
+      "calls": {
+        "author": 1
+      },
+      "source_executed_successfully": false,
+      "initial_source_executed": false,
+      "final_source_executed": false,
+      "skeleton_geometry_pass": false,
+      "final_geometry_pass": false,
+      "valid_visual_review": false,
+      "visual_pass": false,
+      "candidate_archived": false,
+      "formal_accepted": false,
+      "unresolved_or_unfinished": true,
+      "task_terminal_seconds": null,
+      "unknown_executions": 0,
+      "tokens": {
+        "prompt_tokens": {
+          "reported_sum": 2069,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "completion_tokens": {
+          "reported_sum": 33713,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "total_tokens": {
+          "reported_sum": 35782,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 30333,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        }
+      },
+      "local_container_duration_seconds": {
+        "build": 0,
+        "render": 0
+      },
+      "failure_occurrences": [
+        {
+          "revision_path": "v0001",
+          "category": "material_not_allowlisted",
+          "rule": "sandbox_execution_failed"
+        }
+      ],
+      "valid_visual_verdicts": [],
+      "skeleton_build_revisions": [],
+      "refine_requests": 0
+    },
+    {
+      "task_id": "b72f46ec2d28df4313f0838a",
+      "theme_seed_id": "civic_learning_01",
+      "group": "direct_architecture",
+      "scene_type": "architecture",
+      "scale": "S",
+      "status": "ready",
+      "stage": "author",
+      "reason": "geometry_repair",
+      "revision": 2,
+      "creative_phase": "final",
+      "calls": {
+        "author": 1
+      },
+      "source_executed_successfully": false,
+      "initial_source_executed": false,
+      "final_source_executed": false,
+      "skeleton_geometry_pass": false,
+      "final_geometry_pass": false,
+      "valid_visual_review": false,
+      "visual_pass": false,
+      "candidate_archived": false,
+      "formal_accepted": false,
+      "unresolved_or_unfinished": true,
+      "task_terminal_seconds": null,
+      "unknown_executions": 0,
+      "tokens": {
+        "prompt_tokens": {
+          "reported_sum": 2106,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "completion_tokens": {
+          "reported_sum": 63629,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "total_tokens": {
+          "reported_sum": 65735,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 55499,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        }
+      },
+      "local_container_duration_seconds": {
+        "build": 0,
+        "render": 0
+      },
+      "failure_occurrences": [
+        {
+          "revision_path": "v0001",
+          "category": "metadata_declaration",
+          "rule": "source_or_build_invalid"
+        }
+      ],
+      "valid_visual_verdicts": [],
+      "skeleton_build_revisions": [],
+      "refine_requests": 0
+    },
+    {
+      "task_id": "60db2efc0936c45221d10ce1",
+      "theme_seed_id": "courtyard_east_08",
+      "group": "two_stage_architecture",
+      "scene_type": "architecture",
+      "scale": "XL",
+      "status": "ready",
+      "stage": "author",
+      "reason": "geometry_repair",
+      "revision": 2,
+      "creative_phase": "skeleton",
+      "calls": {
+        "author": 1
+      },
+      "source_executed_successfully": true,
+      "initial_source_executed": true,
+      "final_source_executed": false,
+      "skeleton_geometry_pass": false,
+      "final_geometry_pass": false,
+      "valid_visual_review": false,
+      "visual_pass": false,
+      "candidate_archived": false,
+      "formal_accepted": false,
+      "unresolved_or_unfinished": true,
+      "task_terminal_seconds": null,
+      "unknown_executions": 0,
+      "tokens": {
+        "prompt_tokens": {
+          "reported_sum": 2135,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "completion_tokens": {
+          "reported_sum": 41570,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "total_tokens": {
+          "reported_sum": 43705,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        },
+        "reasoning_tokens": {
+          "reported_sum": 33849,
+          "known_attempts": 1,
+          "unknown_attempts": 0
+        }
+      },
+      "local_container_duration_seconds": {
+        "build": 3.296,
+        "render": 0
+      },
+      "failure_occurrences": [
+        {
+          "revision_path": "v0001",
+          "category": "geometric_defect",
+          "rule": "disconnected_geometry"
+        },
+        {
+          "revision_path": "v0001",
+          "category": "geometric_defect",
+          "rule": "window_backed_by_solid_wall"
+        },
+        {
+          "revision_path": "v0001",
+          "category": "geometric_defect",
+          "rule": "window_backed_by_solid_wall"
+        },
+        {
+          "revision_path": "v0001",
+          "category": "spatial_semantics",
+          "rule": "missing_floor_semantics"
+        },
+        {
+          "revision_path": "v0001",
+          "category": "geometric_defect",
+          "rule": "opening_filled_by_later_geometry"
+        }
+      ],
+      "valid_visual_verdicts": [],
+      "skeleton_build_revisions": [
+        "v0001"
+      ],
+      "refine_requests": 0
+    }
+  ],
+  "overview_performance": {
+    "observations": 60,
+    "overview_latency_ms": {
+      "median": 0.711,
+      "p95": 1.03,
+      "max": 2.694
+    },
+    "service_rss_mb": {
+      "min": 273.684,
+      "max": 274.688
+    },
+    "scope": "Short authenticated read-only API window during five real initial requests. Excludes sandbox memory; not a long soak or monitoring-overhead comparison."
+  },
+  "browser_during_load": {
+    "browser_errors": [],
+    "authentication": true,
+    "read_only_during_load": true,
+    "mobile_layout": true,
+    "preview_images": 0
+  },
+  "browser_real_assets": {
+    "browser_errors": [],
+    "authentication": true,
+    "read_only_during_load": true,
+    "mobile_layout": true,
+    "preview_images": 3,
+    "phase": "Read-only browser of saved geometry after drained restart; no new model call",
+    "candidate_archived": false,
+    "visual_model_review_completed": false,
+    "attempt_ledger_unchanged": true
+  },
+  "unchanged_source_replay": {
+    "evidence_kind": "Offline unchanged replay of the new geometry-passing scene; no visual-model approval or archive",
+    "sample_id": "afef8914d456ca81ad86576d",
+    "source_unchanged": true,
+    "canonical_hash_equal": true,
+    "voxels": 125204,
+    "render_passed": true,
+    "new_model_requests": 0,
+    "candidate_archived": false
+  },
+  "human_blind_package": {
+    "items": 1,
+    "automatic_visual_pass_candidates": 0,
+    "human_reviews_completed": 0,
+    "scores_blank": true,
+    "model_identity_and_verdict_hidden": true,
+    "qualification_evidence": "insufficient; geometry-only preview inspection package"
+  },
+  "verification_log_sha256": {
+    "before.txt": "29352f1c3db8819f775c0d71e774573b2c83f7bed648fbdf8fa4d995e2386ce1",
+    "python-full.txt": "c96f443d2ace5575f1793214e3e842f4197354705afbe655c9157591aed6c59d",
+    "metadata-before.txt": "b367cbfb61a2cbc69b640bce92b0e80fc54be65749ad7f1d89e82c1612cc9db0",
+    "python-final.txt": "279ba7ce7d233e5bd66f6a6260d249b44a4132fc04cde92077cdc1f31efbf3da"
+  },
+  "actual_local_docker_recovery": {
+    "evidence_kind": "real local Docker/renderer, fixture geometry/mock review; zero model calls",
+    "fault": "Docker CLI against absent local socket; real daemon and other services untouched",
+    "failed_reason": "sandbox_unavailable",
+    "automatic_probe_cooldown_seconds": 30,
+    "source_unchanged": true,
+    "revision_unchanged": true,
+    "manual_sample_retry": false,
+    "model_requests": 0,
+    "author_repairs": 0,
+    "status": "provisional_pass",
+    "exports": {
+      "assets": 1,
+      "accepted": 0,
+      "provisional": 1,
+      "source_sft": 1,
+      "repair_pairs": 0,
+      "train": 0,
+      "val": 0,
+      "test": 0,
+      "calibration": 0,
+      "excluded": 1
+    },
+    "elapsed_seconds": 32.231
+  },
+  "final_source_commit": "8b424344739115e1897710c397a0d7aa1a329a25",
+  "post_pilot_patch": {
+    "commit": "8b424344739115e1897710c397a0d7aa1a329a25",
+    "scope": "Specific metadata field/type diagnostics and route malformed air_bbox to author repair instead of local environment retry. No quality contract or authored source change.",
+    "offline_saved_source_replay": {
+      "source_unchanged": true,
+      "original_invalid_metadata_still_rejected": true,
+      "diagnostic": "MODEL_SPEC.spaces[0] must be an object with id and component_ids, not str",
+      "new_model_calls": 0,
+      "qualification": "offline saved-source replay, no evidence of successful model repair"
+    },
+    "new_paid_validation": false,
+    "profile_limit": "The six paid requests share the earlier pinned commit/profile. This validator-hash change has no fresh paid qualification."
+  },
+  "actual_process_restart_fixture": {
+    "kind": "Actual CLI process stop/start and actual local geometry/render; loopback fixture HTTP, not paid model evidence",
+    "normal_running_intent_retained": true,
+    "pause_drain_emergency_retained": true,
+    "saved_attempt_and_budget_equal_at_restart": true,
+    "generation_continued_without_resume_or_start": true,
+    "fixture_http_requests_before": 1,
+    "fixture_http_requests_after": 2,
+    "new_model_requests": 0,
+    "fixture_candidates": 1,
+    "fixture_duplicate_rejected": 1
+  },
+  "historical_nonempty_replay": {
+    "evidence_kind": "Offline replay of previous 24-task model run; excludes new six-task quality cohort",
+    "new_model_requests": 0,
+    "new_candidates": 0,
+    "requests_retained": 79,
+    "unknown_execution_retained": 3,
+    "historical_complex_asset": "673e090e56755a425c855976",
+    "source_unchanged": true,
+    "canonical_hash_equal": true,
+    "voxels": 267209,
+    "build_render_passed": true,
+    "nonempty_backup_restored": true,
+    "ledger_unchanged": true,
+    "exports": {
+      "formal": {
+        "assets": 0,
+        "accepted": 0,
+        "provisional": 0,
+        "source_sft": 0,
+        "repair_pairs": 0,
+        "train": 0,
+        "val": 0,
+        "test": 0,
+        "calibration": 0,
+        "excluded": 0
+      },
+      "provisional": {
+        "assets": 11,
+        "accepted": 0,
+        "provisional": 11,
+        "source_sft": 11,
+        "repair_pairs": 17,
+        "train": 0,
+        "val": 0,
+        "test": 0,
+        "calibration": 11,
+        "excluded": 0
+      }
+    }
+  },
+  "new_visual_rubric_live_review_calls": 0,
+  "paid_restart_boundary_reached": false,
+  "measurement_scope": "Task rates use all six attempted tasks, including the unknown. All tasks are incomplete/censored because no review/repair was admitted after the initial cap0 barrier. Zero visual passes is zero evaluated candidates, not a measured aesthetic rejection rate.",
+  "pool_audit": {
+    "read_only": true,
+    "gateway_sha256": "a0b13756bb83671c5ee190549f807b088bda0adb1f8e31100d9193bbcde35359",
+    "five_workers_same_sha256": "2fc2e8c14f5e5f2a81de58c460ff8f8bd2b94de3edc08b708aaccf1bd0616bb9",
+    "request_status_or_cancel_receipt_found": false,
+    "maximum_upstream_execution_contract_found": false,
+    "upstream_tls_and_route_retries_present": true,
+    "service_modified": false
+  }
+}

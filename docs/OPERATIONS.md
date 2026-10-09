@@ -12,7 +12,9 @@ The 2026-10-08 live follow-up used DeepSeek v4.1 Flash parameters `{"max_tokens"
 
 ## Controls and shutdown
 
-Use the dashboard or CLI campaign commands. They submit idempotent commands to the API; do not edit `runtime.db` directly. Pause stops further campaign dispatch while allowing local work to settle; drain stops new paid work and lets returned results finish local stages. For normal shutdown, drain active campaigns and then stop the process. `emergency_stop` can leave an external request with unknown billing/outcome; inspect the attempt record before retrying.
+Use the dashboard or CLI campaign commands. They submit idempotent commands to the API; do not edit `runtime.db` directly. Pause stops further campaign dispatch while allowing already active work to settle; drain stops new paid work and lets returned results finish local stages. Both are durable user choices and remain in effect after restart.
+
+Normal process shutdown preserves a running campaign's intent. Startup applies queued user controls and recovers existing requests/artifacts before dispatch resumes; it does not reset budgets or replay unknown requests. For a planned restart without interrupting paid work, temporarily set the campaign cap to 0, wait for active requests/local work to settle, restart, then restore its cap. Do not issue drain if you expect automatic continuation; an intentional drain requires an explicit resume. Older `draining/shutdown` records resume automatically unless a queued user control supersedes them. `emergency_stop` or a shutdown deadline can leave an external request unknown; inspect its evidence before reconciliation.
 
 ## Unknown execution reconciliation
 
@@ -50,7 +52,11 @@ The first new Store open upgrades schema 1/2 through additive migrations to sche
 
 Nonempty schema-1/2 migration fixtures preserve reservations and pass integrity checking; the existing real model asset's backup also migrated to schema 3 and survived export/backup/restore. These are local test roots, not production migration. Rollback to a schema-1/2 binary requires its verified pre-migration backup restored to a new root.
 
-Old active two-stage repairs without evidence of refinement are blocked as `phase_recovery_required`; automatic recovery and generic retry cannot infer the missing phase. Inspect saved source, build reports and attempts before any evidence-backed maintenance, retaining an audit trail. New jobs persist phase directly. Docker unavailability retries locally twice on the same source/revision, then blocks; image mismatch blocks immediately. Restore the local resource and use the normal retry command for a blocked local stage. Its accumulated automatic retry count is retained. Storage errors stop new paid dispatch. These faults do not request an author rewrite or count as theme-quality failures.
+Old active two-stage repairs without evidence of refinement are blocked as `phase_recovery_required`; automatic recovery and generic retry cannot infer the missing phase. Inspect saved source, build reports and attempts before any evidence-backed maintenance, retaining an audit trail. New jobs persist phase directly.
+
+Docker/image faults pause dependent author, refinement, build and render work. A trusted one-voxel Docker/render probe runs at most once per 30 seconds during an outage; it never calls a model. A successful probe automatically requeues affected tasks with their original source, revision and retry counters. Repeated task failure is bounded to four executions even if the probe succeeds, then becomes `sandbox_recovery_exhausted`. Other local render failures get at most two retries. A historical terminal failure cannot keep global admission blocked; queue high/low watermarks still apply. Review/archive work may drain while the sandbox is unavailable.
+
+Missing/corrupt sample artifacts retain a local diagnostic and do not automatically mark all storage failed. Database failures, shared-volume errors (including full/read-only storage), and an unwritable request/response ledger stop new paid dispatch. Repair the storage cause before resuming. Filesystem, Docker and renderer failures never spend author repair allowance or change authored source. An uncertain/invalid visual verdict gets only the bounded review retry; only an actual valid visual failure can request an author repair.
 
 ## Updates and rollback
 

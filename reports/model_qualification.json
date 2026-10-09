@@ -1,7 +1,7 @@
 {
   "schema_version": "voxlush.model_qualification.v1",
   "status": "unqualified_model_profile",
-  "profile_hash": "dfa59c8de0a9dab85fe72627982e3f32e49c2de6d1f850fb5e5018609f9049a1",
+  "profile_hash": "402a08c953cfebbd41a7a4900939305f31ca506d53800542b1bbfc6e89ad77eb",
   "config": {
     "allow_live": false,
     "author_endpoint": null,
@@ -10,23 +10,23 @@
     "qualification_flag": false,
     "prompt_version": "voxlush.prompt.v5",
     "stream_policy_version": "voxlush.stream.v4",
-    "visual_rubric": "voxlush.visual.v2"
+    "visual_rubric": "voxlush.visual.v3"
   },
   "budget": {
-    "model_requests": 115,
+    "model_requests": 121,
     "request_limit": null,
     "known_cost": null,
     "known_cost_requests": 0,
-    "unknown_cost_requests": 115,
+    "unknown_cost_requests": 121,
     "currency": null,
-    "scope": "36 historical requests plus the current 24-task pilot. Counts include repair/review calls, without counting cumulative phase snapshots twice; monetary settlement remains unknown."
+    "scope": "115 historical calls plus six final-cohort author calls. No additional model call during local replay, fixture tests, restart or browser checks. Verified monetary settlement is unavailable."
   },
   "calibration": {
-    "representative_briefs": 24,
+    "representative_briefs": 30,
     "paired_direct_two_stage": 0,
     "holdout_tasks": 0,
     "automatic_pass_candidates": 12,
-    "scope": "Current 24-task pilot counts once; automatic candidate total includes one distinct historical stone arch. No paired same-task direct/two-stage comparison or human blind review."
+    "scope": "24 prior plus six new independent calibration tasks; candidate total remains eleven prior pilot assets plus one earlier stone arch. New six-task cohort archived zero. No matched direct/two-stage comparison or human blind qualification."
   },
   "human_review": {
     "reviewed": 0,
@@ -41,9 +41,9 @@
     "same_task_quality_noninferior": true,
     "cost_or_throughput_improvement": true
   },
-  "reason": "Current supervised 24-task pilot made 79 calls: 15 tasks executed source, 13 passed final geometry, 11 archived provisional candidates, 3 new execution unknowns. Prompt fixes followed real W-axis/metadata/visual-schema failures. Formal accepted_unique=0 and human reviews=0; neither mixed prompt phases nor policy-exception testing qualify unattended production.",
+  "reason": "Final reliability fixes verified; new uniform six-task pilot returned five complete programs, executed three and passed one final geometry check. One new unknown stopped before review/repair, so zero new archived candidates. Historical candidates remain provisional; formal accepted_unique=0 and human reviews=0. Not qualified for unattended production.",
   "recorded_at": "2026-10-09",
-  "profile_scope": "Current offline configuration, prompt v5, visual rubric v2 and stream policy v4. Historical live profiles remain in their dated sections; this pilot changed prompts between drained phases.",
+  "profile_scope": "Current offline example configuration, prompt v5 / rubric v3 / stream v4 and final metadata diagnostics. The pinned paid six-task profile precedes the diagnostic patch; historical model profiles remain separate.",
   "probe_outcomes": {
     "response_complete": 2,
     "outcome_unknown": 2,
@@ -2463,5 +2463,15 @@
       "additional_calibration_tasks": 0,
       "initial_harness_error": "Used exported brief instead of runtime task; corrected to persisted immutable task and phase"
     }
+  },
+  "review_4f95_validation": {
+    "evidence_ref": "final_quality_validation.json",
+    "source_commit": "b684fcf5d1667cbd553f41490dd7597ddfd7f486",
+    "final_source_commit": "8b424344739115e1897710c397a0d7aa1a329a25",
+    "requests": 6,
+    "new_candidates": 0,
+    "new_unknown": 1,
+    "qualified": false,
+    "human_reviews": 0
   }
 }

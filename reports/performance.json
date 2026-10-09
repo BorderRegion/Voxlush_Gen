@@ -607,5 +607,30 @@
       "additional_calibration_tasks": 0,
       "initial_harness_error": "Used exported brief instead of runtime task; corrected to persisted immutable task and phase"
     }
+  },
+  "review_4f95_validation": {
+    "evidence_ref": "final_quality_validation.json",
+    "peak_real_active": 6,
+    "real_model_calls": 6,
+    "tokens_reported": 233261,
+    "calls_missing_token_usage": 1,
+    "new_candidates": 0,
+    "actual_paid_restart_verified": false,
+    "actual_process_restart_with_loopback_verified": true,
+    "actual_local_docker_recovery_verified": true,
+    "overview_observation": {
+      "observations": 60,
+      "overview_latency_ms": {
+        "median": 0.711,
+        "p95": 1.03,
+        "max": 2.694
+      },
+      "service_rss_mb": {
+        "min": 273.684,
+        "max": 274.688
+      },
+      "scope": "Short authenticated read-only API window during five real initial requests. Excludes sandbox memory; not a long soak or monitoring-overhead comparison."
+    },
+    "not_a_soak": true
   }
 }
