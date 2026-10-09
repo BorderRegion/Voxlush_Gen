@@ -135,6 +135,15 @@
         "string",
         "null"
       ]
+    },
+    "composition_mode": {
+      "enum": [
+        "pure_target",
+        "light_context",
+        "contextual",
+        "environment_rich",
+        null
+      ]
     }
   },
   "allOf": [
@@ -172,6 +181,45 @@
         "properties": {
           "interior_requirement": {
             "const": "usable_declared_spaces"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "scene_type": {
+            "const": "natural"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "composition_mode": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "scene_type": {
+            "const": "hybrid"
+          }
+        },
+        "required": [
+          "scene_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "composition_mode": {
+            "enum": [
+              "contextual",
+              "environment_rich",
+              null
+            ]
           }
         }
       }

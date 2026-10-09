@@ -606,7 +606,7 @@ def test_nonempty_v1_migration_preserves_ledger_and_builds_seed_stats(tmp_path):
     db.close()
     store = Store(root)
     try:
-        assert store.one("SELECT value FROM meta WHERE key='schema'")['value']=='3'
+        assert store.one("SELECT value FROM meta WHERE key='schema'")['value']=='4'
         assert store.campaign('old')['reserved_cost']==3
         assert store.campaign('old')['requests_used']==1
         attempt = store.one('SELECT * FROM attempts')

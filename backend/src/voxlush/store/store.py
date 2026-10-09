@@ -9,7 +9,8 @@ import uuid
 from contextlib import contextmanager
 from pathlib import Path
 from voxlush.store import sqlite as sqlite3
-from voxlush.themes.planner import FAMILIES, SEEDS, family_targets
+from voxlush.themes.planner import FAMILIES, SEEDS, apportion, family_targets
+from voxlush.themes.composition import DEFAULT_WEIGHTS, MODES, export_selection, requested_mode, scene_weights as composition_scene_weights, validate_weights
 from voxlush.store.migrations import migrate
 from voxlush.inference import execution_state
 
@@ -163,15 +164,19 @@ class Store:
     def _config_history(self, db, campaign_id):
         c = db.execute("SELECT * FROM campaigns WHERE campaign_id=?",(campaign_id,)).fetchone()
         if c['runtime_config_hash']:
-            settings = {k:c[k] for k in ('target','request_limit','api_cap','scene_weights','cost_limit')}
+            settings = {k:c[k] for k in ('target','request_limit','api_cap','scene_weights','cost_limit','composition_weights')}
             db.execute("INSERT OR IGNORE INTO config_history VALUES(?,?,?,?,?)",
                        (campaign_id,c['config_revision'],c['runtime_config_hash'],dump(settings),time.time()))
             self._event(db,campaign_id,'config_revision',{'revision':c['config_revision'],'config_hash':c['runtime_config_hash']})
 
     def create_campaign(self, campaign_id, name, target, request_limit, api_cap, scene_weights,
-                        cost_limit=None):
+                        cost_limit=None, composition_weights=None):
         now = time.time()
         family_targets(target, scene_weights)
+        weights = validate_weights(DEFAULT_WEIGHTS if composition_weights is None else composition_weights)
+        for scene, weight in scene_weights.items():
+            if weight > 0:
+                composition_scene_weights(weights, scene)
         with self.transaction() as db:
             old = db.execute("SELECT * FROM campaigns WHERE campaign_id=?", (campaign_id,)).fetchone()
             if old:
@@ -179,11 +184,14 @@ class Store:
                 actual = tuple(old[k] for k in ("name","target","request_limit","api_cap","scene_weights","cost_limit"))
                 if expected != actual:
                     raise ValueError("campaign id reused with different configuration")
+                if old['composition_weights'] is not None and json.loads(old['composition_weights']) != weights:
+                    raise ValueError('campaign id reused with different composition weights')
             else:
                 db.execute("INSERT INTO campaigns(campaign_id,name,target,request_limit,api_cap,scene_weights,cost_limit,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)",
                     (campaign_id,name,target,request_limit,api_cap,dump(scene_weights),cost_limit,now,now))
                 self._event(db,campaign_id,"campaign_created",{"target":target})
                 db.execute("UPDATE campaigns SET runtime_config_hash=? WHERE campaign_id=?",(self.runtime_config_hash,campaign_id))
+                db.execute('UPDATE campaigns SET composition_weights=? WHERE campaign_id=?',(dump(weights),campaign_id))
                 self._config_history(db,campaign_id)
         return self.campaign(campaign_id)
 
@@ -191,6 +199,7 @@ class Store:
         c = self.one("SELECT * FROM campaigns WHERE campaign_id=?", (campaign_id,))
         if c:
             c["scene_weights"] = json.loads(c["scene_weights"])
+            c['composition_weights'] = json.loads(c['composition_weights']) if c['composition_weights'] else None
         return c
 
     def campaigns(self):
@@ -313,13 +322,14 @@ class Store:
 
     def add_sample(self, task, source_path=None):
         now = time.time()
+        mode = requested_mode(task)
         with self.transaction() as db:
             db.execute("INSERT OR IGNORE INTO samples(sample_id,campaign_id,theme_seed_id,family_id,scene_type,task_json,stage,status,source_path,last_progress_at,updated_at,created_at,lineage_group) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (task["sample_id"],task["campaign_id"],task["theme_seed_id"],task.get("theme_family_id","unknown"),task["scene_type"],dump(task),"build" if source_path else "author","ready",source_path,now,now,now,task.get("lineage_group",task["sample_id"])))
             if db.execute("SELECT changes()").fetchone()[0]:
                 db.execute("UPDATE campaigns SET sequence=sequence+1 WHERE campaign_id=?",(task["campaign_id"],))
-                db.execute("UPDATE samples SET runtime_config_hash=?,creative_phase=? WHERE sample_id=?",
-                           (self.runtime_config_hash,'skeleton' if task.get('generation_mode') == 'two_stage' else 'final',task['sample_id']))
+                db.execute("UPDATE samples SET runtime_config_hash=?,creative_phase=?,composition_mode=? WHERE sample_id=?",
+                           (self.runtime_config_hash,'skeleton' if task.get('generation_mode') == 'two_stage' else 'final',mode,task['sample_id']))
                 self._event(db,task["campaign_id"],"sample_created",{},task["sample_id"])
         return self.sample(task["sample_id"])
 
@@ -333,10 +343,10 @@ class Store:
                     r[key] = str(self.root / r[key])
         return r
 
-    def list_samples(self, campaign_id=None, cursor=None, limit=50, status=None, stage=None, q=None):
+    def list_samples(self, campaign_id=None, cursor=None, limit=50, status=None, stage=None, q=None, composition_mode=None):
         where = ["sample_id>?"]
         args = [cursor or ""]
-        for column,value in (("campaign_id",campaign_id),("status",status),("stage",stage)):
+        for column,value in (("campaign_id",campaign_id),("status",status),("stage",stage),("composition_mode",composition_mode)):
             if value:
                 where.append(column+"=?")
                 args.append(value)
@@ -345,7 +355,7 @@ class Store:
             args.extend([q[:100]+"%",q[:100]+"%"])
         limit = max(1,min(limit,100))
         args.append(limit+1)
-        rows = self.rows("SELECT sample_id,campaign_id,stage,status,reason_code,theme_seed_id,scene_type,revision,updated_at,preview_artifact_id FROM samples WHERE "+" AND ".join(where)+" ORDER BY sample_id LIMIT ?",args)
+        rows = self.rows("SELECT sample_id,campaign_id,stage,status,reason_code,theme_seed_id,scene_type,composition_mode,revision,updated_at,preview_artifact_id FROM samples WHERE "+" AND ".join(where)+" ORDER BY sample_id LIMIT ?",args)
         return {"items":rows[:limit],"next_cursor":rows[limit-1]["sample_id"] if len(rows)>limit else None}
 
     def ready(self, stages, limit=32, allow_network=True):
@@ -639,6 +649,8 @@ class Store:
             manifest = record["manifest_json"]
             if isinstance(manifest,str):
                 manifest = json.loads(manifest)
+            if manifest.get('composition',{}).get('requested_mode') != s['composition_mode']:
+                raise ValueError('archive composition differs from planned sample')
             features = record.get('dedup_features')
             duplicate = self.asset_exists(record['canonical_voxel_hash']) or self.one('SELECT sample_id FROM assets WHERE lineage_group=? AND is_current=1 LIMIT 1',(manifest['lineage']['group_id'],))
             if not duplicate and features:
@@ -694,7 +706,7 @@ class Store:
         if not c:
             return {"items":[],"totals":{}}
         targets = family_targets(c["target"],c["scene_weights"])
-        stats = {r['family_id']:r for r in self.rows("SELECT family_id,SUM(accepted) accepted,SUM(active) active,SUM(rejected) rejected,SUM(duplicate) duplicate FROM seed_stats WHERE campaign_id=? GROUP BY family_id",(campaign_id,))}
+        stats = {r['family_id']:r for r in self.rows("SELECT family_id,SUM(accepted) accepted,SUM(active) active,SUM(rejected) rejected,SUM(duplicate) duplicate,SUM(provisional) provisional FROM seed_stats WHERE campaign_id=? GROUP BY family_id",(campaign_id,))}
         health = {r['family_id']:r for r in self.rows("SELECT * FROM family_health WHERE campaign_id=?",(campaign_id,))}
         items = []
         for fid,f in FAMILIES.items():
@@ -702,15 +714,60 @@ class Store:
             accepted = s.get("accepted",0)
             items.append({"family_id":fid,"name":f["name_zh"],"scene_type":f["scene_type"],"target":targets.get(fid,0),"accepted":accepted,"active":s.get("active",0),"rejected":s.get("rejected",0),"duplicate":s.get("duplicate",0),"debt":max(0,targets.get(fid,0)-accepted),"qualification":"unqualified","reason_code":"unqualified_model_profile"})
             items[-1].update(consecutive_failures=health.get(fid,{}).get('failures',0),last_failure_at=health.get(fid,{}).get('last_failure_at',0))
-        return {"items":items,"totals":{k:sum(i[k] for i in items) for k in ("target","accepted","active","rejected","duplicate","debt")},
+            items[-1]['provisional'] = s.get('provisional',0)
+        return {"items":items,"totals":{k:sum(i[k] for i in items) for k in ("target","accepted","active","rejected","duplicate","debt","provisional")},
                 'seeds':self.rows('SELECT * FROM seed_stats WHERE campaign_id=?',(campaign_id,))}
 
-    def next_seed(self, campaign_id, family_id):
+    def composition_coverage(self, campaign_id, *, diagnostics=False):
+        c = self.campaign(campaign_id)
+        if not c:
+            return {'items':[]}
+        stats = {(s['scene_type'],s['composition_mode']):s for s in self.rows(
+            'SELECT * FROM composition_stats WHERE campaign_id=?',(campaign_id,))}
+        targets = {}
+        if c['composition_weights']:
+            for scene, count in apportion(c['target'],c['scene_weights']).items():
+                if scene != 'natural':
+                    targets.update({(scene,mode):n for mode,n in apportion(count,composition_scene_weights(c['composition_weights'],scene)).items()})
+        items = []
+        for scene, mode in sorted(set(targets) | set(stats)):
+            s = stats.get((scene,mode),{})
+            row = {'scene_type':scene,'composition_mode':mode or None,'target':targets.get((scene,mode),0),
+                   **{k:s.get(k,0) for k in ('tasks','active','accepted','provisional','rejected','duplicate','requests','visual_reviewed','visual_pass')}}
+            row.update(debt=max(0,row['target']-row['accepted']),
+                       candidate_debt=max(0,row['target']-row['accepted']-row['provisional']),
+                       candidate_archives=row['accepted']+row['provisional'],
+                       archive_rate=(row['accepted']+row['provisional'])/row['tasks'] if row['tasks'] else None,
+                       average_requests=row['requests']/row['tasks'] if row['tasks'] else None,
+                       visual_pass_rate=row['visual_pass']/row['visual_reviewed'] if row['visual_reviewed'] else None)
+            if diagnostics:
+                row['failures'] = self.rows('''SELECT reason_code,COUNT(*) count FROM samples WHERE campaign_id=?
+                    AND scene_type=? AND composition_mode IS ? AND reason_code IS NOT NULL
+                    AND status IN ('rejected','blocked','awaiting_review') GROUP BY reason_code''',(campaign_id,scene,mode or None))
+            items.append(row)
+        return {'items':items,'weights':c['composition_weights'],
+                'rate_basis':'archive_rate = unique candidate or accepted / all tasks; visual = last valid image verdict per reviewed task'}
+
+    def next_composition(self, campaign_id, scene_type, *, qualified):
+        rows = [r for r in self.composition_coverage(campaign_id)['items']
+                if r['scene_type'] == scene_type and r['composition_mode'] in MODES]
+        for r in rows:
+            r['pending_debt'] = r['debt' if qualified else 'candidate_debt'] - r['active']
+        rows = [r for r in rows if r['pending_debt'] > 0]
+        return max(rows,key=lambda r:(r['pending_debt']/max(1,r['target']),r['pending_debt'],r['composition_mode']))['composition_mode'] if rows else None
+
+    def record_review(self, claim, review):
+        with self.transaction() as db:
+            db.execute('UPDATE samples SET review_json=? WHERE sample_id=? AND revision=? AND lease_token=?',
+                       (dump(review),claim['sample_id'],claim['revision'],claim['lease_token']))
+
+    def next_seed(self, campaign_id, family_id, composition_mode=None):
         progress = {r['theme_seed_id']:r for r in self.rows('SELECT * FROM seed_stats WHERE campaign_id=? AND family_id=?',(campaign_id,family_id))}
         def priority(seed):
             row = progress.get(seed['id'],{})
             return (row.get('accepted',0)+row.get('active',0),row.get('planned',0),seed['id'])
-        return min((s for s in SEEDS if s['family_id'] == family_id),key=priority)['id']
+        return min((s for s in SEEDS if s['family_id'] == family_id
+                    and (composition_mode is None or composition_mode in s.get('composition_modes', MODES))),key=priority)['id']
 
     def overview(self,campaign_id,effective_cap=0):
         c = self.campaign(campaign_id)
@@ -730,12 +787,15 @@ class Store:
         with self.transaction() as db:
             db.execute("INSERT INTO metrics_minute(campaign_id,minute,active_requests,effective_cap) VALUES(?,?,?,?) ON CONFLICT(campaign_id,minute) DO UPDATE SET active_requests=excluded.active_requests,effective_cap=excluded.effective_cap",(campaign_id,int(time.time()//60)*60,active,cap))
 
-    def create_export(self,export_id,campaign_id,include_provisional):
+    def create_export(self,export_id,campaign_id,include_provisional,composition_modes=None,composition_weights=None,composition_count=None):
+        selection = export_selection(composition_modes,composition_weights,composition_count)
         with self.transaction() as db:
             old = db.execute("SELECT * FROM exports WHERE export_id=?",(export_id,)).fetchone()
             if old and (old["campaign_id"] != campaign_id or old["include_provisional"] != int(include_provisional)):
                 raise ValueError("export id reused with different input")
-            db.execute("INSERT OR IGNORE INTO exports(export_id,campaign_id,include_provisional,created_at) VALUES(?,?,?,?)",(export_id,campaign_id,int(include_provisional),time.time()))
+            if old and export_selection(**{k.removeprefix('composition_'):v for k,v in json.loads(old['composition_selection']).items()}) != selection:
+                raise ValueError('export id reused with different composition selection')
+            db.execute("INSERT OR IGNORE INTO exports(export_id,campaign_id,include_provisional,created_at,composition_selection) VALUES(?,?,?,?,?)",(export_id,campaign_id,int(include_provisional),time.time(),dump(selection)))
         return self.one("SELECT * FROM exports WHERE export_id=?",(export_id,))
 
     def finish_export(self,export_id,status,result=None,reason=None,path=None):

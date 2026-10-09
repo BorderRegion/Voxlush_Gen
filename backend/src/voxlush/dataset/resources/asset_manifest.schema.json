@@ -565,6 +565,50 @@
     },
     "note": {
       "type": "string"
+    },
+    "composition": {
+      "type": "object",
+      "required": [
+        "requested_mode",
+        "observed",
+        "meets_requested"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "requested_mode": {
+          "enum": [
+            "pure_target",
+            "light_context",
+            "contextual",
+            "environment_rich",
+            null
+          ]
+        },
+        "observed": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "meets_requested": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "reason": {
+          "enum": [
+            "natural_contract",
+            "legacy_unspecified"
+          ]
+        },
+        "geometry_ref": {
+          "const": "geometry.json"
+        },
+        "visual_ref": {
+          "const": "review.json"
+        }
+      }
     }
   },
   "allOf": [

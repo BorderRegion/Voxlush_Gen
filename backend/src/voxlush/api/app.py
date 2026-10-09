@@ -16,6 +16,7 @@ from voxlush.core.files import safe_path,digest
 from voxlush.store.store import Store
 from voxlush.pipeline.scheduler import Scheduler
 from voxlush.dataset.export import export
+from voxlush.themes.composition import CompositionMode, DEFAULT_WEIGHTS
 
 
 def create_app(config: Config,*,start_scheduler=True):
@@ -36,7 +37,7 @@ def create_app(config: Config,*,start_scheduler=True):
                     out = store.root/"releases"/eid
                     store.finish_export(eid,"running",path=out)
                     try:
-                        result = await asyncio.to_thread(export,store,store.root,pending["campaign_id"],out,bool(pending["include_provisional"]))
+                        result = await asyncio.to_thread(export,store,store.root,pending["campaign_id"],out,bool(pending["include_provisional"]),**json.loads(pending['composition_selection']))
                         result = result if isinstance(result,dict) else {"result":str(result)}
                         candidates = sorted(out.glob("*.tar")) + sorted(out.glob("*.json"))
                         result["artifacts"] = [{"name":p.name,"artifact_id":store.register_artifact(None,p,p.name,digest(p))} for p in candidates]
@@ -126,7 +127,7 @@ def create_app(config: Config,*,start_scheduler=True):
 
     @app.get("/api/v1/config")
     def get_config():
-        return {**config.public(),"campaign_defaults":{"target":100,"request_limit":800,"api_cap":config.global_api_cap,"scene_weights":{"architecture":.6,"natural":.25,"hybrid":.15}}}
+        return {**config.public(),"campaign_defaults":{"target":100,"request_limit":800,"api_cap":config.global_api_cap,"scene_weights":{"architecture":.6,"natural":.25,"hybrid":.15},'composition_weights':DEFAULT_WEIGHTS}}
 
     @app.post("/api/v1/config/validate")
     def validate_config(value: dict):
@@ -168,8 +169,8 @@ def create_app(config: Config,*,start_scheduler=True):
         return result
 
     @app.get("/api/v1/samples",response_model=SamplePage)
-    def samples(campaign_id: str | None=None,cursor: str | None=None,limit: int=Query(50,ge=1,le=100),status: str | None=None,stage: str | None=None,q: str | None=Query(None,max_length=100)):
-        return store().list_samples(campaign_id,cursor,limit,status,stage,q)
+    def samples(campaign_id: str | None=None,cursor: str | None=None,limit: int=Query(50,ge=1,le=100),status: str | None=None,stage: str | None=None,q: str | None=Query(None,max_length=100),composition_mode: CompositionMode | None=None):
+        return store().list_samples(campaign_id,cursor,limit,status,stage,q,composition_mode)
 
     @app.get("/api/v1/samples/{sample_id}")
     def sample(sample_id: str):
@@ -179,6 +180,8 @@ def create_app(config: Config,*,start_scheduler=True):
         result["artifacts"] = store().rows("SELECT artifact_id,name FROM artifacts WHERE sample_id=? ORDER BY name",(sample_id,))
         result["events"] = store().rows("SELECT event_id,kind,payload,created_at FROM events WHERE sample_id=? ORDER BY event_id DESC LIMIT 100",(sample_id,))
         result["attempts"] = store().rows("SELECT attempt_id,role,endpoint_alias,status,billing_status,started_at,finished_at,occupancy,execution_deadline,execution_evidence,response_applied,runtime_config_hash FROM attempts WHERE sample_id=? ORDER BY started_at DESC LIMIT 16",(sample_id,))
+        asset = store().one('SELECT manifest_json FROM assets WHERE sample_id=? AND is_current=1 ORDER BY revision DESC LIMIT 1',(sample_id,))
+        result['composition'] = json.loads(asset['manifest_json']).get('composition') if asset else None
         result.pop("lease_token",None)
         return result
 
@@ -197,6 +200,7 @@ def create_app(config: Config,*,start_scheduler=True):
     @app.get("/api/v1/coverage")
     def coverage(campaign_id: str):
         result = store().coverage(campaign_id)
+        result['composition'] = store().composition_coverage(campaign_id,diagnostics=True)
         for item in result["items"]:
             item["qualification"] = "qualified" if config.is_qualified() else "unqualified"
             if config.is_qualified():

@@ -64,7 +64,8 @@ def command_campaign(args, config: Config) -> int:
                 "target": args.target,
                 "request_limit": args.request_limit,
                 "api_cap": args.api_cap,
-                "scene_weights": {"architecture": .6, "natural": .25, "hybrid": .15},
+                "scene_weights": json.loads(args.scene_weights) if args.scene_weights else {"architecture": .6, "natural": .25, "hybrid": .15},
+                **({'composition_weights':json.loads(args.composition_weights)} if args.composition_weights else {}),
             })
             result.raise_for_status()
             _print(result.json())
@@ -122,7 +123,10 @@ def command_export(args, config: Config) -> int:
     from voxlush.dataset.export import export
     store = _store(config)
     try:
-        _print(export(store, config.data_root, args.campaign, Path(args.output), args.include_provisional))
+        _print(export(store, config.data_root, args.campaign, Path(args.output), args.include_provisional,
+                      composition_modes=args.composition_mode,
+                      composition_weights=json.loads(args.composition_weights) if args.composition_weights else None,
+                      composition_count=args.composition_count))
         return 0
     finally:
         store.close()
@@ -175,6 +179,8 @@ def parser() -> argparse.ArgumentParser:
     create.add_argument("target", type=int)
     create.add_argument("--request-limit", type=int, default=800)
     create.add_argument("--api-cap", type=int, default=8)
+    create.add_argument('--composition-weights', help='JSON weights; default 40/30/20/10 for building scenes')
+    create.add_argument('--scene-weights', help='JSON scene weights, e.g. {"architecture":1} for building-only data')
     for action in ("start", "pause", "resume", "drain", "emergency_stop", "set_cap", "retry", "reconcile_execution"):
         command = camp_sub.add_parser(action)
         command.add_argument("campaign_id")
@@ -194,6 +200,9 @@ def parser() -> argparse.ArgumentParser:
     exp.add_argument("--campaign", required=True)
     exp.add_argument("--output", required=True)
     exp.add_argument("--include-provisional", action="store_true")
+    exp.add_argument('--composition-mode', action='append', choices=('pure_target','light_context','contextual','environment_rich'))
+    exp.add_argument('--composition-weights', help='JSON weights for a fixed-size mixed release; shortage fails explicitly')
+    exp.add_argument('--composition-count', type=int)
     gallery = sub.add_parser('blind-gallery')
     gallery.add_argument('--campaign', required=True)
     gallery.add_argument('--output', required=True)

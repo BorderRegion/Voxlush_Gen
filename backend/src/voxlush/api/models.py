@@ -1,6 +1,7 @@
 from typing import Literal
 from pydantic import Field,model_validator
 from voxlush.core.config import StrictModel
+from voxlush.themes.composition import CompositionMode, DEFAULT_WEIGHTS, export_selection, scene_weights as composition_scene_weights, validate_weights
 
 class CampaignCreate(StrictModel):
     campaign_id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,64}$")
@@ -10,11 +11,16 @@ class CampaignCreate(StrictModel):
     api_cap: int = Field(ge=0,le=512)
     scene_weights: dict[str,float] = Field(default_factory=lambda:{"architecture":.6,"natural":.25,"hybrid":.15})
     cost_limit: float | None = Field(default=None,gt=0)
+    composition_weights: dict[CompositionMode,float] = Field(default_factory=lambda:dict(DEFAULT_WEIGHTS))
 
     @model_validator(mode="after")
     def weights(self):
         if set(self.scene_weights)-{"architecture","natural","hybrid"} or any(v<0 for v in self.scene_weights.values()) or sum(self.scene_weights.values())<=0:
             raise ValueError("valid nonnegative scene weights are required")
+        validate_weights(self.composition_weights)
+        for scene, weight in self.scene_weights.items():
+            if weight > 0:
+                composition_scene_weights(self.composition_weights, scene)
         return self
 
 class CommandCreate(StrictModel):
@@ -49,6 +55,14 @@ class ExportCreate(StrictModel):
     export_id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,100}$")
     campaign_id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,64}$")
     include_provisional: bool = False
+    composition_modes: list[CompositionMode] | None = None
+    composition_weights: dict[CompositionMode,float] | None = None
+    composition_count: int | None = Field(default=None,gt=0,le=1000000)
+
+    @model_validator(mode='after')
+    def selection(self):
+        export_selection(self.composition_modes,self.composition_weights,self.composition_count)
+        return self
 
 class SessionCreate(StrictModel):
     token: str = Field(min_length=1,max_length=512)
@@ -90,6 +104,7 @@ class SampleSummary(StrictModel):
     reason_code: str | None
     theme_seed_id: str
     scene_type: str
+    composition_mode: CompositionMode | None = None
     revision: int
     updated_at: float
     preview_artifact_id: str | None

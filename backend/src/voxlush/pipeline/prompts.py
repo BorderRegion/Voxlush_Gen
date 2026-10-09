@@ -6,9 +6,10 @@ import json
 from pathlib import Path
 from voxlush.voxel.adapter import primitive_contract, MAX_SOURCE_BYTES
 from voxlush.core.files import digest
+from voxlush.themes.composition import instruction as composition_instruction, requested_mode, validate_observation
 
-PROMPT_VERSION = "voxlush.prompt.v5"
-RUBRIC_VERSION = "voxlush.visual.v3"
+PROMPT_VERSION = "voxlush.prompt.v6"
+RUBRIC_VERSION = "voxlush.visual.v4"
 RUBRIC_TEXT = """Inspect the actual complementary voxel views. Assess completeness, silhouette and
 proportions, structural/detail logic, material harmony, visual hierarchy, style consistency,
 theme recognizability and conspicuous repetitive detailing. Passing geometry alone does not
@@ -21,7 +22,22 @@ support a decision, with the specific uncertainty. Do not infer requested tags w
 Return one JSON object only: verdict is a string ('pass', 'fail' or 'gray'); issues is a list of
 strings describing concrete visible defects or uncertainties (empty for pass, nonempty otherwise);
 observed_tags is a list of objects with tag (string), evidence (nonempty string describing visible
-support), and confidence (a JSON number between 0 and 1, e.g. 0.8; never 'high', 'medium' or 'low')."""
+support), and confidence (a JSON number between 0 and 1, e.g. 0.8; never 'high', 'medium' or 'low').
+When task.composition_mode is set, also return context_assessment: {observed_mode:
+'pure_target'|'light_context'|'contextual'|'environment_rich'|null,
+building_focus:'dominant'|'co_primary'|'incidental'|'absent'|'unclear',
+extraneous_environment:boolean, evidence:nonempty string, confidence:number 0..1}.
+Classify the actual images, not requested labels or declared component categories. Pure means
+one main building with necessary contact treatment and functional attachments, not a settlement;
+light allows small supporting scenery;
+contextual has a moderate surrounding scene; environment_rich has strong landscape storytelling.
+Check both views for visual centrality, framing, distracting large terrain/trees/water, and whether
+the building is merely incidental. Describe visible context and subject proportion, including
+mislabelled environmental components. Pure/light must remain visually dominant, with no extraneous
+surroundings; other modes need a recognizable main architectural subject. Context control must not
+reward a crude empty box or penalize architectural detail, foundations or functional attachments.
+Use null/unclear and gray when the images cannot establish this. Natural tasks use their original
+landscape contract and do not require a building context assessment."""
 RUBRIC_HASH = hashlib.sha256((RUBRIC_VERSION + "\0" + RUBRIC_TEXT).encode()).hexdigest()
 
 def extract_source(content: str) -> str:
@@ -72,6 +88,9 @@ def author_messages(task: dict,source: str | None = None,feedback: dict | None =
         "output":"Return exactly one complete Python code block; include literal design metadata. No prose outside the block."}
     if task.get("phase") == "skeleton":
         instruction["stage_requirements"] = "Free-form massing, access, major structure, voids and circulation; preserve freedom for detail refinement."
+    context = composition_instruction(task)
+    if context:
+        instruction['scene_composition'] = context
     if source:
         instruction["current_authored_source"] = source
     if feedback:
@@ -82,13 +101,14 @@ def review_messages(task: dict,build_dir: Path):
     images = [build_dir/"previews"/f"view_{v}.webp" for v in ("a","b")]
     evidence = {"schema_version":RUBRIC_VERSION,"task":task,
         "geometry":compact_evidence(json.loads((build_dir/"geometry.json").read_text())),
-        "rubric":RUBRIC_TEXT}
+        "rubric":RUBRIC_TEXT, "scene_composition":composition_instruction(task),
+        "context_measurement":json.loads((build_dir/'geometry.json').read_text()).get('evidence',{}).get('composition')}
     content = [{"type":"text","text":json.dumps(evidence,ensure_ascii=False)}]
     for image in images:
         content.append({"type":"image_url","image_url":{"url":"data:image/webp;base64,"+base64.b64encode(image.read_bytes()).decode()}})
     return [{"role":"system","content":"You are the independent visual assessor. Evaluate only submitted images and immutable quality contract; never invent human calibration results."},{"role":"user","content":content}], [digest(p) for p in images]
 
-def parse_review(content,geometry_hash,image_hashes,qualified=False):
+def parse_review(content,geometry_hash,image_hashes,qualified=False,task=None):
     text = content.strip()
     if text.startswith("```json\n") and text.endswith("\n```"):
         text = text[8:-4]
@@ -102,6 +122,14 @@ def parse_review(content,geometry_hash,image_hashes,qualified=False):
     tags = value.get("observed_tags",[])
     if not isinstance(tags,list) or any(not isinstance(t,dict) or not isinstance(t.get("tag"),str) or not t['tag'].strip() or not isinstance(t.get('evidence'),str) or not t['evidence'].strip() or type(t.get("confidence")) not in (int,float) or not 0<=t["confidence"]<=1 for t in tags):
         raise ValueError("observed tags require concrete evidence and confidence")
+    mode = requested_mode(task or {})
+    if mode:
+        observation = validate_observation(mode,value.get('context_assessment'))
+        meets = observation['meets_requested']
+        value['context_assessment'] = observation
+        if meets is not True and value['verdict'] == 'pass':
+            value['verdict'] = 'gray' if meets is None else 'fail'
+            value['issues'] = ['Composition '+ ('uncertain: ' if meets is None else 'mismatch: ') + observation['evidence']]
     return {**value,"status":value["verdict"],"passed":value["verdict"]=="pass",
         "input_voxel_sha256":geometry_hash,"image_sha256":image_hashes,"evidence_kind":"live_model",
         "profile_qualified":qualified,"rubric_version":RUBRIC_VERSION,"rubric_hash":RUBRIC_HASH,

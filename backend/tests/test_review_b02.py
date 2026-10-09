@@ -10,14 +10,15 @@ from voxlush.core.files import digest
 from voxlush.inference import client as inference
 from voxlush.pipeline.scheduler import Scheduler
 from voxlush.store.store import Store
-from voxlush.themes.planner import runtime_task, task_for
+from voxlush.themes.planner import SEEDS, runtime_task, task_for
 from voxlush.voxel import sandbox
 from test_inference import completion, reasoning, sse
 
 
-def add(store, campaign="review", *, two_stage=False, source=None):
+def add(store, campaign="review", *, two_stage=False, source=None, composition_mode=None):
     c = store.campaign(campaign)
-    task = runtime_task(task_for(c, "geology", c["sequence"], "fixture", seed_id="geology_03"))
+    seed = next(s for s in SEEDS if s['scene_type']=='architecture' and s['suggested_scale']=='L') if composition_mode else next(s for s in SEEDS if s['id']=='geology_03')
+    task = runtime_task(task_for(c, seed['family_id'], c["sequence"], "fixture", seed_id=seed['id'], composition_mode=composition_mode))
     if two_stage:
         task.update(generation_mode="two_stage", phase="skeleton")
     return store.add_sample(task, source_path=str(source) if source else None)
@@ -95,12 +96,13 @@ async def test_n01_termination_is_independent_of_validity_and_billing(store, fak
 
 
 @pytest.mark.parametrize('first_failure', [None, 'geometry', 'syntax'])
-async def test_n02_skeleton_repairs_then_refine_once_across_restart(store, fake_http, monkeypatch, first_failure):
+@pytest.mark.parametrize('composition_mode', [None, 'pure_target', 'light_context'])
+async def test_n02_skeleton_repairs_then_refine_once_across_restart(store, fake_http, monkeypatch, first_failure, composition_mode):
     url, posts = await fake_http(sse(completion('x=1'), b'[DONE]'))
     endpoint = Endpoint(base_url=url, model='fixture')
     config = Config(data_root=store.root, author=endpoint)
     scheduler = Scheduler(store, config)
-    sample = add(store, two_stage=True)
+    sample = add(store, two_stage=True, composition_mode=composition_mode)
     immutable = json.dumps(sample['task'], sort_keys=True)
     phases = []
 
@@ -138,6 +140,7 @@ async def test_n02_skeleton_repairs_then_refine_once_across_restart(store, fake_
             assert current['stage'] in {'author', 'refine'}
         assert phases == (['skeleton', 'skeleton', 'final'] if first_failure == 'geometry' else ['skeleton', 'final'])
         sent = [json.loads(p['messages'][1]['content']) for p in posts]
+        assert all(p['task']['composition_mode'] == composition_mode for p in sent)
         assert sum(p['phase'] == 'refinement' for p in sent) == 1
         assert all(p['task']['phase'] == 'skeleton' for p in sent[:-1])
         assert current['creative_phase'] == 'final'
@@ -155,6 +158,7 @@ async def test_n02_skeleton_repairs_then_refine_once_across_restart(store, fake_
         await scheduler.local(store.claim(repaired['sample_id'], repaired['revision']))
         assert store.sample(sample['sample_id'])['stage'] == 'render'
         assert json.loads(posts[-1]['messages'][1]['content'])['task']['phase'] == 'final'
+        assert json.loads(posts[-1]['messages'][1]['content'])['task']['composition_mode'] == composition_mode
     finally:
         await scheduler.client.close()
 

@@ -25,6 +25,23 @@ COORDINATES = {"up": "Y", "north": "-Z", "south": "+Z", "east": "+X", "west": "-
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 
 
+def _composition(task, sample, geometry, review):
+    from voxlush.themes.composition import requested_mode, validate_observation
+    from voxlush.voxel.composition import measure
+    mode = requested_mode(task)
+    if mode is None:
+        return {'requested_mode':None,'observed':None,'meets_requested':None,
+                'reason':'natural_contract' if task.get('scene_type') == 'natural' else 'legacy_unspecified'}
+    actual, violations = measure(sample,task)
+    if actual != geometry.get('evidence',{}).get('composition') or violations:
+        raise ValueError('composition geometry missing, failed or inconsistent with saved voxels')
+    visual = validate_observation(mode,review.get('context_assessment'))
+    if visual != review.get('context_assessment') or visual['meets_requested'] is not True:
+        raise ValueError('composition image evidence missing, failed or inconsistent')
+    return {'requested_mode':mode, 'observed':{'geometry':actual,'visual':visual},
+            'meets_requested':True,'geometry_ref':'geometry.json','visual_ref':'review.json'}
+
+
 def _version_record(report: dict, prefix: str) -> str | None:
     version, digest = report.get(prefix + "_version"), report.get(prefix + "_hash")
     if not isinstance(version, str) or not version or not isinstance(digest, str) or not SHA256_RE.fullmatch(digest):
@@ -102,7 +119,7 @@ def verify_asset(directory: Path) -> dict:
     if canonical["annotation_hash"] != manifest["hashes"]["annotation_sha256"]:
         raise ValueError("canonical annotation hash mismatch")
     sample = json.loads((directory / "sample.json").read_text())
-    coordinates, blocks, _, palette = from_sample(sample)
+    coordinates, blocks, owners, palette = from_sample(sample)
     if canonical_voxel_hash(coordinates, blocks, palette) != voxel_hash:
         raise ValueError("legacy sample and canonical arrays disagree")
     if "sample.json.gz" in names:
@@ -128,6 +145,15 @@ def verify_asset(directory: Path) -> dict:
         raise ValueError("visual evidence is not bound to current artifacts")
     if review.get("input_voxel_sha256") != voxel_hash or review.get("image_sha256") != image_hashes:
         raise ValueError("review provenance mismatch")
+    brief = json.loads((directory/'brief.json').read_text())
+    if brief.get('composition_mode') is not None or 'composition' in manifest:
+        if brief.get('composition_mode') is not None:
+            from voxlush.voxel.canonical import annotation_hash
+            if annotation_hash(coordinates,owners,palette,sample['components'],
+                               {'generator_declared':sample.get('generator_claimed_tags',[])}) != canonical['annotation_hash']:
+                raise ValueError('composition sample ownership differs from canonical annotations')
+        if manifest.get('composition') != _composition(brief,sample,geometry,review):
+            raise ValueError('composition manifest evidence mismatch')
     if manifest["lifecycle"] == "accepted":
         evidence_versions = _evidence_versions(geometry, rendering or {}, review)
         if geometry.get("acceptance_eligible") is not True:
@@ -175,6 +201,7 @@ class Archive:
             raise ValueError("stale or fabricated review evidence")
         if review.get("status") != "pass":
             raise ValueError("visual review did not pass")
+        composition = _composition(task,json.loads((build_dir/'sample.json').read_text()),geometry,review)
         kind = sample.get("record_kind", task.get("record_kind", "production"))
         if kind not in {"production", "calibration", "fixture"}:
             raise ValueError("example/unknown records cannot be archived")
@@ -239,6 +266,7 @@ class Archive:
             "schema_version": "voxlush.asset.v1", "record_kind": kind, "sample_id": sid,
             "task_id": task.get("task_id", sid), "campaign_id": campaign_id, "revision": revision,
             "theme_seed_id": task["theme_seed_id"], "scene_type": task["scene_type"], "quality_contract": task["quality_contract"],
+            "composition":composition,
             "lifecycle": "accepted" if accepted else ("duplicate" if not unique else "candidate"),
             "accepted_at": (sample.get("accepted_at") or datetime.now(timezone.utc).isoformat()) if accepted else None,
             "grid": [256, 256, 256], "coordinate_system": COORDINATES,

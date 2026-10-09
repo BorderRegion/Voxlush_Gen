@@ -167,6 +167,11 @@ class Scheduler:
                 elif c["accepted_unique"]>=c["target"]:
                     self.store.set_campaign_state(c["campaign_id"],"completed","target_reached")
                     continue
+                elif (c.get('composition_weights') and not self.config.is_qualified()
+                      and c['accepted_unique']+c['provisional_pass']>=c['target']
+                      and all(i['candidate_debt'] == 0 for i in self.store.composition_coverage(c['campaign_id'])['items'])):
+                    self.store.set_campaign_state(c['campaign_id'],'completed','calibration_target_reached')
+                    continue
                 elif c["requests_used"]>=c["request_limit"]:
                     reason = "budget_exhausted"
                 elif not self.config.allow_live:
@@ -246,20 +251,30 @@ class Scheduler:
 
     def plan(self,c):
         coverage = self.store.coverage(c["campaign_id"])
+        calibration = bool(c.get('composition_weights')) and not self.config.is_qualified()
+        if calibration:
+            for row in coverage['items']:
+                row['debt'] = max(0,row['debt']-row['provisional'])
         active = coverage["totals"]["active"]
         buffer = min(1024,max(64,4*self.cap(c)))
         if active>=buffer or c["sequence"]>=c["request_limit"]:
             return
-        outstanding = c["target"]-c["accepted_unique"]-active
+        outstanding = c["target"]-c["accepted_unique"]-(c['provisional_pass'] if calibration else 0)-active
         if outstanding<=0:
             return
         candidates = [i for i in coverage["items"] if i["debt"]>i["active"] and self.family_available(i)]
+        modes = {}
+        if c.get('composition_weights'):
+            modes = {scene:self.store.next_composition(c['campaign_id'],scene,qualified=not calibration)
+                     for scene in ('architecture','hybrid')}
+            candidates = [i for i in candidates if i['scene_type'] == 'natural' or modes.get(i['scene_type'])]
         if not candidates:
             return
         family = max(candidates,key=lambda i:((i["debt"]-i["active"])/max(1,i["target"]),-i["active"],i["family_id"]))
         contract = task_for(c,family["family_id"],c["sequence"],
                             "production" if self.config.is_qualified() else "calibration",
-                            seed_id=self.store.next_seed(c['campaign_id'],family['family_id']))
+                            seed_id=self.store.next_seed(c['campaign_id'],family['family_id'],modes.get(family['scene_type'])),
+                            composition_mode=modes.get(family['scene_type']))
         self.store.add_sample(runtime_task(contract))
 
     def family_available(self, family):
@@ -474,11 +489,12 @@ class Scheduler:
             geometry = json.loads((directory/"geometry.json").read_text())
             hashes = [digest(directory/"previews"/f"view_{v}.webp") for v in ("a","b")]
             try:
-                review = parse_review(result["content"],geometry["canonical_voxel_hash"],hashes,self.config.is_qualified())
+                review = parse_review(result["content"],geometry["canonical_voxel_hash"],hashes,self.config.is_qualified(),task=claim['task'])
                 self.persist_json(directory/"review.json",review)
             except (ValueError,KeyError,TypeError):
                 self.retry_review(claim,'review_format')
                 return
+            self.store.record_review(claim,review)
             if review["passed"]:
                 self.store.finish(claim,stage="archive",changes={"review_json":json.dumps(review),"local_retries":0})
             elif review['status'] == 'gray':

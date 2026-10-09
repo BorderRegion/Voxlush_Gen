@@ -12,6 +12,7 @@ from PIL import Image
 
 from .archive import verify_asset
 from .files import json_bytes, safe_path, write_atomic
+from voxlush.themes.composition import INSTRUCTIONS
 
 
 # This exact renderer places all geometry in y=[90,850], with captions
@@ -51,11 +52,11 @@ def blind_gallery(store, data_root: Path, campaign_id: str, output: Path, *, cou
         asset = safe_path(data_root, row['path'])
         brief = json.loads((asset/'brief.json').read_text())
         group = (manifest['scene_type'], brief.get('bounds', {}).get('scale_class', 'unknown'),
-                 manifest['provenance']['generation_mode'])
+                 manifest['provenance']['generation_mode'], brief.get('composition_mode') or 'unspecified')
         rank = hashlib.sha256(f"{seed}:{manifest['sample_id']}:{manifest['revision']}".encode()).hexdigest()
         available[group] += 1
         groups[group].append((rank, row, brief))
-        # Keep a bounded random subset within each scene/scale/route stratum.
+        # Keep a bounded random subset within each scene/scale/route/context stratum.
         groups[group].sort(key=lambda item: item[0])
         del groups[group][count:]
     rng = random.Random(seed)
@@ -97,12 +98,16 @@ def blind_gallery(store, data_root: Path, campaign_id: str, output: Path, *, cou
             images.append(f'<img loading="lazy" src="{name}" alt="{blind_id} 视图 {view}">')
         task = brief.get('brief', {})
         instruction = '；'.join(str(task[k]) for k in ('instruction', 'design_focus') if task.get(k))
+        mode = brief.get('composition_mode')
+        if mode:
+            instruction += f' | Requested composition: {mode}. {INSTRUCTIONS[mode]}'
         cards.append(f'<article id="{blind_id}"><h2>{blind_id}</h2><p>{html.escape(instruction)}</p><div>{"".join(images)}</div></article>')
         mapping.append({'blind_id':blind_id,'sample_id':manifest['sample_id'], 'revision':manifest['revision'],
                         'stratum':group,'manifest_sha256':hashlib.sha256((asset/'manifest.json').read_bytes()).hexdigest(),
                         'versions':manifest['versions'],'image_sha256':manifest['quality']['visual']['image_sha256'],
                         'blind_previews':derivatives})
         scores.append({'blind_id':blind_id,'reviewer':None,'verdict':None,'defects':None,'notes':None,
+                       'observed_composition_mode':None,'composition_meets_requested':None,
                        'scores':{key:None for key in ('silhouette_proportion','spatial_hierarchy','structural_detail',
                                                      'materials_style','landscape_composition','theme','repetition','completeness')}})
     document = '''<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
@@ -115,6 +120,7 @@ def blind_gallery(store, data_root: Path, campaign_id: str, output: Path, *, cou
               'available':sum(available.values()),'seed':seed,'human_reviewed':0,'qualified':False,
               'preview_transform':'lossless caption-margin crop; full geometry pixels retained',
               'strata':[{'scene_type':g[0],'scale':g[1],'generation_mode':g[2],'available':available[g],
+                         'composition_mode':None if g[3]=='unspecified' else g[3],
                          'selected':sum(item[0] == g for item in selected)} for g in sorted(available)],
               'instructions':'Send only reviewer/ to reviewers. curator/ reveals identities. Missing scores stay missing; this export never qualifies or promotes assets.'}
     write_atomic(curator/'mapping.json', json_bytes(mapping))

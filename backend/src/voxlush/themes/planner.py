@@ -5,6 +5,7 @@ import math
 from importlib.resources import files
 
 from jsonschema import Draft202012Validator
+from voxlush.themes.composition import MODES, requested_mode, scene_weights
 
 CATALOG = json.loads(files("voxlush.themes").joinpath("catalog.json").read_text())
 FAMILIES = {f["id"]: f for f in CATALOG["families"]}
@@ -30,13 +31,21 @@ def family_targets(target: int, scene_weights: dict) -> dict:
         result.update(apportion(count, members))
     return result
 
-def task_for(campaign: dict, family_id: str, sequence: int, record_kind="calibration", seed_id=None) -> dict:
-    seeds = [s for s in SEEDS if s["family_id"] == family_id]
+def task_for(campaign: dict, family_id: str, sequence: int, record_kind="calibration", seed_id=None,
+             composition_mode=None) -> dict:
+    scene = FAMILIES.get(family_id, {}).get('scene_type')
+    if composition_mode is None and scene != 'natural' and campaign.get('composition_weights'):
+        weights = scene_weights(campaign['composition_weights'], scene)
+        composition_mode = max(weights, key=weights.get)
+    seeds = [s for s in SEEDS if s["family_id"] == family_id
+             and (composition_mode is None or composition_mode in s.get('composition_modes', MODES))]
     if not seeds:
         raise ValueError(f"unknown theme family: {family_id}")
     if record_kind not in {"production", "calibration", "fixture", "example"}:
         raise ValueError(f"invalid task record kind: {record_kind}")
-    spec = next(s for s in seeds if s['id'] == seed_id) if seed_id else seeds[sequence % len(seeds)]
+    spec = next((s for s in seeds if s['id'] == seed_id), None) if seed_id else seeds[sequence % len(seeds)]
+    if spec is None:
+        raise ValueError('theme seed is incompatible with requested composition mode')
     sid = hashlib.sha256(f'{campaign["campaign_id"]}:{sequence}'.encode()).hexdigest()[:24]
     task = {
         "schema_version": "voxlush.task.v1",
@@ -45,6 +54,7 @@ def task_for(campaign: dict, family_id: str, sequence: int, record_kind="calibra
         "campaign_id": campaign["campaign_id"],
         "theme_seed_id": spec["id"],
         "scene_type": spec["scene_type"],
+        "composition_mode": composition_mode,
         "quality_contract": spec["quality_contract"],
         "seed": sequence,
         "brief": {
@@ -62,6 +72,7 @@ def task_for(campaign: dict, family_id: str, sequence: int, record_kind="calibra
         "sampling_tags": {"family_id": family_id, "scale_class": spec["suggested_scale"]},
         "lineage_group_id": sid,
     }
+    requested_mode(task)
     errors = sorted(TASK_VALIDATOR.iter_errors(task), key=lambda error: list(error.path))
     if errors:
         raise ValueError(f"planner produced invalid task: {errors[0].message}")
@@ -85,6 +96,7 @@ def runtime_task(task: dict) -> dict:
         "theme_family_id": task["sampling_tags"]["family_id"],
         "seed": task["seed"],
         "scene_type": task["scene_type"],
+        "composition_mode": requested_mode(task),
         "quality_contract": task["quality_contract"],
         "generation_mode": generation_mode,
         "instruction": f'{brief["instruction"]}。{brief["design_focus"]}',

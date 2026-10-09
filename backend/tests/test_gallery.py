@@ -45,6 +45,9 @@ def test_blind_gallery_verifies_images_hides_identity_and_keeps_scores_missing(t
     assert "<script>" not in document and "&lt;script&gt;" in document
     scores = json.loads((output / "reviewer/scores.json").read_text())["items"]
     assert scores[0]["verdict"] is None and set(scores[0]["scores"].values()) == {None}
+    assert scores[0]['observed_composition_mode'] is None
+    assert scores[0]['composition_meets_requested'] is None
+    assert report['strata'][0]['composition_mode'] is None
     with Image.open(build / 'previews/view_a.webp') as original, Image.open(output / 'reviewer/B0001_a.webp') as anonymous:
         assert anonymous.size == (1200, 800)
         assert ImageChops.difference(original.crop(BLIND_CROP), anonymous).getbbox() is None

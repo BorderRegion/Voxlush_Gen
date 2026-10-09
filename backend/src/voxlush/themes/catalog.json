@@ -266,7 +266,12 @@
       "design_focus": "构思多个独立但协调的体量与完整室内动线",
       "scene_type": "architecture",
       "quality_contract": "inhabited",
-      "suggested_scale": "XL"
+      "suggested_scale": "XL",
+      "composition_modes": [
+        "light_context",
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "masonry_01",
@@ -1544,7 +1549,12 @@
       "design_focus": "构思各亭之间的场所关系而非复制阵列",
       "scene_type": "architecture",
       "quality_contract": "mixed",
-      "suggested_scale": "L"
+      "suggested_scale": "L",
+      "composition_modes": [
+        "light_context",
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "leisure_07",
@@ -1625,7 +1635,12 @@
       "design_focus": "保留生活空间与地形开采痕迹的关系",
       "scene_type": "architecture",
       "quality_contract": "ruin",
-      "suggested_scale": "M"
+      "suggested_scale": "M",
+      "composition_modes": [
+        "light_context",
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "ruins_08",
@@ -1787,7 +1802,11 @@
       "design_focus": "组织多栋独立体量与主要公共路径",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "S"
+      "suggested_scale": "S",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "settlement_02",
@@ -1796,7 +1815,11 @@
       "design_focus": "让水岸、桥与商住体量形成不同节点",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "M"
+      "suggested_scale": "M",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "settlement_03",
@@ -1805,7 +1828,11 @@
       "design_focus": "形成可达高差与连续街面而非等距复制",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "M"
+      "suggested_scale": "M",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "settlement_04",
@@ -1814,7 +1841,11 @@
       "design_focus": "安排共享场地和多种生活体量",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "L"
+      "suggested_scale": "L",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "settlement_05",
@@ -1823,7 +1854,11 @@
       "design_focus": "回应岸线与小型公共活动中心",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "M"
+      "suggested_scale": "M",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "settlement_06",
@@ -1832,7 +1867,11 @@
       "design_focus": "区分公共设施、住宅与交通边界",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "L"
+      "suggested_scale": "L",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "settlement_07",
@@ -1841,7 +1880,11 @@
       "design_focus": "设计遮阴路径与多重院落关系",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "M"
+      "suggested_scale": "M",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "settlement_08",
@@ -1850,7 +1893,11 @@
       "design_focus": "让不同教学/公共体量与户外空间互补",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "XL"
+      "suggested_scale": "XL",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "landscape_hybrid_01",
@@ -1859,7 +1906,11 @@
       "design_focus": "将水流、岩体和居住界面共同设计",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "S"
+      "suggested_scale": "S",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "landscape_hybrid_02",
@@ -1868,7 +1919,11 @@
       "design_focus": "组织多高度平台与地形观察关系",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "M"
+      "suggested_scale": "M",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "landscape_hybrid_03",
@@ -1877,7 +1932,11 @@
       "design_focus": "区分洞内、洞口与地表公共活动",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "M"
+      "suggested_scale": "M",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "landscape_hybrid_04",
@@ -1886,7 +1945,11 @@
       "design_focus": "设计陆水边界上的连续观察体验",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "L"
+      "suggested_scale": "L",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "landscape_hybrid_05",
@@ -1895,7 +1958,11 @@
       "design_focus": "让耕作坡地与生活体量彼此适应",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "M"
+      "suggested_scale": "M",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "landscape_hybrid_06",
@@ -1904,7 +1971,11 @@
       "design_focus": "让自然支点影响公共活动布局",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "L"
+      "suggested_scale": "L",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "landscape_hybrid_07",
@@ -1913,7 +1984,11 @@
       "design_focus": "将岸崖、通路与设施形成整体",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "M"
+      "suggested_scale": "M",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "landscape_hybrid_08",
@@ -1922,7 +1997,11 @@
       "design_focus": "让旧建筑空间被新的植被与路径重新使用",
       "scene_type": "hybrid",
       "quality_contract": "mixed",
-      "suggested_scale": "XL"
+      "suggested_scale": "XL",
+      "composition_modes": [
+        "contextual",
+        "environment_rich"
+      ]
     },
     {
       "id": "geology_01",

@@ -4,9 +4,60 @@ import json
 
 
 def migrate(db):
+    migrate_v3(db)
+    version = db.execute("SELECT value FROM meta WHERE key='schema'").fetchone()[0]
+    if version == '4':
+        return
+    db.execute('BEGIN IMMEDIATE')
+    try:
+        # NULL preserves legacy intent: old samples are not retrospectively labelled.
+        db.execute('ALTER TABLE campaigns ADD COLUMN composition_weights TEXT')
+        db.execute('ALTER TABLE samples ADD COLUMN composition_mode TEXT')
+        db.execute("ALTER TABLE exports ADD COLUMN composition_selection TEXT NOT NULL DEFAULT '{}'")
+        db.execute('CREATE INDEX samples_composition ON samples(campaign_id,composition_mode,sample_id)')
+        db.execute('''CREATE TABLE composition_stats (
+            campaign_id TEXT NOT NULL,scene_type TEXT NOT NULL,composition_mode TEXT NOT NULL,
+            tasks INTEGER NOT NULL DEFAULT 0,active INTEGER NOT NULL DEFAULT 0,
+            accepted INTEGER NOT NULL DEFAULT 0,provisional INTEGER NOT NULL DEFAULT 0,
+            rejected INTEGER NOT NULL DEFAULT 0,duplicate INTEGER NOT NULL DEFAULT 0,
+            requests INTEGER NOT NULL DEFAULT 0,visual_reviewed INTEGER NOT NULL DEFAULT 0,
+            visual_pass INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY(campaign_id,scene_type,composition_mode))''')
+        fields = {
+            'tasks': '1', 'active': "{r}.status IN ('ready','running','deferred','awaiting_review')",
+            'accepted': "{r}.status='accepted'", 'provisional': "{r}.status='provisional_pass'",
+            'rejected': "{r}.status='rejected' AND COALESCE({r}.reason_code,'')!='duplicate'",
+            'duplicate': "COALESCE({r}.reason_code,'')='duplicate'", 'requests': '{r}.request_count',
+            'visual_reviewed': "COALESCE(json_extract({r}.review_json,'$.status') IN ('pass','fail','gray'),0)",
+            'visual_pass': "COALESCE(json_extract({r}.review_json,'$.status')='pass',0)",
+        }
+        columns = ','.join(fields)
+        sums = ','.join(f'SUM({condition.format(r="s")})' for condition in fields.values())
+        db.execute(f'''INSERT INTO composition_stats(campaign_id,scene_type,composition_mode,{columns})
+            SELECT campaign_id,scene_type,COALESCE(composition_mode,''),{sums} FROM samples s
+            GROUP BY campaign_id,scene_type,composition_mode''')
+
+        def delta(row, sign):
+            assignments = ','.join(f'{name}={name}{sign}({condition.format(r=row)})' for name, condition in fields.items())
+            return (f'UPDATE composition_stats SET {assignments} WHERE campaign_id={row}.campaign_id '
+                    f"AND scene_type={row}.scene_type AND composition_mode=COALESCE({row}.composition_mode,'');")
+
+        initialize = "INSERT OR IGNORE INTO composition_stats(campaign_id,scene_type,composition_mode) VALUES(NEW.campaign_id,NEW.scene_type,COALESCE(NEW.composition_mode,''));"
+        db.execute(f'CREATE TRIGGER composition_insert AFTER INSERT ON samples BEGIN {initialize} {delta("NEW", "+")} END')
+        db.execute(f'''CREATE TRIGGER composition_update AFTER UPDATE OF status,reason_code,request_count,review_json,campaign_id,scene_type,composition_mode ON samples
+            BEGIN {delta('OLD','-')} {initialize} {delta('NEW','+')} END''')
+        db.execute(f'CREATE TRIGGER composition_delete AFTER DELETE ON samples BEGIN {delta("OLD","-")} END')
+        db.execute("UPDATE meta SET value='4' WHERE key='schema'")
+        db.execute('COMMIT')
+    except BaseException:
+        db.execute('ROLLBACK')
+        raise
+
+
+def migrate_v3(db):
     migrate_v2(db)
     version = db.execute("SELECT value FROM meta WHERE key='schema'").fetchone()[0]
-    if version == "3":
+    if version in ("3", "4"):
         return
     db.execute("BEGIN IMMEDIATE")
     try:
@@ -39,7 +90,7 @@ def migrate(db):
 
 def migrate_v2(db):
     version = db.execute("SELECT value FROM meta WHERE key='schema'").fetchone()[0]
-    if version in ("2", "3"):
+    if version in ("2", "3", "4"):
         return
     if version != "1":
         raise RuntimeError("unsupported schema: migration required")

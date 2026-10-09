@@ -12,6 +12,7 @@ import re
 import numpy as np
 
 from . import canonical, sandbox
+from .composition import measure as measure_composition
 from .resources import legacy_quality, legacy_wooden
 from .resources.legacy_render import COLORS
 
@@ -70,13 +71,14 @@ def versions() -> dict:
     def digest(names):
         h = hashlib.sha256()
         for name in names:
-            path = Path(__file__) if name == "adapter.py" else RESOURCES / name
+            path = (Path(__file__).parent / name[1:] if name.startswith('@') else
+                    Path(__file__) if name == "adapter.py" else RESOURCES / name)
             h.update(name.encode() + b"\0" + path.read_bytes())
         return h.hexdigest()
 
     return {
         "validator_version": VERSION,
-        "validator_hash": digest(["adapter.py", "legacy_quality.py", "legacy_wooden.py"]),
+        "validator_hash": digest(["adapter.py", "legacy_quality.py", "legacy_wooden.py", "@composition.py", "@../themes/composition.py"]),
         "runtime_version": "voxlush-primitives-v1",
         "runtime_hash": digest(["builder_core.txt"]),
         "renderer_version": "legacy-orthographic-webp-v1",
@@ -405,6 +407,13 @@ def inspect(sample: dict, task: dict) -> dict:
         semantic_source="generator_declared",
         independently_verified=False,
     )
+    composition, context_violations = measure_composition(sample, task)
+    evidence['composition'] = composition
+    if composition['applicable']:
+        # Explicit task context permissions replace only the old blanket ban.
+        # All structural, spatial and legacy quality requirements remain intact.
+        violations = [v for v in violations if v['rule'] != 'unapproved_environment']
+        violations.extend(context_violations)
     return {
         "passed": not violations,
         "violations": violations,
