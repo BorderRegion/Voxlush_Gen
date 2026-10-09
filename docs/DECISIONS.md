@@ -1,5 +1,9 @@
 # Decisions and Deviations
 
+## 2026-10-09: explicitly opt into continuity after upstream interruption
+
+The user now accepts losing interrupted samples and requests that one unresolved upstream call not permanently halt production. The earlier strict pool-isolation rule remains the default for existing configurations; the new `continue_new_tasks` policy separates local dispatch concurrency from retained unknown remote occupancy. It does not pretend remote execution ended, clear any record, reset a budget or replay the old request. Only new tasks are admitted after a bounded, persistent cooldown; actual costs and unknown reservations remain independently budgeted. Receipt recovery and all geometry/image/archive/export gates remain unchanged. Under this policy remote concurrency cannot be guaranteed from local connection counts; upstream admission/rate limits must still be respected. A small persisted cooldown in the existing Store also applies provider Retry-After to new tasks across restart. No second scheduler, workflow or state machine is introduced.
+
 ## Review 4f95a9e: liveness without another state machine
 
 Code: `b684fcf5d1667cbd553f41490dd7597ddfd7f486`. Keep campaign state as durable user intent: normal owner shutdown no longer changes running to draining. Startup first applies queued controls and recovers requests/artifacts, then restores only old `draining/shutdown` records. Explicit pause/drain/emergency stop remain authoritative. No schema or budget migration is needed.

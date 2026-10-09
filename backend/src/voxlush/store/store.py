@@ -111,6 +111,8 @@ class Store:
         self.db.execute("INSERT OR IGNORE INTO meta VALUES('schema','1')")
         migrate(self.db)
         self.runtime_config_hash = None
+        self.continue_unknown = False
+        self.unknown_backoff_seconds = 30
         self.db.execute("INSERT OR REPLACE INTO meta VALUES('sqlite_version',?)", (sqlite3.sqlite_version,))
 
     @contextmanager
@@ -160,6 +162,8 @@ class Store:
                     marks = ','.join('?' for _ in roles)
                     db.execute(f"UPDATE attempts SET capacity_group=? WHERE capacity_group=? AND role IN ({marks})",
                                (endpoint.capacity_key(),'legacy:'+endpoint.alias,*roles))
+        self.continue_unknown = config.unknown_execution_policy == 'continue_new_tasks'
+        self.unknown_backoff_seconds = config.unknown_backoff_seconds
 
     def _config_history(self, db, campaign_id):
         c = db.execute("SELECT * FROM campaigns WHERE campaign_id=?",(campaign_id,)).fetchone()
@@ -360,7 +364,8 @@ class Store:
 
     def ready(self, stages, limit=32, allow_network=True):
         marks = ",".join("?" for _ in stages)
-        network = "s.stage IN ('author','refine','review') AND c.state='running' AND c.requests_used<c.request_limit AND c.api_cap>0 AND (SELECT COUNT(*) FROM attempts a WHERE a.campaign_id=c.campaign_id AND a.occupancy=1)<c.api_cap" if allow_network else "0"
+        counted = "a.occupancy=1" + (" AND a.status!='outcome_unknown'" if self.continue_unknown else "")
+        network = f"s.stage IN ('author','refine','review') AND c.state='running' AND c.requests_used<c.request_limit AND c.api_cap>0 AND (SELECT COUNT(*) FROM attempts a WHERE a.campaign_id=c.campaign_id AND {counted})<c.api_cap" if allow_network else "0"
         local = "s.stage IN ('build','render','archive') AND c.state IN ('running','draining','completed','blocked','degraded')"
         return self.rows(f"SELECT s.* FROM samples s JOIN campaigns c USING(campaign_id) WHERE s.status IN ('ready','deferred') AND s.next_ready_at<=? AND s.stage IN ({marks}) AND (({network}) OR ({local})) ORDER BY s.updated_at LIMIT ?",
                          [time.time(),*stages,max(0,min(limit,1024))])
@@ -387,10 +392,16 @@ class Store:
                 return None
             if db.execute("SELECT 1 FROM attempts WHERE attempt_id=? AND response_applied=0",(s['attempt_id'],)).fetchone():
                 return None
-            active = db.execute("SELECT COUNT(*) FROM attempts WHERE occupancy=1").fetchone()[0]
-            route_active = db.execute("SELECT COUNT(*) FROM attempts WHERE occupancy=1 AND capacity_group=?",(endpoint.capacity_key(),)).fetchone()[0]
-            campaign_active = db.execute("SELECT COUNT(*) FROM attempts WHERE occupancy=1 AND campaign_id=?",(s["campaign_id"],)).fetchone()[0]
-            if db.execute("SELECT 1 FROM attempts WHERE occupancy=1 AND capacity_group=? AND status='outcome_unknown' LIMIT 1",(endpoint.capacity_key(),)).fetchone():
+            cooldown = db.execute("SELECT value FROM meta WHERE key=?", ('dispatch_after:'+endpoint.capacity_key(),)).fetchone()
+            if cooldown and float(cooldown['value']) > now:
+                return None
+            # Opt-in continuity caps locally active calls, NOT unknown remote work.
+            # Unknown occupancy, original identities and financial reservations stay intact.
+            counted = "occupancy=1" + (" AND status!='outcome_unknown'" if self.continue_unknown else "")
+            active = db.execute(f"SELECT COUNT(*) FROM attempts WHERE {counted}").fetchone()[0]
+            route_active = db.execute(f"SELECT COUNT(*) FROM attempts WHERE {counted} AND capacity_group=?",(endpoint.capacity_key(),)).fetchone()[0]
+            campaign_active = db.execute(f"SELECT COUNT(*) FROM attempts WHERE {counted} AND campaign_id=?",(s["campaign_id"],)).fetchone()[0]
+            if not self.continue_unknown and db.execute("SELECT 1 FROM attempts WHERE occupancy=1 AND capacity_group=? AND status='outcome_unknown' LIMIT 1",(endpoint.capacity_key(),)).fetchone():
                 return None  # Unconfirmed execution isolates this pool, never the financial ledger.
             if active >= hard_cap or campaign_active >= c["api_cap"] or route_active >= endpoint.provider_cap:
                 return None
@@ -434,6 +445,15 @@ class Store:
                 ("outcome_unknown" if unknown else "complete",int(unknown),cost,billing,dump(summary),time.time(),attempt_id))
             db.execute("UPDATE campaigns SET cost_known=cost_known+?,cost_unknown=cost_unknown+?,reserved_cost=MAX(0,reserved_cost-?) WHERE campaign_id=?",
                 (cost or 0,int(cost is None),release,a["campaign_id"]))
+            if self.continue_unknown:
+                delay = self.unknown_backoff_seconds if unknown else 0
+                if result.get('error_category') in ('rate_limited', 'service_busy'):
+                    delay = max(delay, result.get('retry_after') or 5)
+                if delay:
+                    # One small persistent pool cooldown, including across restarts.
+                    # Its expiry only admits new work; it never settles the old POST.
+                    db.execute("INSERT INTO meta(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=MAX(CAST(meta.value AS REAL),CAST(excluded.value AS REAL))",
+                               ('dispatch_after:'+a['capacity_group'], str(time.time()+delay)))
             self._event(db,a["campaign_id"],"settled",{"attempt_id":attempt_id,"billing_status":billing},a["sample_id"])
             return True
 

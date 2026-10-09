@@ -220,7 +220,8 @@ class Scheduler:
                 if endpoint is None or endpoint.alias in self.blocked_endpoints or (stage == 'review' and not endpoint.supports_images):
                     continue
                 pool = pools.get(endpoint.capacity_key(), {'n':0,'unknown':0})
-                if not pool['unknown'] and pool['n'] < endpoint.provider_cap:
+                occupied = pool['n'] - (pool['unknown'] if self.store.continue_unknown else 0)
+                if (self.store.continue_unknown or not pool['unknown']) and occupied < endpoint.provider_cap:
                     eligible.append(stage)
             rows = self.store.ready(eligible,limit=max(64,self.cap()*4)) if eligible else []
             if self.round%8:
@@ -485,6 +486,9 @@ class Scheduler:
     async def consume(self,claim,result):
         category = result.get("error_category")
         if execution_state(result) == "execution_unknown":
+            if category in ('endpoint_auth', 'endpoint_configuration', 'endpoint_quota'):
+                endpoint = self.config.visual if claim['stage'] == 'review' else self.config.author
+                self.blocked_endpoints.add(endpoint.alias)
             self.store.finish(claim,status="blocked",reason="outcome_unknown")
             return
         if not result.get("response_complete"):

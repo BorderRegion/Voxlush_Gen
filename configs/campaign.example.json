@@ -5,6 +5,8 @@
   "port": 8740,
   "allow_live": false,
   "global_api_cap": 0,
+  "unknown_execution_policy": "continue_new_tasks",
+  "unknown_backoff_seconds": 30,
   "build_workers": 1,
   "render_workers": 1,
   "archive_workers": 1,

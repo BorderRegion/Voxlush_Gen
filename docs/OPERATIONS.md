@@ -18,6 +18,25 @@ Normal process shutdown preserves a running campaign's intent. Startup applies q
 
 ## Unknown execution reconciliation
 
+### Continue producing while retaining unknown records
+
+For the user-approved policy that tolerates lost samples, set these top-level fields:
+
+```json
+{
+  "unknown_execution_policy": "continue_new_tasks",
+  "unknown_backoff_seconds": 30
+}
+```
+
+An interrupted sample remains blocked and its original request is never resent. After a persistent pool cooldown, the scheduler can dispatch **new independent tasks**. It still queries original receipts; a later verified complete response can resume the original sample through all normal checks. No incomplete response goes to build or archive. The example config selects this policy but remains offline with no endpoints and an API cap of zero. Existing configs default to `isolate_pool` unless explicitly changed.
+
+In `continue_new_tasks`, global/campaign/endpoint caps limit **locally active requests**, not unobservable remote executions. Old `outcome_unknown` rows keep `occupancy=1`, original IDs, response bytes and unknown financial reservations. They remain visible in the existing unknown counter and do not consume local dispatch slots. This is explicit acceptance of uncertain remote execution, **not proof that those executions ended or that total remote concurrency is bounded**. All dispatches still count against request budgets and RPM/TPM; unknown financial reservations still count against a configured cost budget. Quota/auth/config errors still isolate the endpoint. Retry-After pauses new work across the pool and survives restart. Persistent total service failure cannot produce assets; budgets, user pause/drain and zero-yield protection remain effective.
+
+Changing this field records a runtime config revision, without rewriting historical attempts or changing model-quality qualification. No manual clear/reset of unknowns, new-ledger workaround, new model health probe or weaker archive gate is needed. The admission policy does not enable disabled gateway accounts; deliberate gateway configuration changes remain separate, backed-up operations.
+
+### Strict isolation and evidence-based reconciliation
+
 Inspect attempt details in `GET /api/v1/samples/<sample_id>`. An `outcome_unknown` request keeps its financial reservation and blocks further dispatch to the same capacity pool. Independent routes can continue within the remaining global cap. If unknown execution occupies the full global authorization, obtain termination evidence before expecting new dispatch.
 
 After the service confirms completion or cancellation, use:

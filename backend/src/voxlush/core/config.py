@@ -80,6 +80,9 @@ class Config(StrictModel):
     auth_token_env: str = "VOXLUSH_ADMIN_TOKEN"
     allow_live: bool = False
     global_api_cap: int = Field(default=8, ge=0, le=512)
+    unknown_execution_policy: Literal["isolate_pool", "continue_new_tasks"] = "isolate_pool"
+    unknown_backoff_seconds: float = Field(default=30, ge=1, le=3600,
+        description="Pause new calls after an unknown result in continue_new_tasks mode; not a remote execution deadline.")
     build_workers: int = Field(default=1, ge=1, le=8)
     render_workers: int = Field(default=1, ge=1, le=8)
     archive_workers: int = Field(default=1, ge=1, le=2)
