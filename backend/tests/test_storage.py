@@ -76,6 +76,29 @@ def test_new_archive_gzip_only_old_archive_plain_only_and_export(tmp_path):
     assert verify_asset(asset) == manifest
 
 
+def test_resume_old_partial_archive_drops_only_staged_redundant_files(tmp_path, monkeypatch):
+    from voxlush.dataset import archive as module
+    record, review = artifact_fixture(tmp_path / "build")
+    archive = Archive(tmp_path / "data")
+    rename = module.os.rename
+    def interrupted(*args):
+        raise OSError("rename interrupted")
+    monkeypatch.setattr(module.os, "rename", interrupted)
+    with pytest.raises(OSError, match="interrupted"):
+        archive.prepare(record, tmp_path / "build", review)
+    stage = next((tmp_path / "data/staging/fixture-one").iterdir())
+    # Previous releases left these alongside the same deterministic commit.
+    (stage / "sample.json").write_bytes((tmp_path / "build/sample.json").read_bytes())
+    (stage / "previews/contact.webp").write_bytes(b"old optional derivative")
+    monkeypatch.setattr(module.os, "rename", rename)
+    row = archive.prepare(record, tmp_path / "build", review)
+    final = tmp_path / "data" / row["path"]
+    verify_asset(final)
+    assert not (final / "sample.json").exists()
+    assert not (final / "previews/contact.webp").exists()
+    assert (tmp_path / "build/sample.json").is_file()
+
+
 def test_compaction_preserves_ledger_archives_registered_paths_and_restart(tmp_path):
     root = tmp_path / "data"
     store = Store(root)

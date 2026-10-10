@@ -158,14 +158,15 @@
   "original_assets_modified": false,
   "archive_saving_fraction": 0.933098,
   "verification": {
-    "python_passed": 349,
+    "python_passed": 350,
     "python_optional_skipped": 1,
     "ruff": "pass",
     "frontend_build": "pass",
     "browser_transport_tests_passed": 11,
     "browser_real_backend_tests_passed": 1,
     "list_image_requests": 0,
-    "selected_sample_image_requests": 2
+    "selected_sample_image_requests": 2,
+    "old_partial_archive_resume": "pass"
   },
   "production_deployment": "pending; engineering verified, old campaign draining without forced cancellation"
 }

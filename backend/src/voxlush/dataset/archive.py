@@ -250,6 +250,10 @@ class Archive:
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(safe_path(build_dir, name), destination)
         write_sample_bytes(stage, sample_bytes)
+        # An interrupted pre-compression commit may have left these in staging.
+        # Only the new verified gzip and actual review views enter this revision.
+        for obsolete in ("sample.json", "previews/contact.webp"):
+            safe_path(stage, obsolete, must_exist=False).unlink(missing_ok=True)
         names.append("sample.json.gz")
         write_atomic(stage / "brief.json", json_bytes(task))
         write_atomic(stage / "review.json", json_bytes(review))
