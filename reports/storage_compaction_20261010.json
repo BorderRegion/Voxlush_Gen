@@ -1,0 +1,171 @@
+{
+  "kind": "existing_real_model_assets_local_storage_validation",
+  "paid_model_requests": 0,
+  "samples": [
+    {
+      "sample_id": "18eac08dc8e21ca06faea95f",
+      "scene_type": "architecture",
+      "composition_mode": "contextual",
+      "generation_mode": "direct",
+      "before_bytes": 10331073,
+      "after_bytes": 722831,
+      "prepare_verify_seconds": 1.775,
+      "geometry_annotation_source_hashes_unchanged": true,
+      "json_bytes_unchanged": true
+    },
+    {
+      "sample_id": "1b6fefff89863f4522f4171c",
+      "scene_type": "architecture",
+      "composition_mode": "contextual",
+      "generation_mode": "two_stage",
+      "before_bytes": 15993704,
+      "after_bytes": 945298,
+      "prepare_verify_seconds": 2.241,
+      "geometry_annotation_source_hashes_unchanged": true,
+      "json_bytes_unchanged": true
+    },
+    {
+      "sample_id": "5934375cd0ef0a8b824ec060",
+      "scene_type": "architecture",
+      "composition_mode": "environment_rich",
+      "generation_mode": "direct",
+      "before_bytes": 18100396,
+      "after_bytes": 1116264,
+      "prepare_verify_seconds": 2.658,
+      "geometry_annotation_source_hashes_unchanged": true,
+      "json_bytes_unchanged": true
+    },
+    {
+      "sample_id": "e7e86806abf3cd97ef47552f",
+      "scene_type": "architecture",
+      "composition_mode": "environment_rich",
+      "generation_mode": "two_stage",
+      "before_bytes": 18800611,
+      "after_bytes": 1304180,
+      "prepare_verify_seconds": 2.975,
+      "geometry_annotation_source_hashes_unchanged": true,
+      "json_bytes_unchanged": true
+    },
+    {
+      "sample_id": "4292e31a6b1d0a3830d4486c",
+      "scene_type": "architecture",
+      "composition_mode": "light_context",
+      "generation_mode": "direct",
+      "before_bytes": 2222949,
+      "after_bytes": 249332,
+      "prepare_verify_seconds": 0.506,
+      "geometry_annotation_source_hashes_unchanged": true,
+      "json_bytes_unchanged": true
+    },
+    {
+      "sample_id": "6fa159a316662d8acbcb0e71",
+      "scene_type": "architecture",
+      "composition_mode": "light_context",
+      "generation_mode": "two_stage",
+      "before_bytes": 5488101,
+      "after_bytes": 459428,
+      "prepare_verify_seconds": 0.938,
+      "geometry_annotation_source_hashes_unchanged": true,
+      "json_bytes_unchanged": true
+    },
+    {
+      "sample_id": "0ffb2a07207dc8a1d17ce7ea",
+      "scene_type": "architecture",
+      "composition_mode": "pure_target",
+      "generation_mode": "direct",
+      "before_bytes": 2795074,
+      "after_bytes": 361997,
+      "prepare_verify_seconds": 0.61,
+      "geometry_annotation_source_hashes_unchanged": true,
+      "json_bytes_unchanged": true
+    },
+    {
+      "sample_id": "5b23bf6cadaf718120c52ae8",
+      "scene_type": "architecture",
+      "composition_mode": "pure_target",
+      "generation_mode": "two_stage",
+      "before_bytes": 10931165,
+      "after_bytes": 756542,
+      "prepare_verify_seconds": 1.938,
+      "geometry_annotation_source_hashes_unchanged": true,
+      "json_bytes_unchanged": true
+    },
+    {
+      "sample_id": "b27f0751293f75ba5c7b581a",
+      "scene_type": "hybrid",
+      "composition_mode": "contextual",
+      "generation_mode": "direct",
+      "before_bytes": 25326910,
+      "after_bytes": 1552507,
+      "prepare_verify_seconds": 3.767,
+      "geometry_annotation_source_hashes_unchanged": true,
+      "json_bytes_unchanged": true
+    },
+    {
+      "sample_id": "0651a50cf2aa20e67646dce4",
+      "scene_type": "hybrid",
+      "composition_mode": "contextual",
+      "generation_mode": "two_stage",
+      "before_bytes": 28117696,
+      "after_bytes": 1803663,
+      "prepare_verify_seconds": 4.012,
+      "geometry_annotation_source_hashes_unchanged": true,
+      "json_bytes_unchanged": true
+    },
+    {
+      "sample_id": "d2322a05da43461ce8a61588",
+      "scene_type": "hybrid",
+      "composition_mode": "environment_rich",
+      "generation_mode": "direct",
+      "before_bytes": 23512985,
+      "after_bytes": 1858633,
+      "prepare_verify_seconds": 4.855,
+      "geometry_annotation_source_hashes_unchanged": true,
+      "json_bytes_unchanged": true
+    },
+    {
+      "sample_id": "3702e5a53c7759c2e420faf8",
+      "scene_type": "natural",
+      "composition_mode": null,
+      "generation_mode": "direct",
+      "before_bytes": 29634214,
+      "after_bytes": 1664634,
+      "prepare_verify_seconds": 5.37,
+      "geometry_annotation_source_hashes_unchanged": true,
+      "json_bytes_unchanged": true
+    }
+  ],
+  "before_bytes": 191254878,
+  "after_bytes": 12795309,
+  "real_saved_voxel_render": {
+    "passed": true,
+    "review_image_bytes_identical_to_v1": true,
+    "views": 2,
+    "contact_generated": false
+  },
+  "nonempty_export": {
+    "assets": 12,
+    "accepted": 0,
+    "provisional": 12,
+    "source_sft": 12,
+    "repair_pairs": 3,
+    "train": 0,
+    "val": 0,
+    "test": 0,
+    "calibration": 12,
+    "excluded": 0
+  },
+  "original_assets_modified": false,
+  "archive_saving_fraction": 0.933098,
+  "verification": {
+    "python_passed": 349,
+    "python_optional_skipped": 1,
+    "ruff": "pass",
+    "frontend_build": "pass",
+    "browser_transport_tests_passed": 11,
+    "browser_real_backend_tests_passed": 1,
+    "list_image_requests": 0,
+    "selected_sample_image_requests": 2
+  },
+  "production_deployment": "pending; engineering verified, old campaign draining without forced cancellation"
+}

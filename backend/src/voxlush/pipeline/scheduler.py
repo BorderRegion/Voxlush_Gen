@@ -21,6 +21,7 @@ from voxlush.voxel.sandbox import SandboxError, probe_resource
 from voxlush.dataset.archive import Archive
 from voxlush.voxel.canonical import load_and_validate
 from voxlush.dataset.dedup import features_from_asset
+from voxlush.dataset.sample_io import SAMPLE_NAMES, read_sample
 
 NETWORK = ("author","refine","review")
 SHARED_SANDBOX = ("sandbox_unavailable", "sandbox_image_version_mismatch")
@@ -600,7 +601,7 @@ class Scheduler:
                 if result is None:
                     # Recover partial local work into a new isolated destination.
                     output = directory
-                    if any((directory/name).exists() for name in ("sample.json","voxels.npz","geometry.json")):
+                    if any((directory/name).exists() for name in (*SAMPLE_NAMES,"voxels.npz","geometry.json")):
                         output = Path(tempfile.mkdtemp(prefix="retry-build-",dir=self.work_dir(claim)))
                     # Persist the local destination before execution, so restart
                     # can inspect it without overwriting the previous evidence.
@@ -623,7 +624,7 @@ class Scheduler:
                 directory = Path(claim["build_path"])
                 await asyncio.to_thread(render,directory,self.config.model_dump())
                 ids = []
-                for name in ("view_a.webp","view_b.webp","contact.webp"):
+                for name in ("view_a.webp","view_b.webp"):
                     p = directory/"previews"/name
                     ids.append(self.store.register_artifact(claim["sample_id"],p,name,digest(p)))
                 if task.get("record_kind") == "fixture":
@@ -665,7 +666,7 @@ class Scheduler:
         claim["versions"] = {**geometry.get("versions",{}),"rubric":RUBRIC_VERSION}
         claim.update(self.store.attempt_provenance(claim["sample_id"]))
         claim["observed_tags"] = claim["review"].get("observed_tags",[])
-        model = json.loads((directory/"sample.json").read_text()).get("model",{})
+        model = read_sample(directory).get("model",{})
         claim["generator_declared"] = {"tags":model.get("actual_tags",[])}
         features = await asyncio.to_thread(features_from_asset,directory)
         duplicate = self.store.variant_of(geometry["canonical_voxel_hash"],features,claim["lineage_group"])

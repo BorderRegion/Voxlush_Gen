@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 
 import numpy as np
+from voxlush.dataset.sample_io import SAMPLE_NAMES, read_sample_bytes, write_sample_bytes
 
 from . import canonical, sandbox
 from .composition import measure as measure_composition
@@ -437,7 +438,7 @@ def inspect(sample: dict, task: dict) -> dict:
 def build(source: str, task: dict, destination: Path, config: dict | None = None) -> dict:
     destination = Path(destination)
     destination.mkdir(parents=True, exist_ok=True)
-    if any((destination / name).exists() for name in ("sample.json", "voxels.npz", "geometry.json")):
+    if any((destination / name).exists() for name in (*SAMPLE_NAMES, "voxels.npz", "geometry.json")):
         raise ValueError("Build destination must be a fresh revision")
     (destination / "authored_source.py").write_text(source, encoding="utf-8")
     try:
@@ -483,8 +484,9 @@ def build(source: str, task: dict, destination: Path, config: dict | None = None
         if "sample.json" not in artifacts:
             raise sandbox.SandboxError("sandbox_missing_sample")
         sample = json.loads(artifacts["sample.json"])
+        write_sample_bytes(destination, artifacts["sample.json"])
         for name, content in artifacts.items():
-            if name != "probe.json":
+            if name not in {"probe.json", "sample.json"}:
                 (destination / name).write_bytes(content)
         annotations = {
             "schema_version": "voxlush.components.v1",
@@ -515,7 +517,8 @@ def build(source: str, task: dict, destination: Path, config: dict | None = None
 def render(destination: Path, config: dict | None = None) -> dict:
     destination = Path(destination)
     identity = canonical.load_and_validate(destination)
-    sample = json.loads((destination / "sample.json").read_text())
+    payload = read_sample_bytes(destination)
+    sample = json.loads(payload)
     for block in sample["blocks"]:
         state = canonical.normalize_block_state(block.get("block_state", block["type"]))
         if block["type"] not in COLORS or state.split("[", 1)[0] != "minecraft:" + block["type"]:
@@ -524,9 +527,9 @@ def render(destination: Path, config: dict | None = None) -> dict:
     if canonical.canonical_voxel_hash(coords, bi, palette) != identity["canonical_voxel_hash"]:
         raise ValueError("Render input differs from authoritative voxel arrays")
     artifacts, execution = sandbox.run(
-        (destination / "sample.json").read_bytes(), mode="render", config=config, seed=sample["seed"]
+        payload, mode="render", config=config, seed=sample["seed"]
     )
-    names = ("previews/view_a.webp", "previews/view_b.webp", "previews/contact.webp")
+    names = ("previews/view_a.webp", "previews/view_b.webp")
     if set(artifacts) != set(names):
         raise sandbox.SandboxError("render_missing_artifacts")
     (destination / "previews").mkdir(exist_ok=True)

@@ -12,17 +12,21 @@ from PIL import Image
 
 from .archive import verify_asset
 from .files import json_bytes, safe_path, write_atomic
+from .sample_io import read_sample
 from voxlush.themes.composition import INSTRUCTIONS
 
 
 # This exact renderer places all geometry in y=[90,850], with captions
 # above y=64 and below y=864. Reject unknown layouts rather than hide geometry.
 BLIND_RENDERER = 'legacy-orthographic-webp-v1@sha256:6692402cbabcbdbbc3c2fc7a6331c4fb382e1d8262db041a73932d3ca0214781'
+BLIND_RENDERERS = {BLIND_RENDERER,
+    # Same two lossless views and caption layout; no extra contact-sheet derivative.
+    'legacy-orthographic-webp-v1@sha256:243e43dbbb5ba2eb3ee663d84ae2c90b599163853577faa5ee20d3e0968ed383'}
 BLIND_CROP = (0, 64, 1200, 864)
 
 
 def blind_preview(source, target, renderer):
-    if renderer != BLIND_RENDERER:
+    if renderer not in BLIND_RENDERERS:
         raise ValueError('unsupported blind preview renderer; caption layout must be verified')
     with Image.open(source) as original:
         if original.size != (1200, 900):
@@ -84,7 +88,7 @@ def blind_gallery(store, data_root: Path, campaign_id: str, output: Path, *, cou
         review = json.loads((asset/'review.json').read_text())
         if review.get('evidence_kind') != 'live_model':
             raise ValueError('blind candidates require an actual model review')
-        sample = json.loads((asset/'sample.json').read_text())
+        sample = read_sample(asset)
         caption = sample['sample_id'] + sample['building']['name'][:62]
         if '\n' in caption or '\r' in caption:
             raise ValueError('unsupported multiline preview caption; anonymous rerender required')

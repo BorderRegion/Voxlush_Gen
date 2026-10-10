@@ -14,7 +14,7 @@ import time
 import uuid
 
 RESOURCES = Path(__file__).parent / "resources"
-DEFAULT_IMAGE = "voxlush-sandbox:v1"
+DEFAULT_IMAGE = "voxlush-sandbox:v2"
 ALLOWED = {
     "sample.json",
     "spec.json",
@@ -22,7 +22,6 @@ ALLOWED = {
     "probe.json",
     "previews/view_a.webp",
     "previews/view_b.webp",
-    "previews/contact.webp",
 }
 
 
@@ -61,7 +60,7 @@ def probe_resource(config: dict | None = None) -> None:
     artifacts, _ = run(json.dumps(sample).encode(), mode="render",
                        config={**(config or {}), "build_timeout_seconds": 10})
     if not all(artifacts.get("previews/" + name) for name in
-               ("view_a.webp", "view_b.webp", "contact.webp")):
+               ("view_a.webp", "view_b.webp")):
         raise SandboxError("render_missing_artifacts")
 
 

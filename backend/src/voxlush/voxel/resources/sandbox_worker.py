@@ -23,16 +23,10 @@ elif MODE == "render":
     with contextlib.redirect_stdout(sys.stderr):
         render(OUTPUT)
     OUTPUT.joinpath("previews").mkdir()
-    views = []
     for label, source in [("view_a", "southwest"), ("view_b", "northeast")]:
         with Image.open(OUTPUT / ("preview_" + source + ".png")) as original:
             original.save(OUTPUT / "previews" / (label + ".webp"), "WEBP", lossless=True, method=4)
-            views.append(original.resize((600, 450)))
-    contact = Image.new("RGB", (1200, 450))
-    contact.paste(views[0], (0, 0))
-    contact.paste(views[1], (600, 0))
-    contact.save(OUTPUT / "previews" / "contact.webp", "WEBP", lossless=True, method=4)
-    names = ("previews/view_a.webp", "previews/view_b.webp", "previews/contact.webp")
+    names = ("previews/view_a.webp", "previews/view_b.webp")
 else:
     raise ValueError("Unsupported isolated operation")
 with tarfile.open(fileobj=sys.stdout.buffer, mode="w|") as archive:

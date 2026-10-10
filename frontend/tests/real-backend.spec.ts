@@ -5,7 +5,11 @@ test("real isolated build/render, persistent control, authenticated artifacts an
   context,
 }) => {
   const browserErrors: string[] = [];
+  const imageRequests: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
+  page.on("request", (request) => {
+    if (request.resourceType() === "image") imageRequests.push(request.url());
+  });
   await page.goto("/");
   await expect(page.getByText("登录后访问").first()).toBeVisible();
   await page.getByRole("button", { name: "会话认证", exact: true }).click();
@@ -18,19 +22,15 @@ test("real isolated build/render, persistent control, authenticated artifacts an
   await expect(page.locator(".stat").first().locator("small")).toHaveText(
     "1 个暂定通过，未计入合格",
   );
-  await expect(page.locator(".sample-card img")).toHaveCount(1);
-  await expect
-    .poll(() =>
-      page
-        .locator(".sample-card img")
-        .evaluate((image) => (image as HTMLImageElement).naturalWidth),
-    )
-    .toBeGreaterThan(0);
+  // Browsing lists must not fetch every candidate's preview.
+  await expect(page.locator(".sample-card img")).toHaveCount(0);
+  await expect(page.getByText("点击查看真实预览").first()).toBeVisible();
+  expect(imageRequests).toHaveLength(0);
   await page
     .getByRole("button", { name: "查看样本 browser_real_islands", exact: true })
     .click();
   const dialog = page.getByRole("dialog");
-  await expect(dialog.locator(".detail-previews img")).toHaveCount(3);
+  await expect(dialog.locator(".detail-previews img")).toHaveCount(2);
   const loaded = await dialog
     .locator(".detail-previews img")
     .evaluateAll((images) =>
@@ -41,6 +41,7 @@ test("real isolated build/render, persistent control, authenticated artifacts an
       ),
     );
   expect(loaded).toBe(true);
+  expect(imageRequests).toHaveLength(2);
   await expect(dialog.getByText("暂定通过", { exact: true })).toBeVisible();
   await expect(dialog.locator(".detail-meta")).not.toContainText("1970");
   await page.screenshot({

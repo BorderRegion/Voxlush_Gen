@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import hashlib
-import gzip
 import json
 import os
 import re
@@ -16,9 +15,10 @@ from typing import Iterator
 from jsonschema import Draft202012Validator, FormatChecker, ValidationError
 
 from .files import file_record, fsync_directory, identifier, json_bytes, safe_path, sha256, write_atomic
+from .sample_io import SAMPLE_NAMES, read_sample, read_sample_bytes, write_sample_bytes
 
 REQUIRED = (
-    "authored_source.py", "build.py", "sample.json", "voxels.npz", "palette.json",
+    "authored_source.py", "build.py", "voxels.npz", "palette.json",
     "components.json", "geometry.json", "previews/view_a.webp", "previews/view_b.webp",
 )
 COORDINATES = {"up": "Y", "north": "-Z", "south": "+Z", "east": "+X", "west": "-X"}
@@ -111,7 +111,8 @@ def verify_asset(directory: Path) -> dict:
         actual = file_record(directory, record["path"], record["kind"])
         if actual != record:
             raise ValueError(f"artifact integrity mismatch: {record['path']}")
-    if not set(REQUIRED).issubset(names) or not {"brief.json", "review.json"}.issubset(names):
+    if (not set(REQUIRED).issubset(names) or not {"brief.json", "review.json"}.issubset(names)
+            or not names.intersection(SAMPLE_NAMES)):
         raise ValueError("missing mandatory manifest artifacts")
     from voxlush.voxel.canonical import canonical_voxel_hash, from_sample, load_and_validate
     canonical = load_and_validate(directory)
@@ -120,14 +121,10 @@ def verify_asset(directory: Path) -> dict:
         raise ValueError("canonical voxel hash mismatch")
     if canonical["annotation_hash"] != manifest["hashes"]["annotation_sha256"]:
         raise ValueError("canonical annotation hash mismatch")
-    sample = json.loads((directory / "sample.json").read_text())
+    sample = read_sample(directory, names=names)
     coordinates, blocks, owners, palette = from_sample(sample)
     if canonical_voxel_hash(coordinates, blocks, palette) != voxel_hash:
         raise ValueError("legacy sample and canonical arrays disagree")
-    if "sample.json.gz" in names:
-        with gzip.open(directory / "sample.json.gz", "rt") as handle:
-            if json.load(handle) != sample:
-                raise ValueError("compressed sample and canonical sample disagree")
     if sha256(directory / "authored_source.py") != manifest["hashes"]["source_sha256"]:
         raise ValueError("authored source hash mismatch")
     geometry = json.loads((directory / "geometry.json").read_text())
@@ -203,7 +200,8 @@ class Archive:
             raise ValueError("stale or fabricated review evidence")
         if review.get("status") != "pass":
             raise ValueError("visual review did not pass")
-        composition = _composition(task,json.loads((build_dir/'sample.json').read_text()),geometry,review)
+        sample_bytes = read_sample_bytes(build_dir)
+        composition = _composition(task,json.loads(sample_bytes),geometry,review)
         kind = sample.get("record_kind", task.get("record_kind", "production"))
         if kind not in {"production", "calibration", "fixture"}:
             raise ValueError("example/unknown records cannot be archived")
@@ -235,7 +233,7 @@ class Archive:
         stage = safe_path(self.root, f"staging/{sid}/v{revision:04d}-{commit_id[:12]}", must_exist=False)
         stage.mkdir(parents=True, exist_ok=True)
         names = list(REQUIRED)
-        for optional in ("previews/contact.webp", "sample.json.gz", "runtime.py", "runtime_contract.txt", "runtime_provenance.json", "render.json"):
+        for optional in ("runtime.py", "runtime_contract.txt", "runtime_provenance.json", "render.json"):
             candidate = safe_path(build_dir, optional, must_exist=False)
             if candidate.is_file():
                 names.append(optional)
@@ -251,6 +249,8 @@ class Archive:
             destination = safe_path(stage, name, must_exist=False)
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(safe_path(build_dir, name), destination)
+        write_sample_bytes(stage, sample_bytes)
+        names.append("sample.json.gz")
         write_atomic(stage / "brief.json", json_bytes(task))
         write_atomic(stage / "review.json", json_bytes(review))
         names.extend(["brief.json", "review.json"])

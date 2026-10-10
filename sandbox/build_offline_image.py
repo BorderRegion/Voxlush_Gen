@@ -5,6 +5,7 @@ The resulting image identity and runtime manifest are recorded by each build.
 """
 
 import hashlib
+import argparse
 import importlib
 import json
 from pathlib import Path
@@ -15,6 +16,9 @@ import sys
 import sysconfig
 import tempfile
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--tag', default='voxlush-sandbox:v2')
+args = parser.parse_args()
 root = Path(__file__).resolve().parents[1]
 resources = root / "backend/src/voxlush/voxel/resources"
 h = hashlib.sha256()
@@ -83,4 +87,4 @@ with tempfile.TemporaryDirectory(prefix="voxlush-runtime-image-") as directory:
         + "ENV PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1\n"
         + 'USER 10001:10001\nENTRYPOINT ["/usr/bin/python3.12", "-I", "/runtime/sandbox_worker.py"]\n'
     )
-    subprocess.run(["docker", "build", "-t", "voxlush-sandbox:v1", str(context)], check=True)
+    subprocess.run(["docker", "build", "-t", args.tag, str(context)], check=True)

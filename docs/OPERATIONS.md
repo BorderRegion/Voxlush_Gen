@@ -162,3 +162,12 @@ The 2026-10-09 installation uses this pattern on a dedicated data disk, pinned r
 
 
 A clean HTTP EOF is not proof of upstream completion. From stream policy v3, an otherwise error-free stream lacking both finish_reason and DONE stays outcome_unknown; do not replay it merely because the socket closed. A length finish is known truncation, not executable source. Preserve thinking and size output/total time budgets for the model: the NVIDIA DeepSeek v4.1 Flash model card recommends max_tokens of at least 262144. This is provider guidance, not qualification of that configuration for voxel generation.
+
+
+## Lossless work compaction and on-demand display
+
+New builds/archives contain `sample.json.gz` instead of a second uncompressed voxel JSON. Canonical NPZ and palette are unchanged. Readers accept either representation, compare both if present, and bound decompression to the sandbox's 256 MiB absolute output ceiling. Manifests hash the actual stored gzip; exports carry its path in `paths.sample`. Old immutable archives/releases are not migrated.
+
+Drain, wait for running attempts and local leases to reach zero, stop the service, and take a verified backup before `voxlush --config <config> compact-work --apply`. Omitting `--apply` inventories eligible files. The command takes the exclusive Store owner lock and only compacts unregistered work JSON, verifying exact bytes before removing the plain copy; it retains conflicting/failed inputs and reports errors with a nonzero exit status. It is restartable and changes no task, budget, unknown-execution or quality state. Keep the output receipt with the backup. Resume the original campaign after upgrading the pinned release.
+
+Build sandbox v2 with `python sandbox/build_image.py` (or the documented offline builder). It generates only the two required review views. The dashboard fetches those existing images only when a sample is opened; there is no new render endpoint, model call, cache directory or background thumbnail job. The old v1 image remains usable with the old release. Rollback to pre-compression code requires restoring its pre-upgrade backup into a separate root; the old reader cannot handle gzip-only assets. Test restore and reader compatibility before changing traffic.

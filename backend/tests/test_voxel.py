@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 from voxlush.voxel import canonical, sandbox
+from voxlush.dataset.sample_io import read_sample, write_sample_bytes
 from voxlush.voxel.adapter import (
     FROZEN_WOODEN,
     build,
@@ -150,11 +151,12 @@ def test_real_build_render_repeat_and_roundtrip(tmp_path, isolation):
     assert previews_a["image_hashes"] == previews_b["image_hashes"]
     assert all((tmp_path / "first" / name).stat().st_size > 1000 for name in previews_a["image_hashes"])
     # Rendering rejects changed JSON instead of reviewing different geometry from arrays.
-    sample_path = tmp_path / "first/sample.json"
-    sample = json.loads(sample_path.read_text())
+    assert not (tmp_path / "first/sample.json").exists()
+    assert not (tmp_path / "first/previews/contact.webp").exists()
+    sample = read_sample(tmp_path / "first")
     sample["blocks"][0]["type"] = "stone"
     sample["blocks"][0]["block_state"] = "minecraft:stone"
-    sample_path.write_text(json.dumps(sample))
+    write_sample_bytes(tmp_path / "first", json.dumps(sample).encode())
     with pytest.raises(ValueError, match="differs"):
         render(tmp_path / "first")
 

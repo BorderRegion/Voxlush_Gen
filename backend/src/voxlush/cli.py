@@ -142,6 +142,17 @@ def command_backup(args, config: Config) -> int:
         store.close()
 
 
+def command_compact(args, config: Config) -> int:
+    from voxlush.dataset.compact import compact_work
+    store = _store(config)
+    try:
+        result = compact_work(store, apply=args.apply)
+        _print(result)
+        return 2 if result["errors"] else 0
+    finally:
+        store.close()
+
+
 def command_gallery(args, config: Config) -> int:
     from voxlush.dataset.gallery import blind_gallery
     store = _store(config)
@@ -210,6 +221,8 @@ def parser() -> argparse.ArgumentParser:
     gallery.add_argument('--seed', type=int, default=0)
     backup_parser = sub.add_parser("backup")
     backup_parser.add_argument("--output", required=True)
+    compact = sub.add_parser("compact-work", help="Offline lossless work JSON compression; stop service first")
+    compact.add_argument("--apply", action="store_true", help="Apply after a verified backup; default is inventory only")
     restore = sub.add_parser("restore")
     restore.add_argument("--source", required=True)
     restore.add_argument("--destination", required=True)
@@ -235,6 +248,8 @@ def main(argv: list[str] | None = None) -> int:
             return command_export(args, _config(args.config))
         if args.command == "backup":
             return command_backup(args, _config(args.config))
+        if args.command == "compact-work":
+            return command_compact(args, _config(args.config))
         if args.command == "restore":
             return command_restore(args)
         if args.command == "verify-release":

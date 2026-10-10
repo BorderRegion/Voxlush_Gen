@@ -223,15 +223,7 @@ export function SampleCard({
       aria-label={`查看样本 ${sample.sample_id}`}
     >
       <div className="sample-image">
-        {sample.preview_artifact_id ? (
-          <img
-            loading="lazy"
-            src={artifactUrl(sample.preview_artifact_id)}
-            alt={`${sample.sample_id} 的真实体素预览`}
-          />
-        ) : (
-          <span>预览尚未生成</span>
-        )}
+        <span>{sample.preview_artifact_id ? "点击查看真实预览" : "预览尚未生成"}</span>
         <Badge value={sample.status} />
       </div>
       <div className="sample-card-body">

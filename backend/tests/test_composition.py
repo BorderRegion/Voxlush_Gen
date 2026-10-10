@@ -301,7 +301,8 @@ def real_context_builds(tmp_path_factory):
 
 def test_real_saved_voxel_context_limits_and_natural_contract(real_context_builds,tmp_path):
     for mode,(t,directory,report) in real_context_builds.items():
-        sample=json.loads((directory/'sample.json').read_text())
+        from voxlush.dataset.sample_io import read_sample
+        sample=read_sample(directory)
         assert inspect(sample,t)['passed']
         if mode=='contextual':
             changed=inspect(sample,{**t,'composition_mode':'pure_target'})
@@ -448,7 +449,8 @@ def test_old_archive_integrity_is_preserved_but_cannot_fill_or_export_wrong_clas
     shutil.copytree(original_dir,directory)
     t = {**original_task,'composition_mode':requested}
     report = json.loads((directory/'geometry.json').read_text())
-    report['evidence']['composition'] = measure(json.loads((directory/'sample.json').read_text()),t)[0]
+    from voxlush.dataset.sample_io import read_sample
+    report['evidence']['composition'] = measure(read_sample(directory),t)[0]
     (directory/'geometry.json').write_bytes(json_bytes(report))
     root = tmp_path/'data'
     bad,review,record = historical_context_asset(root,directory,t,observed,monkeypatch)

@@ -65,7 +65,7 @@ npm --prefix frontend run build
 python sandbox/build_image.py
 ```
 
-最后一步生成 `voxlush-sandbox:v1`。构建时需要访问基础镜像和 Python 依赖；运行生成代码的沙箱关闭网络。执行服务的用户需要能正常访问 Docker。不要在宿主机上直接运行模型返回的 Python 源码。
+最后一步生成 `voxlush-sandbox:v2`（保留旧 v1 镜像用于旧版本回滚）。构建时需要访问基础镜像和 Python 依赖；运行生成代码的沙箱关闭网络。执行服务的用户需要能正常访问 Docker。不要在宿主机上直接运行模型返回的 Python 源码。
 
 ## 第一次启动
 
@@ -465,7 +465,33 @@ voxlush --config "$VOXLUSH_CONFIG" export \
 
 ### 每个归档资产留下什么
 
-主要工件包括 `brief.json`、`authored_source.py`、`build.py`、`sample.json`、`voxels.npz`、`palette.json`、`components.json`、`geometry.json`、`review.json`、两张实际预览和 `manifest.json`；适用时还保存运行时资源、去重证据、配置快照与修复对。
+主要工件包括 `brief.json`、`authored_source.py`、`build.py`、`sample.json.gz`、`voxels.npz`、`palette.json`、`components.json`、`geometry.json`、`review.json`、两张实际预览和 `manifest.json`；适用时还保存运行时资源、去重证据、配置快照与修复对。
+
+新构建和新归档只保存 gzip 压缩的逐体素 JSON，不再同时留下明文副本。压缩不改变体素、材料、组件、坐标或几何 hash；读取、渲染、归档校验、盲评和训练导出同时兼容旧 `sample.json` 与新 `sample.json.gz`。已有归档与发布不会自动改写。训练读取分片时，请使用 `asset_index.jsonl` 的 `paths.sample`，不要写死扩展名。也可以直接读取更紧凑的 `voxels.npz` 与 `palette.json`。
+
+```python
+import gzip
+import json
+from pathlib import Path
+
+asset = Path("/path/to/asset")
+if (asset / "sample.json.gz").is_file():
+    with gzip.open(asset / "sample.json.gz", "rt", encoding="utf-8") as handle:
+        sample = json.load(handle)
+else:
+    sample = json.loads((asset / "sample.json").read_text(encoding="utf-8"))
+```
+
+图像只在最终几何通过、需要视觉审核时生成两张真实视角，作为审核证据保存；不再生成额外的 `contact.webp` 拼接图。面板列表不批量加载预览，打开某个样本详情后才读取已有审核图。查看图片不会调用模型或重新执行作者源码。骨架和未通过几何的样本不会为了面板出图。必要的视觉质量关卡仍然保留。
+
+旧工作目录通常比最终归档更占空间，可以在排空、停止服务并完成备份后，进行一次无损压缩：
+
+```bash
+voxlush --config "$VOXLUSH_CONFIG" compact-work          # 先查看可压缩数量
+voxlush --config "$VOXLUSH_CONFIG" compact-work --apply  # 执行并输出逐文件校验记录
+```
+
+此命令独占同一个 Store，并拒绝活动仍在运行、存在执行中请求或样本租约的情况。它只处理 `work/` 下未发布的明文副本：先写入并回读压缩文件，确认与原文件逐字节一致，才移除明文。已登记下载的路径、正式归档、发布、源码、思考内容、请求和费用账目不动；出错时保留原文件。中断后可以再次执行。旧版程序不支持仅 gzip 的工作目录和新归档，因此回滚旧程序应使用升级前的完整备份，不能只切回旧 Git 提交。
 
 manifest 分开记录请求标签 `requested_tags`、模型声明 `generator_declared`、观察标签 `observed_tags`，以及构成要求、实测特征和是否达标。源码、体素与预览有对应校验信息。原始响应、请求账目和版本记录也保存在数据目录中。
 
