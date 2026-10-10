@@ -1,0 +1,251 @@
+{
+  "schema": "voxlush.production_progress.v1",
+  "before_recovery": {
+    "observed_at_utc": "2026-10-10T00:56:25Z",
+    "runtime_commit": "cd9db30a72b6bf0c8bef8f8658836548030cc732",
+    "campaign": {
+      "campaign_id": "production-20261009",
+      "state": "blocked",
+      "reason_code": "disk_low_watermark",
+      "target": 1000,
+      "requests_used": 1369,
+      "request_limit": 8000,
+      "api_cap": 256,
+      "provisional_pass": 109,
+      "accepted_unique": 0
+    },
+    "disk_free_gib": 3.86,
+    "blocked_since_utc": "2026-10-09T17:49:45Z",
+    "independent_tasks_sent": 1023,
+    "unknown_attempts": 164,
+    "candidate_breakdown": [
+      {
+        "scene_type": "architecture",
+        "composition_mode": "contextual",
+        "generation_mode": "direct",
+        "n": 14
+      },
+      {
+        "scene_type": "architecture",
+        "composition_mode": "contextual",
+        "generation_mode": "two_stage",
+        "n": 2
+      },
+      {
+        "scene_type": "architecture",
+        "composition_mode": "environment_rich",
+        "generation_mode": "direct",
+        "n": 4
+      },
+      {
+        "scene_type": "architecture",
+        "composition_mode": "environment_rich",
+        "generation_mode": "two_stage",
+        "n": 1
+      },
+      {
+        "scene_type": "architecture",
+        "composition_mode": "light_context",
+        "generation_mode": "direct",
+        "n": 15
+      },
+      {
+        "scene_type": "architecture",
+        "composition_mode": "light_context",
+        "generation_mode": "two_stage",
+        "n": 2
+      },
+      {
+        "scene_type": "architecture",
+        "composition_mode": "pure_target",
+        "generation_mode": "direct",
+        "n": 10
+      },
+      {
+        "scene_type": "architecture",
+        "composition_mode": "pure_target",
+        "generation_mode": "two_stage",
+        "n": 4
+      },
+      {
+        "scene_type": "hybrid",
+        "composition_mode": "contextual",
+        "generation_mode": "direct",
+        "n": 5
+      },
+      {
+        "scene_type": "hybrid",
+        "composition_mode": "contextual",
+        "generation_mode": "two_stage",
+        "n": 2
+      },
+      {
+        "scene_type": "natural",
+        "composition_mode": null,
+        "generation_mode": "direct",
+        "n": 35
+      },
+      {
+        "scene_type": "natural",
+        "composition_mode": null,
+        "generation_mode": "two_stage",
+        "n": 15
+      }
+    ],
+    "attempt_statuses": [
+      {
+        "role": "author",
+        "status": "complete",
+        "n": 991
+      },
+      {
+        "role": "author",
+        "status": "outcome_unknown",
+        "n": 116
+      },
+      {
+        "role": "refine",
+        "status": "complete",
+        "n": 62
+      },
+      {
+        "role": "refine",
+        "status": "outcome_unknown",
+        "n": 4
+      },
+      {
+        "role": "review",
+        "status": "complete",
+        "n": 152
+      },
+      {
+        "role": "review",
+        "status": "outcome_unknown",
+        "n": 44
+      }
+    ],
+    "sample_states": [
+      {
+        "stage": "archive",
+        "status": "provisional_pass",
+        "reason_code": "unqualified_model_profile",
+        "n": 109
+      },
+      {
+        "stage": "author",
+        "status": "blocked",
+        "reason_code": "outcome_unknown",
+        "n": 116
+      },
+      {
+        "stage": "author",
+        "status": "ready",
+        "reason_code": null,
+        "n": 24
+      },
+      {
+        "stage": "author",
+        "status": "ready",
+        "reason_code": "geometry_repair",
+        "n": 711
+      },
+      {
+        "stage": "author",
+        "status": "ready",
+        "reason_code": "visual_repair",
+        "n": 5
+      },
+      {
+        "stage": "refine",
+        "status": "blocked",
+        "reason_code": "outcome_unknown",
+        "n": 4
+      },
+      {
+        "stage": "refine",
+        "status": "ready",
+        "reason_code": null,
+        "n": 6
+      },
+      {
+        "stage": "review",
+        "status": "awaiting_review",
+        "reason_code": "review_format_exhausted",
+        "n": 11
+      },
+      {
+        "stage": "review",
+        "status": "blocked",
+        "reason_code": "outcome_unknown",
+        "n": 44
+      },
+      {
+        "stage": "review",
+        "status": "ready",
+        "reason_code": null,
+        "n": 17
+      }
+    ],
+    "cumulative_usage": {
+      "reported_total_tokens": 62179938,
+      "missing_usage": 165,
+      "actual_currency_cost": null
+    }
+  },
+  "backup_relocation": {
+    "observed_at_utc": "2026-10-10T00:56:48Z",
+    "files": 4218,
+    "bytes": 9520185969,
+    "source_and_destination_hashes_verified": true,
+    "backup_sqlite_integrity": "ok",
+    "live_database_untouched": true,
+    "data_disk_free_gib": 12.74
+  },
+  "after_recovery": {
+    "observed_at_utc": "2026-10-10T00:57:08Z",
+    "previous_state": "blocked",
+    "previous_reason": "disk_low_watermark",
+    "requests_before": 1369,
+    "request_limit_preserved": true,
+    "campaign_cap_preserved": true,
+    "service_restart": false,
+    "overview": {
+      "state": "running",
+      "reason_code": null,
+      "active_requests": 71,
+      "unknown_occupancy": 164,
+      "effective_cap": 71,
+      "configured_cap": 256,
+      "requests_used": 1440,
+      "provisional_pass": 109,
+      "accepted_unique": 0,
+      "queues": [
+        {
+          "stage": "author",
+          "ready": 686,
+          "running": 54,
+          "oldest_wait_seconds": 35750.96444892883
+        },
+        {
+          "stage": "refine",
+          "ready": 6,
+          "running": 0,
+          "oldest_wait_seconds": 25828.97580885887
+        },
+        {
+          "stage": "review",
+          "ready": 0,
+          "running": 17,
+          "oldest_wait_seconds": 0.0
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Pending repair and review tasks have not finished; candidate counts are not a final cohort yield.",
+    "No human qualification or formal accepted promotion was performed.",
+    "The storage action retained a verified independent backup and removed only its old duplicate.",
+    "Production work artifacts still occupy about 24 GiB; this capacity relief is not a large-scale storage qualification.",
+    "No application code, quality contract, unknown ledger, request budget or concurrency limit was changed."
+  ]
+}
