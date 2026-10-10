@@ -1,10 +1,22 @@
 # Acceptance Report
 
-Date: 2026-10-09 (Asia/Shanghai); historical pilots are recorded separately below.
+Updated: 2026-10-10 (Asia/Shanghai); timestamped deployments and historical pilots are recorded separately below.
 
 Original acceptance baseline: `4f4be137d3924b38cb7301c2c4a0081ff32a7c2a`; current follow-up and live results are first below.
 
-Environment: Python 3.12.3, Node 20.19.0, npm 10.8.2, Docker 29.1.3, APSW SQLite 3.51.3, Linux, `voxlush-sandbox:v1` (`sha256:50712f3b25dc`). The checked-in profile has `allow_live=false`, no author or visual endpoint, and global API cap 0. The acceptance data root was `/tmp/voxlush-acceptance-20261008`; it is outside the repository and is not production data.
+Original acceptance environment: Python 3.12.3, Node 20.19.0, npm 10.8.2, Docker 29.1.3, APSW SQLite 3.51.3, Linux, `voxlush-sandbox:v1` (`sha256:50712f3b25dc`). The checked-in profile has `allow_live=false`, no author or visual endpoint, and global API cap 0. The acceptance data root was `/tmp/voxlush-acceptance-20261008`; it is outside the repository and is not production data.
+
+## Lossless storage and on-demand image display (2026-10-10)
+
+Runtime `932323395573ef672f4bae7acfca807e3f01ab59` and sandbox v2 are deployed. [Storage evidence](storage_compaction_20261010.json) records engineering tests, existing-real-asset replay, maintenance and resumed production separately. New builds/archives use bounded lossless gzip for sample JSON; NPZ, palette, coordinates, source and quality gates are unchanged. Old immutable archives/releases retain their paths and bytes. Readers, gallery and nonempty training exports accept both formats. New renders retain the two hash-bound images actually used by visual review, omit the unused contact sheet, and the browser loads images only for an opened sample. No new model call or rendering service is involved in viewing.
+
+**Engineering:** 350 Python passed / one optional private-fixture skip, Ruff, frontend build, 11 transport browser tests and one actual backend/Docker browser test passed. Tests cover compression integrity/limits, old plain compatibility, manifest-bound reading, interrupted conversion/archive commit, exclusive maintenance ownership, preserved budgets and backup restoration. Twelve existing real-model candidates rearchived in an isolated root used 12,795,309 bytes instead of 191,254,878 (93.3% reduction); source, geometry, annotation and decompressed sample bytes matched. A real rerender from saved voxels produced the same two review images byte-for-byte. The nonempty export verified 12 calibration assets, 12 source SFT rows and three repair pairs, with zero formal accepted. These are existing-asset/local results, not new paid quality experiments.
+
+**Production:** after natural request drain, the 17,642-file / 35.07 GiB backup was verified on a separate disk. Offline work conversion compressed 950 files and released 14,189,034,346 bytes (13.21 GiB); all 2,267 existing immutable files rehashed unchanged, the whole prior request/campaign ledger matched, and all 1,622 previous request identities were retained. No active request was interrupted by deployment. Paused restart and doctor passed before resuming cap 256. An isolated rollback canary restored an old plain backup and verified the old reader and v1 renderer; old binaries require this backup and cannot read new gzip-only assets by switching code alone. Actual public HTTPS browser checks passed all main pages with no JavaScript errors, zero image requests on the list and successful existing-image retrieval on opening a sample.
+
+At 02:36 UTC, resumed production had 139 candidates / zero formal accepted, 1,885 cumulative requests, 184 locally active and 245 retained unknown attempts. Sixteen newly written real build revisions matched compressed sample/canonical geometry/annotation hashes; twelve passed geometry and nine had matching saved-voxel render/image hashes with two views and no contact sheet. No new-format live archive was complete at that snapshot; archive/export proof comes from the isolated replay and regression tests above. Storage validation did not require new paid experiments; normal authorized production continued.
+
+Free live-disk space was 19.81 GiB at the postflight snapshot. The work area still retains plain pre-weathering geometry references (~13.7 GiB across 950 files at maintenance); these are provenance, not identical copies of final geometry. The backup also remains on another disk. The 93.3% archive reduction does not establish a whole-pipeline capacity estimate or long-duration qualification. No unknown execution, uncertain cost, human score or candidate status was rewritten.
 
 ## Local production deployment and 256-concurrency startup (2026-10-09)
 

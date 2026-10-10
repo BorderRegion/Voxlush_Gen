@@ -168,5 +168,210 @@
     "selected_sample_image_requests": 2,
     "old_partial_archive_resume": "pass"
   },
-  "production_deployment": "pending; engineering verified, old campaign draining without forced cancellation"
+  "production_deployment": {
+    "status": "deployed_and_resumed",
+    "runtime_commit": "932323395573ef672f4bae7acfca807e3f01ab59",
+    "previous_runtime": "cd9db30a72b6bf0c8bef8f8658836548030cc732",
+    "active_requests_interrupted": 0,
+    "backup_files": 17642,
+    "backup_bytes": 37656387294,
+    "verified_backup_on_separate_disk": true,
+    "work_files_compacted": 950,
+    "work_bytes_saved": 14189034346,
+    "work_errors": [],
+    "immutable_files_rehashed_unchanged": 2267,
+    "ledger_identical_after_compaction": true,
+    "prior_attempt_ids_retained": 1622,
+    "requests_used_before_resume": 1622,
+    "free_bytes_before": 7611854848,
+    "free_bytes_after": 21800992768,
+    "paused_restart_verified": true,
+    "doctor_passed": true,
+    "resumed_cap": 256,
+    "rollback_canary": {
+      "isolated_fixture": true,
+      "old_runtime": "cd9db30a72b6bf0c8bef8f8658836548030cc732",
+      "old_plain_backup_verified": true,
+      "new_work_compaction_verified": true,
+      "restore_to_separate_root": true,
+      "old_reader_and_v1_render_after_restore": true,
+      "paid_requests": 0
+    },
+    "public_browser": {
+      "login": true,
+      "secure_httponly_cookie": true,
+      "public_https": true,
+      "list_image_requests": 0,
+      "selected_sample_image_requests": 3,
+      "existing_review_images_loaded": true,
+      "page_errors": [],
+      "state": "running",
+      "requests_used": 1881,
+      "effective_cap": 256,
+      "selected_sample_note": "Historical sample retains its original contact image; new builds have only two review views."
+    },
+    "postflight": {
+      "checked_at_utc": "2026-10-10T02:36:25.996353+00:00",
+      "campaign": {
+        "state": "running",
+        "api_cap": 256,
+        "request_limit": 8000,
+        "requests_used": 1885,
+        "provisional_pass": 139,
+        "accepted_unique": 0
+      },
+      "attempt_status_counts": {
+        "complete": 1456,
+        "outcome_unknown": 245,
+        "running": 184
+      },
+      "new_real_compressed_builds": [
+        {
+          "sample_id": "2953439bccdd44e694887092",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": true,
+          "real_two_view_render_passed": true
+        },
+        {
+          "sample_id": "3b75eab845fc84fdf6124f76",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": true,
+          "real_two_view_render_passed": true
+        },
+        {
+          "sample_id": "4bf9068b39785fe20d7c82da",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": false,
+          "real_two_view_render_passed": false
+        },
+        {
+          "sample_id": "4dd8b1feca575da474413115",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": true,
+          "real_two_view_render_passed": true
+        },
+        {
+          "sample_id": "570fb537685288fa50bc216c",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": true,
+          "real_two_view_render_passed": false
+        },
+        {
+          "sample_id": "5c63f0d73d0083f854028487",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": true,
+          "real_two_view_render_passed": true
+        },
+        {
+          "sample_id": "842d455f4c49b40ae0209e42",
+          "revision": "v0003",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": true,
+          "real_two_view_render_passed": true
+        },
+        {
+          "sample_id": "96dd7f7411f57d18627530a7",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": true,
+          "real_two_view_render_passed": false
+        },
+        {
+          "sample_id": "a3c6343e0f07a2bda044f9be",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": true,
+          "real_two_view_render_passed": true
+        },
+        {
+          "sample_id": "a9b2b9a2c6e464be8f2e010a",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": false,
+          "real_two_view_render_passed": false
+        },
+        {
+          "sample_id": "ce4d959dfe8abdec650dccde",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": true,
+          "real_two_view_render_passed": true
+        },
+        {
+          "sample_id": "d706af73f0b62dcf28c257f8",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": true,
+          "real_two_view_render_passed": false
+        },
+        {
+          "sample_id": "da757d2802c81cc72fe497e1",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": false,
+          "real_two_view_render_passed": false
+        },
+        {
+          "sample_id": "e5a7381a615d1de5f155a039",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": true,
+          "real_two_view_render_passed": true
+        },
+        {
+          "sample_id": "f34ca6cf081ab8b71cce2ffe",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": false,
+          "real_two_view_render_passed": false
+        },
+        {
+          "sample_id": "fbcd0fb6b0ce8967bef4bc25",
+          "revision": "v0002",
+          "compressed_json_matches_npz": true,
+          "canonical_and_annotation_hashes_verified": true,
+          "geometry_passed": true,
+          "real_two_view_render_passed": true
+        }
+      ],
+      "new_archives": [],
+      "free_bytes": 21270654976,
+      "scope": "Read-only verification during resumed authorized production. Build revisions are not newly qualified assets. No new archive was complete at this snapshot.",
+      "upstream_limitations": "outcome_unknown attempts remain recorded; storage deployment neither establishes remote termination nor settles unknown charges."
+    }
+  },
+  "storage_scope": {
+    "archive_saving_basis": "12 existing real-model candidates, locally rearchived; not whole-pipeline or future average storage.",
+    "work_saving_basis": "950 plain sample.json files converted byte-for-byte; immutable archives/releases unchanged.",
+    "remaining_preservation_reference_snapshot": {
+      "files": 950,
+      "bytes": 14685329512,
+      "format": "plain preservation_reference.json",
+      "retained": true
+    },
+    "preservation_reference_note": "Pre-weathering authored geometry is separate provenance, not a byte-identical duplicate of final sample; not removed or converted by compact-work.",
+    "review_images": "Two hash-bound actual reviewed images retained; no extra contact image for new builds.",
+    "backup_storage": "Verified pre-upgrade backup retained on a separate disk; live-disk savings do not subtract this recovery copy."
+  }
 }
